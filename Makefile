@@ -1,8 +1,8 @@
 TAGS ?= ""
 GO_BIN ?= "go"
 
-install: 
-	$(GO_BIN) install -tags ${TAGS} -v ./pkger/cmd/pkger
+install:
+	cd ./cmd/pkger && $(GO_BIN) install -tags ${TAGS} -v .
 	make tidy
 
 tidy:
@@ -16,18 +16,18 @@ deps:
 	$(GO_BIN) get -tags ${TAGS} -t ./...
 	make tidy
 
-build: 
+build:
 	$(GO_BIN) build -v .
 	make tidy
 
-test: 
+test:
 	$(GO_BIN) test -cover -tags ${TAGS} ./...
 	make tidy
 
-ci-deps: 
+ci-deps:
 	$(GO_BIN) get -tags ${TAGS} -t ./...
 
-ci-test: 
+ci-test:
 	$(GO_BIN) test -tags ${TAGS} -race ./...
 
 lint:
@@ -47,7 +47,7 @@ endif
 	make install
 	make tidy
 
-release-test: 
+release-test:
 	$(GO_BIN) test -tags ${TAGS} -race ./...
 	make tidy
 
