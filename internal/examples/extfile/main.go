@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	f, err := pkger.Open("github.com/gobuffalo/buffalo:/server.go")
+	f, err := pkger.Open("github.com/gobuffalo/buffalo:/go.mod")
 	if err != nil {
 		log.Fatal("1", err)
 	}

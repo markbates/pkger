@@ -21,7 +21,72 @@ type File struct {
 	path   Path
 	data   []byte
 	index  *index
+	writer io.ReadWriter
 	Source io.ReadCloser
+}
+
+func (f *File) Close() error {
+	defer func() {
+		f.Source = nil
+		f.writer = nil
+	}()
+	if f.Source != nil {
+		if c, ok := f.Source.(io.Closer); ok {
+			if err := c.Close(); err != nil {
+				return err
+			}
+		}
+	}
+
+	if f.writer == nil {
+		return nil
+	}
+
+	b, err := ioutil.ReadAll(f.writer)
+	if err != nil {
+		return err
+	}
+	f.data = b
+
+	fi := f.info
+	fi.size = int64(len(f.data))
+	fi.modTime = time.Now()
+	f.info = fi
+	return nil
+}
+
+func (f *File) Read(p []byte) (int, error) {
+	if len(f.data) > 0 && len(f.data) <= len(p) {
+		return copy(p, f.data), io.EOF
+	}
+
+	if len(f.data) > 0 {
+		f.Source = ioutil.NopCloser(bytes.NewReader(f.data))
+	}
+
+	if f.Source != nil {
+		return f.Source.Read(p)
+	}
+
+	of, err := f.her.Open(f.Path())
+	if err != nil {
+		return 0, err
+	}
+	f.Source = of
+	return f.Source.Read(p)
+}
+
+func (f *File) Write(b []byte) (int, error) {
+	if f.writer == nil {
+		f.writer = &bytes.Buffer{}
+	}
+	i, err := f.writer.Write(b)
+	fmt.Println(f.Name(), i, err)
+	return i, err
+}
+
+func (f File) HereInfo() here.Info {
+	return f.her
 }
 
 func (f File) MarshalJSON() ([]byte, error) {
@@ -76,9 +141,7 @@ func (f *File) UnmarshalJSON(b []byte) error {
 	if !ok {
 		return fmt.Errorf("missing index")
 	}
-	f.index = &index{
-		Files: map[Path]*File{},
-	}
+	f.index = newIndex()
 	if err := json.Unmarshal(ind, f.index); err != nil {
 		return err
 	}
@@ -87,9 +150,7 @@ func (f *File) UnmarshalJSON(b []byte) error {
 
 func (f *File) Open(name string) (http.File, error) {
 	if f.index == nil {
-		f.index = &index{
-			Files: map[Path]*File{},
-		}
+		f.index = newIndex()
 	}
 	pt, err := Parse(name)
 	if err != nil {
@@ -148,16 +209,6 @@ func (f File) Stat() (os.FileInfo, error) {
 	return f.info, nil
 }
 
-func (f *File) Close() error {
-	if f.Source == nil {
-		return nil
-	}
-	if c, ok := f.Source.(io.Closer); ok {
-		return c.Close()
-	}
-	return nil
-}
-
 func (f File) Name() string {
 	return f.info.Name()
 }
@@ -172,19 +223,6 @@ func (f File) String() string {
 	}
 	b, _ := json.MarshalIndent(f.info, "", "  ")
 	return string(b)
-}
-
-func (f *File) Read(p []byte) (int, error) {
-	if f.Source != nil {
-		return f.Source.Read(p)
-	}
-
-	of, err := f.her.Open(f.Path())
-	if err != nil {
-		return 0, err
-	}
-	f.Source = of
-	return f.Source.Read(p)
 }
 
 // Readdir reads the contents of the directory associated with file and returns a slice of up to n FileInfo values, as would be returned by Lstat, in directory order. Subsequent calls on the same file will yield further FileInfos.
