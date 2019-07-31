@@ -3,10 +3,10 @@ package pkger
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/gobuffalo/here"
@@ -21,6 +21,59 @@ type File struct {
 	data   []byte
 	index  *index
 	Source io.ReadCloser
+}
+
+func (f File) MarshalJSON() ([]byte, error) {
+	m := map[string]interface{}{}
+	m["info"] = f.info
+	m["her"] = f.her
+	m["path"] = f.path
+	m["index"] = f.index
+	return json.Marshal(m)
+}
+
+func (f *File) UnmarshalJSON(b []byte) error {
+	m := map[string]json.RawMessage{}
+	if err := json.Unmarshal(b, &m); err != nil {
+		return err
+	}
+
+	info, ok := m["info"]
+	if !ok {
+		return fmt.Errorf("missing info")
+	}
+	f.info = &FileInfo{}
+	if err := json.Unmarshal(info, f.info); err != nil {
+		return err
+	}
+
+	her, ok := m["her"]
+	if !ok {
+		return fmt.Errorf("missing her")
+	}
+	if err := json.Unmarshal(her, &f.her); err != nil {
+		return err
+	}
+
+	path, ok := m["path"]
+	if !ok {
+		return fmt.Errorf("missing path")
+	}
+	if err := json.Unmarshal(path, &f.path); err != nil {
+		return err
+	}
+
+	ind, ok := m["index"]
+	if !ok {
+		return fmt.Errorf("missing index")
+	}
+	f.index = &index{
+		Files: map[Path]*File{},
+	}
+	if err := json.Unmarshal(ind, f.index); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (f *File) Open(name string) (http.File, error) {
@@ -38,7 +91,9 @@ func (f *File) Open(name string) (http.File, error) {
 		pt.Pkg = f.path.Pkg
 	}
 
-	h := httpFile{}
+	h := httpFile{
+		crs: &byteCRS{bytes.NewReader(f.data)},
+	}
 
 	if pt == f.path {
 		h.File = f
@@ -52,18 +107,19 @@ func (f *File) Open(name string) (http.File, error) {
 	}
 
 	if len(f.data) > 0 {
-		h.crs = &byteCRS{bytes.NewReader(f.data)}
 		return h, nil
 	}
 
-	bf, err := os.Open(h.File.Path())
+	bf, err := f.her.Open(h.File.Path())
 	if err != nil {
 		return h, err
 	}
+
 	fi, err := bf.Stat()
 	if err != nil {
 		return h, err
 	}
+
 	if fi.IsDir() {
 		return h, nil
 	}
@@ -98,12 +154,7 @@ func (f File) Name() string {
 }
 
 func (f File) Path() string {
-	dir := f.her.Dir
-	if filepath.Base(dir) == f.Name() {
-		return dir
-	}
-	fp := filepath.Join(dir, f.Name())
-	return fp
+	return f.her.FilePath(f.Name())
 }
 
 func (f File) String() string {
@@ -119,7 +170,7 @@ func (f *File) Read(p []byte) (int, error) {
 		return f.Source.Read(p)
 	}
 
-	of, err := os.Open(f.Path())
+	of, err := f.her.Open(f.Path())
 	if err != nil {
 		return 0, err
 	}
@@ -133,7 +184,7 @@ func (f *File) Read(p []byte) (int, error) {
 //
 // If n <= 0, Readdir returns all the FileInfo from the directory in a single slice. In this case, if Readdir succeeds (reads all the way to the end of the directory), it returns the slice and a nil error. If it encounters an error before the end of the directory, Readdir returns the FileInfo read until that point and a non-nil error.
 func (f *File) Readdir(count int) ([]os.FileInfo, error) {
-	of, err := os.Open(f.Path())
+	of, err := f.her.Open(f.Path())
 	if err != nil {
 		return nil, err
 	}

@@ -6,8 +6,8 @@ import (
 )
 
 type Path struct {
-	Pkg  string
-	Name string
+	Pkg  string `json:"pkg"`
+	Name string `json:"name"`
 }
 
 func (p Path) String() string {

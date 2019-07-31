@@ -1,6 +1,7 @@
 package pkger
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,6 +14,22 @@ import (
 type index struct {
 	Pkg   string
 	Files map[Path]*File
+}
+
+func (i index) MarshalJSON() ([]byte, error) {
+	m := map[string]interface{}{
+		"pkg": i.Pkg,
+	}
+
+	fm := map[string]File{}
+
+	for k, v := range i.Files {
+		fm[k.String()] = *v
+	}
+
+	m["files"] = fm
+
+	return json.Marshal(m)
 }
 
 func (i index) Walk(pt Path, wf WalkFunc) error {
