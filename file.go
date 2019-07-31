@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
@@ -29,6 +30,14 @@ func (f File) MarshalJSON() ([]byte, error) {
 	m["her"] = f.her
 	m["path"] = f.path
 	m["index"] = f.index
+	m["data"] = f.data
+	if len(f.data) == 0 {
+		b, err := ioutil.ReadAll(&f)
+		if err != nil {
+			return nil, err
+		}
+		m["data"] = b
+	}
 	return json.Marshal(m)
 }
 
