@@ -21,7 +21,7 @@ build:
 	make tidy
 
 test:
-	$(GO_BIN) test -cover -tags ${TAGS} ./...
+	$(GO_BIN) test -cover -tags ${TAGS} -timeout 5s ./...
 	make tidy
 
 ci-deps:

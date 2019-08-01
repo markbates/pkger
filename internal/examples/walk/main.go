@@ -6,13 +6,11 @@ import (
 	"os"
 
 	"github.com/markbates/pkger"
+	"github.com/markbates/pkger/paths"
 )
 
 func main() {
-	err := pkger.Walk("github.com/gobuffalo/buffalo", func(path pkger.Path, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
+	err := pkger.Walk("github.com/gobuffalo/envy", func(path paths.Path, info os.FileInfo) error {
 		fmt.Println(path)
 		return nil
 	})

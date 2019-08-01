@@ -1,11 +1,15 @@
 package pkger
 
-import "os"
+import (
+	"os"
 
-type WalkFunc func(Path, os.FileInfo, error) error
+	"github.com/markbates/pkger/paths"
+)
+
+type WalkFunc func(paths.Path, os.FileInfo) error
 
 func Walk(p string, wf WalkFunc) error {
-	pt, err := Parse(p)
+	pt, err := paths.Parse(p)
 	if err != nil {
 		return err
 	}

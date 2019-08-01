@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gobuffalo/here"
+	"github.com/markbates/pkger/paths"
 )
 
 const timeFmt = time.RFC3339Nano
@@ -18,7 +19,7 @@ const timeFmt = time.RFC3339Nano
 type File struct {
 	info   *FileInfo
 	her    here.Info
-	path   Path
+	path   paths.Path
 	data   []byte
 	index  *index
 	writer io.ReadWriter
@@ -68,7 +69,7 @@ func (f *File) Read(p []byte) (int, error) {
 		return f.Source.Read(p)
 	}
 
-	of, err := f.her.Open(f.Path())
+	of, err := f.her.Open(f.FilePath())
 	if err != nil {
 		return 0, err
 	}
@@ -81,7 +82,6 @@ func (f *File) Write(b []byte) (int, error) {
 		f.writer = &bytes.Buffer{}
 	}
 	i, err := f.writer.Write(b)
-	fmt.Println(f.Name(), i, err)
 	return i, err
 }
 
@@ -152,7 +152,7 @@ func (f *File) Open(name string) (http.File, error) {
 	if f.index == nil {
 		f.index = newIndex()
 	}
-	pt, err := Parse(name)
+	pt, err := paths.Parse(name)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func (f *File) Open(name string) (http.File, error) {
 		return h, nil
 	}
 
-	bf, err := f.her.Open(h.File.Path())
+	bf, err := f.her.Open(h.File.FilePath())
 	if err != nil {
 		return h, err
 	}
@@ -213,8 +213,12 @@ func (f File) Name() string {
 	return f.info.Name()
 }
 
-func (f File) Path() string {
+func (f File) FilePath() string {
 	return f.her.FilePath(f.Name())
+}
+
+func (f File) Path() paths.Path {
+	return f.path
 }
 
 func (f File) String() string {
@@ -231,7 +235,7 @@ func (f File) String() string {
 //
 // If n <= 0, Readdir returns all the FileInfo from the directory in a single slice. In this case, if Readdir succeeds (reads all the way to the end of the directory), it returns the slice and a nil error. If it encounters an error before the end of the directory, Readdir returns the FileInfo read until that point and a non-nil error.
 func (f *File) Readdir(count int) ([]os.FileInfo, error) {
-	of, err := f.her.Open(f.Path())
+	of, err := f.her.Open(f.FilePath())
 	if err != nil {
 		return nil, err
 	}

@@ -22,6 +22,7 @@ func main() {
 		"read":  read,
 		"info":  info,
 		"serve": serve,
+		"list":  list,
 	}
 	args := os.Args[1:]
 
