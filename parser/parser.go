@@ -14,13 +14,15 @@ var DefaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "_fixtu
 
 func Parse(name string) (Results, error) {
 	var r Results
+	c, err := pkgs.Current()
+	if err != nil {
+		return r, err
+	}
+
 	if name == "" || name == "." {
-		c, err := pkgs.Current()
-		if err != nil {
-			return r, err
-		}
 		name = c.ImportPath
 	}
+
 	pt, err := paths.Parse(name)
 	if err != nil {
 		return r, err
@@ -34,16 +36,35 @@ func Parse(name string) (Results, error) {
 	}
 
 	m := map[paths.Path]bool{}
+
 	root := r.Path.Name
 	if !strings.HasPrefix(root, string(filepath.Separator)) {
 		root = string(filepath.Separator) + root
 	}
+
 	if !strings.HasPrefix(root, her.Dir) {
 		root = filepath.Join(her.Dir, root)
 	}
+
+	if name != her.Dir {
+		_, err = os.Stat(filepath.Join(root, "go.mod"))
+		if err == nil {
+			return Results{}, nil
+		}
+	}
+
 	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
+		}
+
+		if info.IsDir() {
+			if path != c.Dir {
+				_, err = os.Stat(filepath.Join(path, "go.mod"))
+				if err == nil {
+					return filepath.SkipDir
+				}
+			}
 		}
 
 		base := filepath.Base(path)
@@ -128,9 +149,24 @@ func sourceFiles(pt paths.Path) ([]paths.Path, error) {
 	if !fi.IsDir() {
 		return res, nil
 	}
+
+	c, err := pkgs.Current()
+	if err != nil {
+		return res, err
+	}
+
 	err = filepath.Walk(fp, func(p string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
+		}
+
+		if info.IsDir() {
+			if p != c.Dir {
+				_, err = os.Stat(filepath.Join(p, "go.mod"))
+				if err == nil {
+					return filepath.SkipDir
+				}
+			}
 		}
 
 		base := filepath.Base(p)
