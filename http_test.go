@@ -52,15 +52,23 @@ func Test_HTTP_Dir(t *testing.T) {
 func Test_HTTP_File_Memory(t *testing.T) {
 	r := require.New(t)
 
-	i := newIndex()
-	f, err := createFile(i, "/cmd/pkger/main.go")
-
+	// f, err := createFile(rootIndex, "/cmd/pkger/main.go")
+	// r.NoError(err)
+	// defer f.Close()
+	//
+	f, err := Create("/suit/case.txt")
 	r.NoError(err)
+	f.Write([]byte(radio))
+	r.NoError(f.Close())
 
-	ts := httptest.NewServer(http.FileServer(f))
+	dir, err := Open("/")
+	r.NoError(err)
+	defer dir.Close()
+
+	ts := httptest.NewServer(http.FileServer(dir))
 	defer ts.Close()
 
-	res, err := http.Get(ts.URL + "/cmd/pkger/main.go")
+	res, err := http.Get(ts.URL + "/suit/case.txt")
 	r.NoError(err)
 	r.Equal(200, res.StatusCode)
 
@@ -68,5 +76,4 @@ func Test_HTTP_File_Memory(t *testing.T) {
 	r.NoError(err)
 	r.Contains(string(b), "I wanna bite the hand that feeds me")
 
-	r.NoError(f.Close())
 }

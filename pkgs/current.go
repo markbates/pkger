@@ -16,7 +16,9 @@ func Dir(p string) (here.Info, error) {
 }
 
 func Current() (here.Info, error) {
-	return Dir(".")
+	return here.Cache("", func(string) (here.Info, error) {
+		return here.Current()
+	})
 }
 
 func Stat(info here.Info, p string) (os.FileInfo, error) {

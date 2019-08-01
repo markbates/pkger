@@ -4,24 +4,23 @@ import (
 	"fmt"
 
 	"github.com/markbates/pkger/parser"
+	"github.com/markbates/pkger/pkgs"
 )
 
 func list(args []string) error {
-	if len(args) == 0 {
-		args = append(args, "")
+	info, err := pkgs.Current()
+	if err != nil {
+		return err
+	}
+	res, err := parser.Parse(info.Dir)
+	if err != nil {
+		return err
 	}
 
-	for _, a := range args {
-		res, err := parser.Parse(a)
-		if err != nil {
-			return err
-		}
+	fmt.Println(res.Path)
 
-		fmt.Println(res.Path)
-
-		for _, p := range res.Paths {
-			fmt.Printf("  > %s\n", p)
-		}
+	for _, p := range res.Paths {
+		fmt.Printf("  > %s\n", p)
 	}
 	return nil
 }

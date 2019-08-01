@@ -34,7 +34,13 @@ func Parse(name string) (Results, error) {
 	}
 
 	m := map[paths.Path]bool{}
-	root := filepath.Join(her.Dir, r.Path.Name)
+	root := r.Path.Name
+	if !strings.HasPrefix(root, string(filepath.Separator)) {
+		root = string(filepath.Separator) + root
+	}
+	if !strings.HasPrefix(root, her.Dir) {
+		root = filepath.Join(her.Dir, root)
+	}
 	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -76,9 +82,6 @@ func Parse(name string) (Results, error) {
 			}
 
 			m[p] = true
-			if len(p.Name) > 0 {
-				continue
-			}
 			found, err := sourceFiles(p)
 			if err != nil {
 				return err
@@ -116,7 +119,16 @@ func sourceFiles(pt paths.Path) ([]paths.Path, error) {
 	if err != nil {
 		return res, err
 	}
-	err = filepath.Walk(her.Dir, func(p string, info os.FileInfo, err error) error {
+
+	fp := her.FilePath(pt.Name)
+	fi, err := os.Stat(fp)
+	if err != nil {
+		return res, err
+	}
+	if !fi.IsDir() {
+		return res, nil
+	}
+	err = filepath.Walk(fp, func(p string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}

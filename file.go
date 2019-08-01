@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"time"
 
 	"github.com/gobuffalo/here"
@@ -152,10 +153,14 @@ func (f *File) Open(name string) (http.File, error) {
 	if f.index == nil {
 		f.index = newIndex()
 	}
+
+	// name = strings.TrimPrefix(name, "/")
 	pt, err := paths.Parse(name)
 	if err != nil {
 		return nil, err
 	}
+
+	pt.Name = path.Join(f.Path().Name, pt.Name)
 
 	if len(pt.Pkg) == 0 {
 		pt.Pkg = f.path.Pkg
