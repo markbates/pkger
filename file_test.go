@@ -65,7 +65,7 @@ func Test_File_Write(t *testing.T) {
 	r.NoError(err)
 	r.Zero(fi.Size())
 
-	r.Equal("/hello.txt", fi.Name())
+	r.Equal("hello.txt", fi.Name())
 
 	mt := fi.ModTime()
 	r.NotZero(mt)

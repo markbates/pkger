@@ -1,8 +1,9 @@
 package paths
 
 import (
+	"encoding/json"
 	"fmt"
-	"strings"
+	"os"
 )
 
 type Path struct {
@@ -11,33 +12,28 @@ type Path struct {
 }
 
 func (p Path) String() string {
-	if len(p.Pkg) == 0 {
-		return p.Name
+	if p.Name == "" {
+		p.Name = "/"
 	}
-	if len(p.Name) == 0 {
-		return p.Pkg
-	}
-	return fmt.Sprintf("%s:/%s", p.Pkg, p.Name)
+	return fmt.Sprintf("%s:%s", p.Pkg, p.Name)
 }
 
-func Parse(p string) (Path, error) {
-	var pt Path
-	res := strings.Split(p, ":")
-
-	if len(res) < 1 {
-		return pt, fmt.Errorf("could not parse %q (%d)", res, len(res))
-	}
-	if len(res) == 1 {
-		if strings.HasPrefix(res[0], "/") {
-			pt.Name = res[0]
-		} else {
-			pt.Pkg = res[0]
+func (p Path) Format(st fmt.State, verb rune) {
+	switch verb {
+	case 'v':
+		if st.Flag('+') {
+			b, err := json.MarshalIndent(p, "", "  ")
+			if err != nil {
+				fmt.Fprint(os.Stderr, err)
+				return
+			}
+			fmt.Fprint(st, string(b))
+			return
 		}
-	} else {
-		pt.Pkg = res[0]
-		pt.Name = res[1]
+		fmt.Fprint(st, p.String())
+	case 'q':
+		fmt.Fprintf(st, "%q", p.String())
+	default:
+		fmt.Fprint(st, p.String())
 	}
-	pt.Name = strings.TrimPrefix(pt.Name, "/")
-	pt.Pkg = strings.TrimPrefix(pt.Pkg, "/")
-	return pt, nil
 }

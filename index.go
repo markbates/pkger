@@ -28,7 +28,7 @@ func (i *index) Create(pt paths.Path) (*File, error) {
 		index: newIndex(),
 		her:   her,
 		info: &FileInfo{
-			name:    pt.Name,
+			name:    strings.TrimPrefix(pt.Name, "/"),
 			mode:    0666,
 			modTime: time.Now(),
 		},
@@ -106,10 +106,6 @@ func (i index) Open(pt paths.Path) (*File, error) {
 	if len(pt.Pkg) == 0 {
 		pt.Pkg = i.Pkg
 	}
-	fmt.Printf("### index.go:110 pt.Pkg (%T) -> %q %+v\n", pt.Pkg, pt.Pkg, pt.Pkg)
-	fmt.Printf("### index.go:110 pt.Name (%T) -> %q %+v\n", pt.Name, pt.Name, pt.Name)
-
-	fmt.Printf("### index.go:112 i.Files (%T) -> %q %+v\n", i.Files, i.Files, i.Files)
 	f, ok := i.Files[pt]
 	if !ok {
 		return i.openDisk(pt)
@@ -141,7 +137,7 @@ func (i index) openDisk(pt paths.Path) (*File, error) {
 		return nil, err
 	}
 	f := &File{
-		info: WithName(pt.Name, NewFileInfo(fi)),
+		info: WithName(strings.TrimPrefix(pt.Name, "/"), NewFileInfo(fi)),
 		her:  info,
 		path: pt,
 		index: &index{

@@ -1,9 +1,8 @@
+// TODO: need to populate in memory cache when packed.
+// you can't use go list, etc... in prod
 package pkgs
 
 import (
-	"os"
-	"path/filepath"
-
 	"github.com/gobuffalo/here"
 )
 
@@ -11,16 +10,8 @@ func Pkg(p string) (here.Info, error) {
 	return here.Cache(p, here.Package)
 }
 
-func Dir(p string) (here.Info, error) {
-	return here.Cache(p, here.Dir)
-}
-
 func Current() (here.Info, error) {
 	return here.Cache("", func(string) (here.Info, error) {
 		return here.Current()
 	})
-}
-
-func Stat(info here.Info, p string) (os.FileInfo, error) {
-	return os.Stat(filepath.Join(info.Dir, p))
 }
