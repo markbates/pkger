@@ -10,15 +10,15 @@ import (
 	"github.com/markbates/errx"
 )
 
-type ParsedFile struct {
+type parsedFile struct {
 	File    string
 	FileSet *token.FileSet
 	Ast     *ast.File
 }
 
-// ParseFileMode ...
-func ParseFileMode(f string, mode parser.Mode) (ParsedFile, error) {
-	pf := ParsedFile{
+// parseFileMode ...
+func parseFileMode(f string, mode parser.Mode) (parsedFile, error) {
+	pf := parsedFile{
 		File:    f,
 		FileSet: token.NewFileSet(),
 	}
@@ -38,7 +38,7 @@ func ParseFileMode(f string, mode parser.Mode) (ParsedFile, error) {
 	return pf, nil
 }
 
-// ParseFile ...
-func ParseFile(f string) (ParsedFile, error) {
-	return ParseFileMode(f, 0)
+// parseFile ...
+func parseFile(f string) (parsedFile, error) {
+	return parseFileMode(f, 0)
 }

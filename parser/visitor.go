@@ -22,7 +22,7 @@ func NewVisitor(p string) (*Visitor, error) {
 }
 
 func (v *Visitor) Run() ([]paths.Path, error) {
-	pf, err := ParseFile(v.File)
+	pf, err := parseFile(v.File)
 	if err != nil {
 		return nil, err
 	}
