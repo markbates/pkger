@@ -6,13 +6,44 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gobuffalo/here"
 )
 
 type index struct {
-	Files map[Path]*File
+	Files   map[Path]*File
+	Infos   map[string]here.Info
+	current here.Info
+	once    sync.Once
+}
+
+func (i *index) Info(p string) (here.Info, error) {
+	if info, ok := i.Infos[p]; ok {
+		return info, nil
+	}
+
+	info, err := here.Cache(p, here.Package)
+	if err != nil {
+		return info, err
+	}
+	i.Infos[p] = info
+	return info, nil
+}
+
+func (i *index) Current() (here.Info, error) {
+	if !i.current.IsZero() {
+		return i.current, nil
+	}
+	var err error
+	i.once.Do(func() {
+		i.current, err = here.Cache("", func(string) (here.Info, error) {
+			return here.Current()
+		})
+	})
+
+	return i.current, err
 }
 
 func (i *index) Create(pt Path) (*File, error) {
@@ -34,18 +65,29 @@ func (i *index) Create(pt Path) (*File, error) {
 	return f, nil
 }
 
-func (i index) MarshalJSON() ([]byte, error) {
+func (i *index) MarshalJSON() ([]byte, error) {
 	m := map[string]interface{}{}
 
-	fm := map[string]File{}
+	fm := map[string]json.RawMessage{}
 
 	for k, v := range i.Files {
-		fm[k.String()] = *v
+		b, err := v.MarshalJSON()
+		if err != nil {
+			return b, err
+		}
+		fm[k.String()] = b
 	}
 
 	m["files"] = fm
+	m["infos"] = i.Infos
+	m["current"] = i.current
 
 	return json.Marshal(m)
+}
+
+func (i *index) UnmarshalJSON(b []byte) error {
+	// fmt.Println(string(b))
+	return nil
 }
 
 func (i index) Walk(pt Path, wf WalkFunc) error {
@@ -133,6 +175,7 @@ func (i index) openDisk(pt Path) (*File, error) {
 func newIndex() *index {
 	return &index{
 		Files: map[Path]*File{},
+		Infos: map[string]here.Info{},
 	}
 }
 

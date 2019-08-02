@@ -187,7 +187,7 @@ func sourceFiles(pt pkger.Path) ([]pkger.Path, error) {
 			return nil
 		}
 
-		n := strings.TrimPrefix(strings.TrimPrefix(p, her.Dir), "/")
+		n := strings.TrimPrefix(p, her.Dir)
 		pt := pkger.Path{
 			Name: n,
 		}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 )
 
 var globalFlags = struct {
@@ -14,6 +15,11 @@ var globalFlags = struct {
 }
 
 func main() {
+
+	defer func() {
+		c := exec.Command("go", "mod", "tidy")
+		c.Run()
+	}()
 
 	type ex func([]string) error
 

@@ -98,7 +98,7 @@ func (f File) MarshalJSON() ([]byte, error) {
 	m["her"] = f.her
 	m["path"] = f.path
 	m["data"] = f.data
-	if len(f.data) == 0 {
+	if len(f.data) == 0 && !f.info.IsDir() {
 		b, err := ioutil.ReadAll(&f)
 		if err != nil {
 			return nil, err

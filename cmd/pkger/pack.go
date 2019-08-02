@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/base64"
-	"encoding/json"
 	"os"
 	"strconv"
 	"text/template"
@@ -23,11 +22,8 @@ func pack(args []string) error {
 
 	fp := info.FilePath(outName)
 	os.RemoveAll(fp)
-	if len(args) == 0 {
-		args = append(args, "")
-	}
 
-	res, err := parser.Parse(args[0])
+	res, err := parser.Parse(info.Dir)
 	if err != nil {
 		return err
 	}
@@ -39,32 +35,14 @@ func pack(args []string) error {
 	return nil
 }
 
-func Package(p string, paths []pkger.Path) error {
-	os.RemoveAll(p)
-
-	var files []*pkger.File
-	for _, p := range paths {
-		f, err := pkger.Open(p.String())
-		if err != nil {
-			return err
-		}
-		fi, err := f.Stat()
-		if err != nil {
-			return err
-		}
-		if fi.IsDir() {
-			continue
-		}
-		f.Close()
-		files = append(files, f)
-	}
+func Package(out string, paths []pkger.Path) error {
+	os.RemoveAll(out)
 
 	bb := &bytes.Buffer{}
 	gz := gzip.NewWriter(bb)
 	defer gz.Close()
 
-	enc := json.NewEncoder(gz)
-	if err := enc.Encode(files); err != nil {
+	if err := pkger.Pack(gz, paths); err != nil {
 		return err
 	}
 
@@ -73,16 +51,20 @@ func Package(p string, paths []pkger.Path) error {
 	}
 
 	s := base64.StdEncoding.EncodeToString(bb.Bytes())
-	//
+
+	c, err := pkger.Current()
+	if err != nil {
+		return err
+	}
 	d := struct {
 		Pkg  string
 		Data string
 	}{
-		Pkg:  "jeremy",
+		Pkg:  c.Name,
 		Data: strconv.Quote(s),
 	}
 
-	f, err := os.Create(p)
+	f, err := os.Create(out)
 	if err != nil {
 		return err
 	}
@@ -95,30 +77,12 @@ func Package(p string, paths []pkger.Path) error {
 	if err := t.Execute(f, d); err != nil {
 		return err
 	}
-
-	// fmt.Fprintf(f, "package jeremy\n\n")
-	// fmt.Fprintf(f, "var _ = func() error {\n")
-	// fmt.Fprintf(f, "const data = %q\n", s)
-	// fmt.Fprintf(f, "return nil\n")
-	// fmt.Fprintf(f, "}\n")
-
-	// fmt.Println(bb.String())
-	// f, err := os.Create(".pkger.index.json")
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// enc := json.NewEncoder(f)
-	// if err := enc.Encode(files); err != nil {
-	// 	return err
-	// }
 	return nil
 }
 
 const outTmpl = `package {{.Pkg}}
 
-var _ = func() error {
-		const data = {{.Data}}
-		return nil
-}
+import "github.com/markbates/pkger"
+
+var _ = pkger.Unpack({{.Data}})
 `
