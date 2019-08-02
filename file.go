@@ -23,11 +23,11 @@ type File struct {
 	path   Path
 	data   []byte
 	writer *bytes.Buffer
-	Source io.ReadCloser
+	reader io.Reader
 }
 
 func (f *File) Seek(offset int64, whence int) (int64, error) {
-	if sk, ok := f.Source.(io.Seeker); ok {
+	if sk, ok := f.reader.(io.Seeker); ok {
 		return sk.Seek(offset, whence)
 	}
 	return 0, nil
@@ -35,11 +35,11 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 
 func (f *File) Close() error {
 	defer func() {
-		f.Source = nil
+		f.reader = nil
 		f.writer = nil
 	}()
-	if f.Source != nil {
-		if c, ok := f.Source.(io.Closer); ok {
+	if f.reader != nil {
+		if c, ok := f.reader.(io.Closer); ok {
 			if err := c.Close(); err != nil {
 				return err
 			}
@@ -65,19 +65,19 @@ func (f *File) Read(p []byte) (int, error) {
 	}
 
 	if len(f.data) > 0 {
-		f.Source = ioutil.NopCloser(bytes.NewReader(f.data))
+		f.reader = ioutil.NopCloser(bytes.NewReader(f.data))
 	}
 
-	if f.Source != nil {
-		return f.Source.Read(p)
+	if f.reader != nil {
+		return f.reader.Read(p)
 	}
 
 	of, err := f.her.Open(f.FilePath())
 	if err != nil {
 		return 0, err
 	}
-	f.Source = of
-	return f.Source.Read(p)
+	f.reader = of
+	return f.reader.Read(p)
 }
 
 func (f *File) Write(b []byte) (int, error) {
@@ -88,7 +88,7 @@ func (f *File) Write(b []byte) (int, error) {
 	return i, err
 }
 
-func (f File) HereInfo() here.Info {
+func (f File) Info() here.Info {
 	return f.her
 }
 
