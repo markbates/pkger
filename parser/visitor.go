@@ -8,20 +8,20 @@ import (
 	"github.com/markbates/pkger"
 )
 
-type Visitor struct {
+type visitor struct {
 	File   string
 	Found  map[pkger.Path]bool
 	errors []error
 }
 
-func NewVisitor(p string) (*Visitor, error) {
-	return &Visitor{
+func newVisitor(p string) (*visitor, error) {
+	return &visitor{
 		File:  p,
 		Found: map[pkger.Path]bool{},
 	}, nil
 }
 
-func (v *Visitor) Run() ([]pkger.Path, error) {
+func (v *visitor) Run() ([]pkger.Path, error) {
 	pf, err := parseFile(v.File)
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (v *Visitor) Run() ([]pkger.Path, error) {
 	return found, nil
 }
 
-func (v *Visitor) addPath(p string) error {
+func (v *visitor) addPath(p string) error {
 	p, _ = strconv.Unquote(p)
 	pt, err := pkger.Parse(p)
 	if err != nil {
@@ -50,7 +50,7 @@ func (v *Visitor) addPath(p string) error {
 	return nil
 }
 
-func (v *Visitor) Visit(node ast.Node) ast.Visitor {
+func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	if node == nil {
 		return v
 	}
@@ -61,7 +61,7 @@ func (v *Visitor) Visit(node ast.Node) ast.Visitor {
 	return v
 }
 
-func (v *Visitor) eval(node ast.Node) error {
+func (v *visitor) eval(node ast.Node) error {
 	switch t := node.(type) {
 	case *ast.CallExpr:
 		return v.evalExpr(t)
@@ -93,7 +93,7 @@ func (v *Visitor) eval(node ast.Node) error {
 	return nil
 }
 
-func (v *Visitor) evalStmt(stmt ast.Stmt) error {
+func (v *visitor) evalStmt(stmt ast.Stmt) error {
 	switch t := stmt.(type) {
 	case *ast.ExprStmt:
 		return v.evalExpr(t.X)
@@ -107,7 +107,7 @@ func (v *Visitor) evalStmt(stmt ast.Stmt) error {
 	return nil
 }
 
-func (v *Visitor) evalExpr(expr ast.Expr) error {
+func (v *visitor) evalExpr(expr ast.Expr) error {
 	switch t := expr.(type) {
 	case *ast.CallExpr:
 		if t.Fun == nil {
@@ -140,7 +140,7 @@ func (v *Visitor) evalExpr(expr ast.Expr) error {
 	return nil
 }
 
-func (v *Visitor) evalArgs(expr ast.Expr) error {
+func (v *visitor) evalArgs(expr ast.Expr) error {
 	switch at := expr.(type) {
 	case *ast.CompositeLit:
 		for _, e := range at.Elts {
@@ -169,7 +169,7 @@ func (v *Visitor) evalArgs(expr ast.Expr) error {
 	return nil
 }
 
-func (v *Visitor) evalSelector(expr *ast.CallExpr, sel *ast.SelectorExpr) error {
+func (v *visitor) evalSelector(expr *ast.CallExpr, sel *ast.SelectorExpr) error {
 	x, ok := sel.X.(*ast.Ident)
 	if !ok {
 		return nil
@@ -239,7 +239,7 @@ func (v *Visitor) evalSelector(expr *ast.CallExpr, sel *ast.SelectorExpr) error 
 	return nil
 }
 
-func (v *Visitor) evalIdent(i *ast.Ident) error {
+func (v *visitor) evalIdent(i *ast.Ident) error {
 	if i.Obj == nil {
 		return nil
 	}
@@ -249,7 +249,7 @@ func (v *Visitor) evalIdent(i *ast.Ident) error {
 	return nil
 }
 
-func (v *Visitor) fromVariable(as *ast.AssignStmt) (string, error) {
+func (v *visitor) fromVariable(as *ast.AssignStmt) (string, error) {
 	if len(as.Rhs) == 1 {
 		if bs, ok := as.Rhs[0].(*ast.BasicLit); ok {
 			return bs.Value, nil
@@ -258,7 +258,7 @@ func (v *Visitor) fromVariable(as *ast.AssignStmt) (string, error) {
 	return "", fmt.Errorf("unable to find value from variable %v", as)
 }
 
-func (v *Visitor) addVariable(bn string, as *ast.AssignStmt) error {
+func (v *visitor) addVariable(bn string, as *ast.AssignStmt) error {
 	bv, err := v.fromVariable(as)
 	if err != nil {
 		return nil
@@ -269,7 +269,7 @@ func (v *Visitor) addVariable(bn string, as *ast.AssignStmt) error {
 	return v.addPath(bn)
 }
 
-func (v *Visitor) fromConstant(vs *ast.ValueSpec) (string, error) {
+func (v *visitor) fromConstant(vs *ast.ValueSpec) (string, error) {
 	if len(vs.Values) == 1 {
 		if bs, ok := vs.Values[0].(*ast.BasicLit); ok {
 			return bs.Value, nil
@@ -278,7 +278,7 @@ func (v *Visitor) fromConstant(vs *ast.ValueSpec) (string, error) {
 	return "", fmt.Errorf("unable to find value from constant %v", vs)
 }
 
-func (v *Visitor) addConstant(bn string, vs *ast.ValueSpec) error {
+func (v *visitor) addConstant(bn string, vs *ast.ValueSpec) error {
 	if len(vs.Values) == 1 {
 		if bs, ok := vs.Values[0].(*ast.BasicLit); ok {
 			bv := bs.Value

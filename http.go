@@ -1,45 +1,35 @@
 package pkger
 
-import (
-	"bytes"
-	"io"
-	"net/http"
-	"os"
-)
-
-type crs interface {
-	io.Closer
-	io.Reader
-	io.Seeker
-}
-
-type byteCRS struct {
-	*bytes.Reader
-}
-
-func (byteCRS) Close() error {
-	return nil
-}
-
-var _ crs = &byteCRS{}
-
-type httpFile struct {
-	File *File
-	crs
-}
-
-func (h httpFile) Readdir(n int) ([]os.FileInfo, error) {
-	if h.File == nil {
-		return nil, os.ErrNotExist
-	}
-	return h.File.Readdir(n)
-}
-
-func (h httpFile) Stat() (os.FileInfo, error) {
-	if h.File == nil {
-		return nil, os.ErrNotExist
-	}
-	return h.File.Stat()
-}
-
-var _ http.File = &httpFile{}
+// type HTTPFile struct {
+// 	io.Reader
+// 	StatFn    func() (os.FileInfo, error)
+// 	ReaddirFn func(int) ([]os.FileInfo, error)
+// }
+//
+// func (h HTTPFile) Readdir(n int) ([]os.FileInfo, error) {
+// 	if h.ReaddirFn != nil {
+// 		return h.ReaddirFn(n)
+// 	}
+// 	return nil, nil
+// }
+//
+// func (h HTTPFile) Stat() (os.FileInfo, error) {
+// 	if h.StatFn != nil {
+// 		return h.StatFn()
+// 	}
+// 	return nil, nil
+// }
+//
+// func (h HTTPFile) Close() error {
+// 	if c, ok := h.Reader.(io.Closer); ok {
+// 		return c.Close()
+// 	}
+// 	return nil
+// }
+//
+// func (h HTTPFile) Seek(offset int64, whence int) (int64, error) {
+// 	if sk, ok := h.Reader.(io.Seeker); ok {
+// 		return sk.Seek(offset, whence)
+// 	}
+// 	return 0, nil
+// }

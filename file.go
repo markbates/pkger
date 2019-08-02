@@ -15,13 +15,22 @@ import (
 
 const timeFmt = time.RFC3339Nano
 
+var _ http.File = &File{}
+
 type File struct {
 	info   *FileInfo
 	her    here.Info
 	path   Path
 	data   []byte
-	writer io.ReadWriter
+	writer *bytes.Buffer
 	Source io.ReadCloser
+}
+
+func (f *File) Seek(offset int64, whence int) (int64, error) {
+	if sk, ok := f.Source.(io.Seeker); ok {
+		return sk.Seek(offset, whence)
+	}
+	return 0, nil
 }
 
 func (f *File) Close() error {
@@ -41,11 +50,7 @@ func (f *File) Close() error {
 		return nil
 	}
 
-	b, err := ioutil.ReadAll(f.writer)
-	if err != nil {
-		return err
-	}
-	f.data = b
+	f.data = f.writer.Bytes()
 
 	fi := f.info
 	fi.size = int64(len(f.data))
@@ -138,69 +143,16 @@ func (f *File) UnmarshalJSON(b []byte) error {
 }
 
 func (f *File) Open(name string) (http.File, error) {
-	// name = strings.TrimPrefix(name, "/")
 	pt, err := Parse(name)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(pt.Pkg) == 0 {
-		pt.Pkg = f.path.Pkg
-	}
-
-	h := httpFile{
-		crs: &byteCRS{bytes.NewReader(f.data)},
-	}
-
-	if len(f.data) > 0 {
-		return h, nil
-	}
-
 	if pt == f.path {
-		h.File = f
+		return f, nil
 	}
 
-	if h.File == nil {
-		of, err := rootIndex.Open(pt)
-		if err != nil {
-			return nil, err
-		}
-		h.File = of
-	}
-
-	bf, err := f.her.Open(h.File.FilePath())
-	if err != nil {
-		if _, ok := err.(*os.PathError); ok {
-			return h, nil
-		}
-
-		b, err := ioutil.ReadAll(h.File)
-		if err != nil {
-			return h, err
-		}
-		h.crs = &byteCRS{bytes.NewReader(b)}
-		return h, err
-	}
-
-	if err != nil {
-		return h, err
-	}
-
-	fi, err := bf.Stat()
-	if err != nil {
-		return h, err
-	}
-
-	if fi.IsDir() {
-		return h, nil
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	h.crs = bf
-	return h, nil
+	return rootIndex.Open(pt)
 }
 
 func (f File) Stat() (os.FileInfo, error) {
@@ -223,11 +175,27 @@ func (f File) Path() Path {
 }
 
 func (f File) String() string {
-	if f.info == nil {
-		return ""
+	return f.Path().String()
+}
+
+func (f File) Format(st fmt.State, verb rune) {
+	switch verb {
+	case 'v':
+		if st.Flag('+') {
+			b, err := json.MarshalIndent(f, "", "  ")
+			if err != nil {
+				fmt.Fprint(os.Stderr, err)
+				return
+			}
+			fmt.Fprint(st, string(b))
+			return
+		}
+		fmt.Fprint(st, f.String())
+	case 'q':
+		fmt.Fprintf(st, "%q", f.String())
+	default:
+		fmt.Fprint(st, f.String())
 	}
-	b, _ := json.MarshalIndent(f.info, "", "  ")
-	return string(b)
 }
 
 // Readdir reads the contents of the directory associated with file and returns a slice of up to n FileInfo values, as would be returned by Lstat, in directory order. Subsequent calls on the same file will yield further FileInfos.

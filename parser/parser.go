@@ -28,7 +28,7 @@ func Parse(name string) (Results, error) {
 	}
 	r.Path = pt
 
-	her, err := pkger.Pkg(r.Path.Pkg)
+	her, err := pkger.Info(r.Path.Pkg)
 
 	if err != nil {
 		return r, err
@@ -86,7 +86,7 @@ func Parse(name string) (Results, error) {
 			return nil
 		}
 
-		v, err := NewVisitor(path)
+		v, err := newVisitor(path)
 		if err != nil {
 			return err
 		}
@@ -134,7 +134,7 @@ func Parse(name string) (Results, error) {
 func sourceFiles(pt pkger.Path) ([]pkger.Path, error) {
 	var res []pkger.Path
 
-	her, err := pkger.Pkg(pt.Pkg)
+	her, err := pkger.Info(pt.Pkg)
 
 	if err != nil {
 		return res, err

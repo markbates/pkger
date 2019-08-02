@@ -6,7 +6,7 @@ import (
 	"github.com/gobuffalo/here"
 )
 
-func Pkg(p string) (here.Info, error) {
+func Info(p string) (here.Info, error) {
 	return here.Cache(p, here.Package)
 }
 

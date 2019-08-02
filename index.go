@@ -16,7 +16,7 @@ type index struct {
 }
 
 func (i *index) Create(pt Path) (*File, error) {
-	her, err := Pkg(pt.Pkg)
+	her, err := Info(pt.Pkg)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func (i index) Walk(pt Path, wf WalkFunc) error {
 	}
 
 	if info.IsZero() {
-		info, err = Pkg(pt.Pkg)
+		info, err = Info(pt.Pkg)
 		if err != nil {
 			return fmt.Errorf("%s: %s", pt, err)
 		}
@@ -98,16 +98,18 @@ func (i *index) Open(pt Path) (*File, error) {
 	if !ok {
 		return i.openDisk(pt)
 	}
-	return &File{
+	nf := &File{
 		info: f.info,
 		path: f.path,
 		data: f.data,
 		her:  f.her,
-	}, nil
+	}
+
+	return nf, nil
 }
 
 func (i index) openDisk(pt Path) (*File, error) {
-	info, err := Pkg(pt.Pkg)
+	info, err := Info(pt.Pkg)
 	if err != nil {
 		return nil, err
 	}
