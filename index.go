@@ -14,13 +14,14 @@ import (
 
 type index struct {
 	Files   *filesMap
-	Infos   map[string]here.Info
+	Infos   *infosMap
 	current here.Info
 	once    sync.Once
 }
 
 func (i *index) Info(p string) (here.Info, error) {
-	if info, ok := i.Infos[p]; ok {
+	info, ok := i.Infos.Load(p)
+	if ok {
 		return info, nil
 	}
 
@@ -28,14 +29,11 @@ func (i *index) Info(p string) (here.Info, error) {
 	if err != nil {
 		return info, err
 	}
-	i.Infos[p] = info
+	i.Infos.Store(p, info)
 	return info, nil
 }
 
 func (i *index) Current() (here.Info, error) {
-	if !i.current.IsZero() {
-		return i.current, nil
-	}
 	var err error
 	i.once.Do(func() {
 		i.current, err = here.Cache("", func(string) (here.Info, error) {
@@ -183,7 +181,7 @@ func (i index) openDisk(pt Path) (*File, error) {
 func newIndex() *index {
 	return &index{
 		Files: &filesMap{},
-		Infos: map[string]here.Info{},
+		Infos: &infosMap{},
 	}
 }
 
