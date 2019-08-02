@@ -25,7 +25,7 @@ func (m *filesMap) Data() *sync.Map {
 func (m *filesMap) MarshalJSON() ([]byte, error) {
 	var err error
 	mm := map[string]interface{}{}
-	m.data.Range(func(key, value interface{}) bool {
+	m.Data().Range(func(key, value interface{}) bool {
 		var b []byte
 		b, err = json.Marshal(key)
 		if err != nil {

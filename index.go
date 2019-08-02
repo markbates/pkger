@@ -36,14 +36,13 @@ func (i *index) Info(p string) (here.Info, error) {
 }
 
 func (i *index) Current() (here.Info, error) {
-	var err error
 	i.once.Do(func() {
-		i.current, err = here.Cache("", func(string) (here.Info, error) {
+		i.current, _ = here.Cache("", func(string) (here.Info, error) {
 			return here.Current()
 		})
 	})
 
-	return i.current, err
+	return i.current, nil
 }
 
 func (i *index) Create(pt Path) (*File, error) {

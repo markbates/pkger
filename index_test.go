@@ -101,4 +101,8 @@ func Test_index_JSON(t *testing.T) {
 	r.NotZero(i2.current)
 	r.Equal(1, len(i2.Files.Keys()))
 	r.Equal(1, len(i2.Infos.Keys()))
+
+	f2, err := i2.Open(Path{Name: "/radio.radio"})
+	r.NoError(err)
+	r.Equal(f.data, f2.data)
 }

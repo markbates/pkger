@@ -2,10 +2,7 @@ package main
 
 import (
 	"bytes"
-	"compress/gzip"
-	"encoding/base64"
 	"os"
-	"strconv"
 	"text/template"
 
 	"github.com/markbates/pkger"
@@ -39,18 +36,10 @@ func Package(out string, paths []pkger.Path) error {
 	os.RemoveAll(out)
 
 	bb := &bytes.Buffer{}
-	gz := gzip.NewWriter(bb)
-	defer gz.Close()
 
-	if err := pkger.Pack(gz, paths); err != nil {
+	if err := pkger.Pack(bb, paths); err != nil {
 		return err
 	}
-
-	if err := gz.Close(); err != nil {
-		return err
-	}
-
-	s := base64.StdEncoding.EncodeToString(bb.Bytes())
 
 	c, err := pkger.Current()
 	if err != nil {
@@ -61,7 +50,7 @@ func Package(out string, paths []pkger.Path) error {
 		Data string
 	}{
 		Pkg:  c.Name,
-		Data: strconv.Quote(s),
+		Data: bb.String(),
 	}
 
 	f, err := os.Create(out)
@@ -80,9 +69,4 @@ func Package(out string, paths []pkger.Path) error {
 	return nil
 }
 
-const outTmpl = `package {{.Pkg}}
-
-import "github.com/markbates/pkger"
-
-var _ = pkger.Unpack({{.Data}})
-`
+const outTmpl = "package {{.Pkg}}\nimport \"github.com/markbates/pkger\"\nvar _ = pkger.Unpack(`{{.Data}}`) "
