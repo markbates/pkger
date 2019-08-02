@@ -62,7 +62,7 @@ func Pack(out io.Writer, paths []Path) error {
 		if fi.IsDir() {
 			continue
 		}
-		rootIndex.Files[p] = f
+		rootIndex.Files.Store(p, f)
 		f.Close()
 	}
 	return json.NewEncoder(out).Encode(rootIndex)

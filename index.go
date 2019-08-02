@@ -13,7 +13,7 @@ import (
 )
 
 type index struct {
-	Files   map[Path]*File
+	Files   *filesMap
 	Infos   map[string]here.Info
 	current here.Info
 	once    sync.Once
@@ -61,7 +61,7 @@ func (i *index) Create(pt Path) (*File, error) {
 		},
 	}
 
-	i.Files[pt] = f
+	i.Files.Store(pt, f)
 	return f, nil
 }
 
@@ -70,12 +70,17 @@ func (i *index) MarshalJSON() ([]byte, error) {
 
 	fm := map[string]json.RawMessage{}
 
-	for k, v := range i.Files {
-		b, err := v.MarshalJSON()
+	var err error
+	i.Files.Range(func(key Path, value *File) bool {
+		b, err := value.MarshalJSON()
 		if err != nil {
-			return b, err
+			return false
 		}
-		fm[k.String()] = b
+		fm[key.String()] = b
+		return true
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	m["files"] = fm
@@ -91,19 +96,22 @@ func (i *index) UnmarshalJSON(b []byte) error {
 }
 
 func (i index) Walk(pt Path, wf WalkFunc) error {
-	if len(i.Files) > 0 {
-		for k, v := range i.Files {
-			if k.Pkg != pt.Pkg {
-				continue
-			}
-			if err := wf(k, v.info); err != nil {
-				return err
-			}
+	var err error
+	i.Files.Range(func(k Path, v *File) bool {
+		if k.Pkg != pt.Pkg {
+			return true
 		}
+		if err = wf(k, v.info); err != nil {
+			return false
+		}
+		return true
+	})
+
+	if err != nil {
+		return err
 	}
 
 	var info here.Info
-	var err error
 	if pt.Pkg == "." {
 		info, err = Current()
 		if err != nil {
@@ -136,7 +144,7 @@ func (i index) Walk(pt Path, wf WalkFunc) error {
 }
 
 func (i *index) Open(pt Path) (*File, error) {
-	f, ok := i.Files[pt]
+	f, ok := i.Files.Load(pt)
 	if !ok {
 		return i.openDisk(pt)
 	}
@@ -174,7 +182,7 @@ func (i index) openDisk(pt Path) (*File, error) {
 
 func newIndex() *index {
 	return &index{
-		Files: map[Path]*File{},
+		Files: &filesMap{},
 		Infos: map[string]here.Info{},
 	}
 }
