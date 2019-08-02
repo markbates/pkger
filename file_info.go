@@ -2,6 +2,7 @@ package pkger
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"time"
 )
@@ -31,48 +32,48 @@ func (f *FileInfo) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// func (f *FileInfo) UnmarshalJSON(b []byte) error {
-// 	m := map[string]interface{}{}
-// 	if err := json.Unmarshal(b, &m); err != nil {
-// 		return err
-// 	}
-//
-// 	var ok bool
-//
-// 	f.name, ok = m["name"].(string)
-// 	if !ok {
-// 		return fmt.Errorf("could not determine name %q", m["name"])
-// 	}
-//
-// 	size, ok := m["size"].(float64)
-// 	if !ok {
-// 		return fmt.Errorf("could not determine size %q", m["size"])
-// 	}
-// 	f.size = int64(size)
-//
-// 	mode, ok := m["mode"].(float64)
-// 	if !ok {
-// 		return fmt.Errorf("could not determine mode %q", m["mode"])
-// 	}
-// 	f.mode = os.FileMode(mode)
-//
-// 	modTime, ok := m["modTime"].(string)
-// 	if !ok {
-// 		return fmt.Errorf("could not determine modTime %q", m["modTime"])
-// 	}
-// 	t, err := time.Parse(timeFmt, modTime)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	f.modTime = t
-//
-// 	f.isDir, ok = m["isDir"].(bool)
-// 	if !ok {
-// 		return fmt.Errorf("could not determine isDir %q", m["isDir"])
-// 	}
-// 	f.sys = m["sys"]
-// 	return nil
-// }
+func (f *FileInfo) UnmarshalJSON(b []byte) error {
+	m := map[string]interface{}{}
+	if err := json.Unmarshal(b, &m); err != nil {
+		return err
+	}
+
+	var ok bool
+
+	f.name, ok = m["name"].(string)
+	if !ok {
+		return fmt.Errorf("could not determine name %q", m["name"])
+	}
+
+	size, ok := m["size"].(float64)
+	if !ok {
+		return fmt.Errorf("could not determine size %q", m["size"])
+	}
+	f.size = int64(size)
+
+	mode, ok := m["mode"].(float64)
+	if !ok {
+		return fmt.Errorf("could not determine mode %q", m["mode"])
+	}
+	f.mode = os.FileMode(mode)
+
+	modTime, ok := m["modTime"].(string)
+	if !ok {
+		return fmt.Errorf("could not determine modTime %q", m["modTime"])
+	}
+	t, err := time.Parse(timeFmt, modTime)
+	if err != nil {
+		return err
+	}
+	f.modTime = t
+
+	f.isDir, ok = m["isDir"].(bool)
+	if !ok {
+		return fmt.Errorf("could not determine isDir %q", m["isDir"])
+	}
+	f.sys = m["sys"]
+	return nil
+}
 
 func (f *FileInfo) Name() string {
 	return f.name

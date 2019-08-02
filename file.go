@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/gobuffalo/here"
+	"github.com/markbates/hepa"
+	"github.com/markbates/hepa/filters"
 )
 
 const timeFmt = time.RFC3339Nano
@@ -105,7 +107,16 @@ func (f File) MarshalJSON() ([]byte, error) {
 		}
 		m["data"] = b
 	}
-	return json.Marshal(m)
+
+	b, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+
+	hep := hepa.New()
+	hep = hepa.With(hep, filters.Golang())
+	hep = hepa.With(hep, filters.Secrets())
+	return hep.Filter(b)
 }
 
 func (f *File) UnmarshalJSON(b []byte) error {
@@ -118,6 +129,8 @@ func (f *File) UnmarshalJSON(b []byte) error {
 	if !ok {
 		return fmt.Errorf("missing info")
 	}
+
+	fmt.Println(string(info))
 	f.info = &FileInfo{}
 	if err := json.Unmarshal(info, f.info); err != nil {
 		return err
@@ -136,6 +149,10 @@ func (f *File) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("missing path")
 	}
 	if err := json.Unmarshal(path, &f.path); err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(m["data"], &f.data); err != nil {
 		return err
 	}
 

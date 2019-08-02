@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/gobuffalo/here"
+	"github.com/markbates/hepa"
+	"github.com/markbates/hepa/filters"
 )
 
 type index struct {
@@ -85,7 +87,15 @@ func (i *index) MarshalJSON() ([]byte, error) {
 	m["infos"] = i.Infos
 	m["current"] = i.current
 
-	return json.Marshal(m)
+	b, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+
+	hep := hepa.New()
+	hep = hepa.With(hep, filters.Golang())
+	hep = hepa.With(hep, filters.Secrets())
+	return hep.Filter(b)
 }
 
 func (i *index) UnmarshalJSON(b []byte) error {

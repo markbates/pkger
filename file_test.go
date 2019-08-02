@@ -1,6 +1,7 @@
 package pkger
 
 import (
+	"encoding/json"
 	"io"
 	"io/ioutil"
 	"strings"
@@ -77,4 +78,29 @@ func Test_File_Write(t *testing.T) {
 	r.Equal(int64(1381), fi.Size())
 	r.NotZero(fi.ModTime())
 	r.NotEqual(mt, fi.ModTime())
+}
+
+func Test_File_JSON(t *testing.T) {
+	r := require.New(t)
+
+	f, err := createFile("radio.radio")
+	r.NoError(err)
+	r.NotNil(f)
+
+	bi, err := f.Stat()
+	r.NoError(err)
+
+	mj, err := json.Marshal(f)
+	r.NoError(err)
+
+	f2 := &File{}
+
+	r.NoError(json.Unmarshal(mj, f2))
+
+	ai, err := f2.Stat()
+	r.NoError(err)
+
+	r.Equal(bi.Size(), ai.Size())
+
+	r.Equal(string(f.data), string(f2.data))
 }
