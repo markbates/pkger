@@ -130,7 +130,6 @@ func (f *File) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("missing info")
 	}
 
-	fmt.Println(string(info))
 	f.info = &FileInfo{}
 	if err := json.Unmarshal(info, f.info); err != nil {
 		return err

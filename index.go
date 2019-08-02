@@ -68,22 +68,7 @@ func (i *index) Create(pt Path) (*File, error) {
 func (i *index) MarshalJSON() ([]byte, error) {
 	m := map[string]interface{}{}
 
-	fm := map[string]json.RawMessage{}
-
-	var err error
-	i.Files.Range(func(key Path, value *File) bool {
-		b, err := value.MarshalJSON()
-		if err != nil {
-			return false
-		}
-		fm[key.String()] = b
-		return true
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	m["files"] = fm
+	m["files"] = i.Files
 	m["infos"] = i.Infos
 	m["current"] = i.current
 
@@ -99,7 +84,38 @@ func (i *index) MarshalJSON() ([]byte, error) {
 }
 
 func (i *index) UnmarshalJSON(b []byte) error {
-	// fmt.Println(string(b))
+	m := map[string]json.RawMessage{}
+
+	if err := json.Unmarshal(b, &m); err != nil {
+		return err
+	}
+
+	infos, ok := m["infos"]
+	if !ok {
+		return fmt.Errorf("missing infos")
+	}
+	i.Infos = &infosMap{}
+	if err := json.Unmarshal(infos, i.Infos); err != nil {
+		return err
+	}
+
+	files, ok := m["files"]
+	if !ok {
+		return fmt.Errorf("missing files")
+	}
+
+	i.Files = &filesMap{}
+	if err := json.Unmarshal(files, i.Files); err != nil {
+		return err
+	}
+
+	current, ok := m["current"]
+	if !ok {
+		return fmt.Errorf("missing current")
+	}
+	if err := json.Unmarshal(current, &i.current); err != nil {
+		return err
+	}
 	return nil
 }
 

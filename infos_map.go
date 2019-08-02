@@ -3,6 +3,8 @@
 package pkger
 
 import (
+	"encoding/json"
+	"fmt"
 	"sort"
 	"sync"
 
@@ -24,6 +26,27 @@ func (m *infosMap) Data() *sync.Map {
 		}
 	})
 	return m.data
+}
+
+func (m *infosMap) MarshalJSON() ([]byte, error) {
+	mm := map[string]interface{}{}
+	m.data.Range(func(key, value interface{}) bool {
+		mm[fmt.Sprintf("%s", key)] = value
+		return true
+	})
+	return json.Marshal(mm)
+}
+
+func (m *infosMap) UnmarshalJSON(b []byte) error {
+	mm := map[string]here.Info{}
+
+	if err := json.Unmarshal(b, &mm); err != nil {
+		return err
+	}
+	for k, v := range mm {
+		m.Store(k, v)
+	}
+	return nil
 }
 
 // Delete the key from the map

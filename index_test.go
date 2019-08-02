@@ -1,6 +1,8 @@
 package pkger
 
 import (
+	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -60,4 +62,43 @@ func Test_index_Create_Write(t *testing.T) {
 	r.Equal(int64(1381), fi.Size())
 	r.NotZero(fi.ModTime())
 	r.NotEqual(mt, fi.ModTime())
+}
+
+func Test_index_JSON(t *testing.T) {
+	r := require.New(t)
+
+	i := newIndex()
+
+	f, err := i.Create(Path{
+		Name: "/radio.radio",
+	})
+	r.NoError(err)
+	r.NotNil(f)
+	fmt.Fprint(f, radio)
+	r.NoError(f.Close())
+
+	c, err := i.Current()
+	r.NoError(err)
+	r.Equal(curPkg, c.ImportPath)
+
+	_, err = i.Info("github.com/markbates/hepa")
+	r.NoError(err)
+
+	r.Equal(1, len(i.Files.Keys()))
+	r.Equal(1, len(i.Infos.Keys()))
+	r.NotZero(i.current)
+
+	jason, err := json.Marshal(i)
+	r.NoError(err)
+	r.NotZero(jason)
+
+	i2 := &index{}
+
+	r.NoError(json.Unmarshal(jason, i2))
+
+	r.NotNil(i2.Infos)
+	r.NotNil(i2.Files)
+	r.NotZero(i2.current)
+	r.Equal(1, len(i2.Files.Keys()))
+	r.Equal(1, len(i2.Infos.Keys()))
 }

@@ -3,6 +3,7 @@
 package pkger
 
 import (
+	"encoding/json"
 	"sort"
 	"sync"
 )
@@ -12,16 +13,49 @@ import (
 // value: *File
 type filesMap struct {
 	data *sync.Map
-	init sync.Once
 }
 
 func (m *filesMap) Data() *sync.Map {
-	m.init.Do(func() {
-		if m.data == nil {
-			m.data = &sync.Map{}
-		}
-	})
+	if m.data == nil {
+		m.data = &sync.Map{}
+	}
 	return m.data
+}
+
+func (m *filesMap) MarshalJSON() ([]byte, error) {
+	var err error
+	mm := map[string]interface{}{}
+	m.data.Range(func(key, value interface{}) bool {
+		var b []byte
+		b, err = json.Marshal(key)
+		if err != nil {
+			return false
+		}
+		mm[string(b)] = value
+		return true
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(mm)
+}
+
+func (m *filesMap) UnmarshalJSON(b []byte) error {
+	mm := map[string]*File{}
+
+	if err := json.Unmarshal(b, &mm); err != nil {
+		return err
+	}
+	for k, v := range mm {
+		var pt Path
+		if err := json.Unmarshal([]byte(k), &pt); err != nil {
+			return err
+		}
+		m.Store(pt, v)
+	}
+	return nil
 }
 
 // Delete the key from the map

@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+const curPkg = "github.com/markbates/pkger"
+
 func createFile(p string, body ...string) (*File, error) {
 	if len(body) == 0 {
 		body = append(body, radio)

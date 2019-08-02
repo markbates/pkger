@@ -6,8 +6,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const curPkg = "github.com/markbates/pkger"
-
 func Test_Parse_Happy(t *testing.T) {
 	table := []struct {
 		in  string
