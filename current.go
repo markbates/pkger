@@ -1,6 +1,6 @@
 // TODO: need to populate in memory cache when packed.
 // you can't use go list, etc... in prod
-package pkgs
+package pkger
 
 import (
 	"github.com/gobuffalo/here"

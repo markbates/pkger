@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/markbates/pkger/paths"
 	"github.com/stretchr/testify/require"
 )
 
@@ -55,7 +54,7 @@ func Test_File_Write(t *testing.T) {
 
 	i := newIndex()
 
-	f, err := i.Create(paths.Path{
+	f, err := i.Create(Path{
 		Name: "/hello.txt",
 	})
 	r.NoError(err)

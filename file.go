@@ -8,11 +8,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path"
 	"time"
 
 	"github.com/gobuffalo/here"
-	"github.com/markbates/pkger/paths"
 )
 
 const timeFmt = time.RFC3339Nano
@@ -20,9 +18,8 @@ const timeFmt = time.RFC3339Nano
 type File struct {
 	info   *FileInfo
 	her    here.Info
-	path   paths.Path
+	path   Path
 	data   []byte
-	index  *index
 	writer io.ReadWriter
 	Source io.ReadCloser
 }
@@ -95,7 +92,6 @@ func (f File) MarshalJSON() ([]byte, error) {
 	m["info"] = f.info
 	m["her"] = f.her
 	m["path"] = f.path
-	m["index"] = f.index
 	m["data"] = f.data
 	if len(f.data) == 0 {
 		b, err := ioutil.ReadAll(&f)
@@ -138,29 +134,15 @@ func (f *File) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	ind, ok := m["index"]
-	if !ok {
-		return fmt.Errorf("missing index")
-	}
-	f.index = newIndex()
-	if err := json.Unmarshal(ind, f.index); err != nil {
-		return err
-	}
 	return nil
 }
 
 func (f *File) Open(name string) (http.File, error) {
-	if f.index == nil {
-		f.index = newIndex()
-	}
-
 	// name = strings.TrimPrefix(name, "/")
-	pt, err := paths.Parse(name)
+	pt, err := Parse(name)
 	if err != nil {
 		return nil, err
 	}
-
-	pt.Name = path.Join(f.Path().Name, pt.Name)
 
 	if len(pt.Pkg) == 0 {
 		pt.Pkg = f.path.Pkg
@@ -170,22 +152,36 @@ func (f *File) Open(name string) (http.File, error) {
 		crs: &byteCRS{bytes.NewReader(f.data)},
 	}
 
-	if pt == f.path {
-		h.File = f
-	} else {
-		of, err := f.index.Open(pt)
-		if err != nil {
-			return nil, err
-		}
-		defer of.Close()
-		h.File = of
-	}
-
 	if len(f.data) > 0 {
 		return h, nil
 	}
 
+	if pt == f.path {
+		h.File = f
+	}
+
+	if h.File == nil {
+		of, err := rootIndex.Open(pt)
+		if err != nil {
+			return nil, err
+		}
+		h.File = of
+	}
+
 	bf, err := f.her.Open(h.File.FilePath())
+	if err != nil {
+		if _, ok := err.(*os.PathError); ok {
+			return h, nil
+		}
+
+		b, err := ioutil.ReadAll(h.File)
+		if err != nil {
+			return h, err
+		}
+		h.crs = &byteCRS{bytes.NewReader(b)}
+		return h, err
+	}
+
 	if err != nil {
 		return h, err
 	}
@@ -222,7 +218,7 @@ func (f File) FilePath() string {
 	return f.her.FilePath(f.Name())
 }
 
-func (f File) Path() paths.Path {
+func (f File) Path() Path {
 	return f.path
 }
 

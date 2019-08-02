@@ -9,24 +9,20 @@ import (
 	"time"
 
 	"github.com/gobuffalo/here"
-	"github.com/markbates/pkger/paths"
-	"github.com/markbates/pkger/pkgs"
 )
 
 type index struct {
-	Pkg   string
-	Files map[paths.Path]*File
+	Files map[Path]*File
 }
 
-func (i *index) Create(pt paths.Path) (*File, error) {
-	her, err := pkgs.Pkg(pt.Pkg)
+func (i *index) Create(pt Path) (*File, error) {
+	her, err := Pkg(pt.Pkg)
 	if err != nil {
 		return nil, err
 	}
 	f := &File{
-		path:  pt,
-		index: newIndex(),
-		her:   her,
+		path: pt,
+		her:  her,
 		info: &FileInfo{
 			name:    strings.TrimPrefix(pt.Name, "/"),
 			mode:    0666,
@@ -39,9 +35,7 @@ func (i *index) Create(pt paths.Path) (*File, error) {
 }
 
 func (i index) MarshalJSON() ([]byte, error) {
-	m := map[string]interface{}{
-		"pkg": i.Pkg,
-	}
+	m := map[string]interface{}{}
 
 	fm := map[string]File{}
 
@@ -54,10 +48,7 @@ func (i index) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m)
 }
 
-func (i index) Walk(pt paths.Path, wf WalkFunc) error {
-	if len(pt.Pkg) == 0 {
-		pt.Pkg = i.Pkg
-	}
+func (i index) Walk(pt Path, wf WalkFunc) error {
 	if len(i.Files) > 0 {
 		for k, v := range i.Files {
 			if k.Pkg != pt.Pkg {
@@ -72,7 +63,7 @@ func (i index) Walk(pt paths.Path, wf WalkFunc) error {
 	var info here.Info
 	var err error
 	if pt.Pkg == "." {
-		info, err = pkgs.Current()
+		info, err = Current()
 		if err != nil {
 			return err
 		}
@@ -80,7 +71,7 @@ func (i index) Walk(pt paths.Path, wf WalkFunc) error {
 	}
 
 	if info.IsZero() {
-		info, err = pkgs.Pkg(pt.Pkg)
+		info, err = Pkg(pt.Pkg)
 		if err != nil {
 			return fmt.Errorf("%s: %s", pt, err)
 		}
@@ -92,7 +83,7 @@ func (i index) Walk(pt paths.Path, wf WalkFunc) error {
 		}
 
 		path = strings.TrimPrefix(path, info.Dir)
-		pt, err := paths.Parse(fmt.Sprintf("%s:%s", pt.Pkg, path))
+		pt, err := Parse(fmt.Sprintf("%s:%s", pt.Pkg, path))
 		if err != nil {
 			return err
 		}
@@ -102,28 +93,21 @@ func (i index) Walk(pt paths.Path, wf WalkFunc) error {
 	return err
 }
 
-func (i index) Open(pt paths.Path) (*File, error) {
-	if len(pt.Pkg) == 0 {
-		pt.Pkg = i.Pkg
-	}
+func (i *index) Open(pt Path) (*File, error) {
 	f, ok := i.Files[pt]
 	if !ok {
 		return i.openDisk(pt)
 	}
 	return &File{
-		info:  f.info,
-		path:  f.path,
-		data:  f.data,
-		her:   f.her,
-		index: newIndex(),
+		info: f.info,
+		path: f.path,
+		data: f.data,
+		her:  f.her,
 	}, nil
 }
 
-func (i index) openDisk(pt paths.Path) (*File, error) {
-	if len(pt.Pkg) == 0 {
-		pt.Pkg = i.Pkg
-	}
-	info, err := pkgs.Pkg(pt.Pkg)
+func (i index) openDisk(pt Path) (*File, error) {
+	info, err := Pkg(pt.Pkg)
 	if err != nil {
 		return nil, err
 	}
@@ -140,30 +124,17 @@ func (i index) openDisk(pt paths.Path) (*File, error) {
 		info: WithName(strings.TrimPrefix(pt.Name, "/"), NewFileInfo(fi)),
 		her:  info,
 		path: pt,
-		index: &index{
-			Files: map[paths.Path]*File{},
-		},
 	}
 	return f, nil
 }
 
-func (i index) Parse(p string) (paths.Path, error) {
-	pt, err := paths.Parse(p)
-	if err != nil {
-		return pt, err
-	}
-
-	if len(pt.Pkg) == 0 {
-		pt.Pkg = i.Pkg
-	}
-
-	return pt, nil
-}
-
 func newIndex() *index {
 	return &index{
-		Files: map[paths.Path]*File{},
+		Files: map[Path]*File{},
 	}
 }
 
-var rootIndex = newIndex()
+var rootIndex = func() *index {
+	i := newIndex()
+	return i
+}()

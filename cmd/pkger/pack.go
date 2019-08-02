@@ -11,14 +11,12 @@ import (
 
 	"github.com/markbates/pkger"
 	"github.com/markbates/pkger/parser"
-	"github.com/markbates/pkger/paths"
-	"github.com/markbates/pkger/pkgs"
 )
 
 const outName = "pkged.go"
 
 func pack(args []string) error {
-	info, err := pkgs.Current()
+	info, err := pkger.Current()
 	if err != nil {
 		return err
 	}
@@ -41,7 +39,7 @@ func pack(args []string) error {
 	return nil
 }
 
-func Package(p string, paths []paths.Path) error {
+func Package(p string, paths []pkger.Path) error {
 	os.RemoveAll(p)
 
 	var files []*pkger.File

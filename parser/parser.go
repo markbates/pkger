@@ -6,15 +6,14 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/markbates/pkger/paths"
-	"github.com/markbates/pkger/pkgs"
+	"github.com/markbates/pkger"
 )
 
 var DefaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "_fixtures", "testdata"}
 
 func Parse(name string) (Results, error) {
 	var r Results
-	c, err := pkgs.Current()
+	c, err := pkger.Current()
 	if err != nil {
 		return r, err
 	}
@@ -23,19 +22,19 @@ func Parse(name string) (Results, error) {
 		name = c.ImportPath
 	}
 
-	pt, err := paths.Parse(name)
+	pt, err := pkger.Parse(name)
 	if err != nil {
 		return r, err
 	}
 	r.Path = pt
 
-	her, err := pkgs.Pkg(r.Path.Pkg)
+	her, err := pkger.Pkg(r.Path.Pkg)
 
 	if err != nil {
 		return r, err
 	}
 
-	m := map[paths.Path]bool{}
+	m := map[pkger.Path]bool{}
 
 	root := r.Path.Name
 	if !strings.HasPrefix(root, string(filepath.Separator)) {
@@ -116,7 +115,7 @@ func Parse(name string) (Results, error) {
 		return nil
 	})
 
-	var found []paths.Path
+	var found []pkger.Path
 
 	for k := range m {
 		if len(k.String()) == 0 {
@@ -132,10 +131,10 @@ func Parse(name string) (Results, error) {
 	return r, err
 }
 
-func sourceFiles(pt paths.Path) ([]paths.Path, error) {
-	var res []paths.Path
+func sourceFiles(pt pkger.Path) ([]pkger.Path, error) {
+	var res []pkger.Path
 
-	her, err := pkgs.Pkg(pt.Pkg)
+	her, err := pkger.Pkg(pt.Pkg)
 
 	if err != nil {
 		return res, err
@@ -150,7 +149,7 @@ func sourceFiles(pt paths.Path) ([]paths.Path, error) {
 		return res, nil
 	}
 
-	c, err := pkgs.Current()
+	c, err := pkger.Current()
 	if err != nil {
 		return res, err
 	}
@@ -189,7 +188,7 @@ func sourceFiles(pt paths.Path) ([]paths.Path, error) {
 		}
 
 		n := strings.TrimPrefix(strings.TrimPrefix(p, her.Dir), "/")
-		pt := paths.Path{
+		pt := pkger.Path{
 			Name: n,
 		}
 		res = append(res, pt)
@@ -200,6 +199,6 @@ func sourceFiles(pt paths.Path) ([]paths.Path, error) {
 }
 
 type Results struct {
-	Paths []paths.Path
-	Path  paths.Path
+	Paths []pkger.Path
+	Path  pkger.Path
 }

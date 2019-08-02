@@ -5,17 +5,12 @@ import (
 	"strings"
 )
 
-func createFile(i *index, p string, body ...string) (*File, error) {
-	pt, err := i.Parse(p)
-	if err != nil {
-		return nil, err
-	}
-
+func createFile(p string, body ...string) (*File, error) {
 	if len(body) == 0 {
 		body = append(body, radio)
 	}
 
-	f, err := i.Create(pt)
+	f, err := Create(p)
 	if err != nil {
 		return nil, err
 	}

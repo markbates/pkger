@@ -2,14 +2,12 @@ package pkger
 
 import (
 	"os"
-
-	"github.com/markbates/pkger/paths"
 )
 
-type WalkFunc func(paths.Path, os.FileInfo) error
+type WalkFunc func(Path, os.FileInfo) error
 
 func Walk(p string, wf WalkFunc) error {
-	pt, err := paths.Parse(p)
+	pt, err := Parse(p)
 	if err != nil {
 		return err
 	}

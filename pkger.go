@@ -1,10 +1,8 @@
 package pkger
 
-import "github.com/markbates/pkger/paths"
-
 // Open opens the named file for reading.
 func Open(p string) (*File, error) {
-	pt, err := paths.Parse(p)
+	pt, err := Parse(p)
 	if err != nil {
 		return nil, err
 	}
@@ -13,7 +11,7 @@ func Open(p string) (*File, error) {
 
 // Create creates the named file with mode 0666 (before umask), truncating it if it already exists. If successful, methods on the returned File can be used for I/O; the associated file descriptor has mode O_RDWR. If there is an error, it will be of type *PathError.
 func Create(p string) (*File, error) {
-	pt, err := paths.Parse(p)
+	pt, err := Parse(p)
 	if err != nil {
 		return nil, err
 	}

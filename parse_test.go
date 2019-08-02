@@ -1,4 +1,4 @@
-package paths
+package pkger
 
 import (
 	"testing"

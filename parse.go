@@ -1,12 +1,10 @@
-package paths
+package pkger
 
 import (
 	"fmt"
 	"regexp"
 	"strings"
 	"sync"
-
-	"github.com/markbates/pkger/pkgs"
 )
 
 var cache = pathsMap{
@@ -44,7 +42,7 @@ func build(p, pkg, name string) (Path, error) {
 		Name: name,
 	}
 
-	info, err := pkgs.Current()
+	info, err := Current()
 	if err != nil {
 		return pt, err
 	}

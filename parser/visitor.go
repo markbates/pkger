@@ -5,23 +5,23 @@ import (
 	"go/ast"
 	"strconv"
 
-	"github.com/markbates/pkger/paths"
+	"github.com/markbates/pkger"
 )
 
 type Visitor struct {
 	File   string
-	Found  map[paths.Path]bool
+	Found  map[pkger.Path]bool
 	errors []error
 }
 
 func NewVisitor(p string) (*Visitor, error) {
 	return &Visitor{
 		File:  p,
-		Found: map[paths.Path]bool{},
+		Found: map[pkger.Path]bool{},
 	}, nil
 }
 
-func (v *Visitor) Run() ([]paths.Path, error) {
+func (v *Visitor) Run() ([]pkger.Path, error) {
 	pf, err := parseFile(v.File)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func (v *Visitor) Run() ([]paths.Path, error) {
 
 	ast.Walk(v, pf.Ast)
 
-	var found []paths.Path
+	var found []pkger.Path
 
 	for k := range v.Found {
 		found = append(found, k)
@@ -40,7 +40,7 @@ func (v *Visitor) Run() ([]paths.Path, error) {
 
 func (v *Visitor) addPath(p string) error {
 	p, _ = strconv.Unquote(p)
-	pt, err := paths.Parse(p)
+	pt, err := pkger.Parse(p)
 	if err != nil {
 		return err
 	}

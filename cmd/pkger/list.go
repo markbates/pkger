@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 
+	"github.com/markbates/pkger"
 	"github.com/markbates/pkger/parser"
-	"github.com/markbates/pkger/pkgs"
 )
 
 func list(args []string) error {
-	info, err := pkgs.Current()
+	info, err := pkger.Current()
 	if err != nil {
 		return err
 	}
