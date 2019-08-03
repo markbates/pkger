@@ -13,7 +13,7 @@ var DefaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "_fixtu
 
 func Parse(name string) (Results, error) {
 	var r Results
-	c, err := pkger.Current()
+	c, err := pkger.Stat()
 	if err != nil {
 		return r, err
 	}
@@ -149,7 +149,7 @@ func sourceFiles(pt pkger.Path) ([]pkger.Path, error) {
 		return res, nil
 	}
 
-	c, err := pkger.Current()
+	c, err := pkger.Stat()
 	if err != nil {
 		return res, err
 	}

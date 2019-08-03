@@ -77,7 +77,7 @@ func Test_index_JSON(t *testing.T) {
 	fmt.Fprint(f, radio)
 	r.NoError(f.Close())
 
-	c, err := i.Current()
+	c, err := i.Stat()
 	r.NoError(err)
 	r.Equal(curPkg, c.ImportPath)
 
@@ -86,7 +86,7 @@ func Test_index_JSON(t *testing.T) {
 
 	r.Equal(1, len(i.Files.Keys()))
 	r.Equal(1, len(i.Infos.Keys()))
-	r.NotZero(i.current)
+	r.NotZero(i.Current)
 
 	jason, err := json.Marshal(i)
 	r.NoError(err)
@@ -98,7 +98,7 @@ func Test_index_JSON(t *testing.T) {
 
 	r.NotNil(i2.Infos)
 	r.NotNil(i2.Files)
-	r.NotZero(i2.current)
+	r.NotZero(i2.Current)
 	r.Equal(1, len(i2.Files.Keys()))
 	r.Equal(1, len(i2.Infos.Keys()))
 

@@ -13,12 +13,18 @@ import (
 // value: *File
 type filesMap struct {
 	data *sync.Map
+	once *sync.Once
 }
 
 func (m *filesMap) Data() *sync.Map {
-	if m.data == nil {
-		m.data = &sync.Map{}
+	if m.once == nil {
+		m.once = &sync.Once{}
 	}
+	m.once.Do(func() {
+		if m.data == nil {
+			m.data = &sync.Map{}
+		}
+	})
 	return m.data
 }
 

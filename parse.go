@@ -1,39 +1,14 @@
 package pkger
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
-	"sync"
 )
-
-var cache = pathsMap{
-	data: &sync.Map{},
-}
 
 var pathrx = regexp.MustCompile("([^:]+)(:(/.+))?")
 
 func Parse(p string) (Path, error) {
-	pt, ok := cache.Load(p)
-	if ok {
-		return pt, nil
-	}
-	if len(p) == 0 {
-		return build(p, "", "")
-	}
-
-	res := pathrx.FindAllStringSubmatch(p, -1)
-	if len(res) == 0 {
-		return pt, fmt.Errorf("could not parse %q", p)
-	}
-
-	matches := res[0]
-
-	if len(matches) != 4 {
-		return pt, fmt.Errorf("could not parse %q", p)
-	}
-
-	return build(p, matches[1], matches[3])
+	return rootIndex.Parse(p)
 }
 
 func build(p, pkg, name string) (Path, error) {
@@ -42,7 +17,7 @@ func build(p, pkg, name string) (Path, error) {
 		Name: name,
 	}
 
-	info, err := Current()
+	info, err := Stat()
 	if err != nil {
 		return pt, err
 	}
@@ -59,6 +34,6 @@ func build(p, pkg, name string) (Path, error) {
 	if !strings.HasPrefix(pt.Name, "/") {
 		pt.Name = "/" + pt.Name
 	}
-	cache.Store(p, pt)
+	rootIndex.Paths.Store(p, pt)
 	return pt, nil
 }

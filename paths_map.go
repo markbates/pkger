@@ -3,6 +3,8 @@
 package pkger
 
 import (
+	"encoding/json"
+	"fmt"
 	"sort"
 	"sync"
 )
@@ -12,11 +14,45 @@ import (
 // value: Path
 type pathsMap struct {
 	data *sync.Map
+	once *sync.Once
+}
+
+func (m *pathsMap) Data() *sync.Map {
+	if m.once == nil {
+		m.once = &sync.Once{}
+	}
+	m.once.Do(func() {
+		if m.data == nil {
+			m.data = &sync.Map{}
+		}
+	})
+	return m.data
+}
+
+func (m *pathsMap) MarshalJSON() ([]byte, error) {
+	mm := map[string]interface{}{}
+	m.Data().Range(func(key, value interface{}) bool {
+		mm[fmt.Sprintf("%s", key)] = value
+		return true
+	})
+	return json.Marshal(mm)
+}
+
+func (m *pathsMap) UnmarshalJSON(b []byte) error {
+	mm := map[string]Path{}
+
+	if err := json.Unmarshal(b, &mm); err != nil {
+		return err
+	}
+	for k, v := range mm {
+		m.Store(k, v)
+	}
+	return nil
 }
 
 // Delete the key from the map
 func (m *pathsMap) Delete(key string) {
-	m.data.Delete(key)
+	m.Data().Delete(key)
 }
 
 // Load the key from the map.
@@ -24,7 +60,7 @@ func (m *pathsMap) Delete(key string) {
 // A false return indicates either the key was not found
 // or the value is not of type Path
 func (m *pathsMap) Load(key string) (Path, bool) {
-	i, ok := m.data.Load(key)
+	i, ok := m.Data().Load(key)
 	if !ok {
 		return Path{}, false
 	}
@@ -35,7 +71,7 @@ func (m *pathsMap) Load(key string) (Path, bool) {
 // LoadOrStore will return an existing key or
 // store the value if not already in the map
 func (m *pathsMap) LoadOrStore(key string, value Path) (Path, bool) {
-	i, _ := m.data.LoadOrStore(key, value)
+	i, _ := m.Data().LoadOrStore(key, value)
 	s, ok := i.(Path)
 	return s, ok
 }
@@ -57,7 +93,7 @@ func (m *pathsMap) LoadOr(key string, fn func(*pathsMap) (Path, bool)) (Path, bo
 
 // Range over the Path values in the map
 func (m *pathsMap) Range(f func(key string, value Path) bool) {
-	m.data.Range(func(k, v interface{}) bool {
+	m.Data().Range(func(k, v interface{}) bool {
 		key, ok := k.(string)
 		if !ok {
 			return false
@@ -72,7 +108,7 @@ func (m *pathsMap) Range(f func(key string, value Path) bool) {
 
 // Store a Path in the map
 func (m *pathsMap) Store(key string, value Path) {
-	m.data.Store(key, value)
+	m.Data().Store(key, value)
 }
 
 // Keys returns a list of keys in the map

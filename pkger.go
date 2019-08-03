@@ -47,8 +47,6 @@ func Unpack(ind string) error {
 		return err
 	}
 
-	fmt.Println(rootIndex.Files.Keys())
-
 	return nil
 }
 
@@ -61,13 +59,6 @@ func Pack(out io.Writer, paths []Path) error {
 		f, err := Open(p.String())
 		if err != nil {
 			return err
-		}
-		fi, err := f.Stat()
-		if err != nil {
-			return err
-		}
-		if fi.IsDir() {
-			continue
 		}
 		rootIndex.Files.Store(p, f)
 		f.Close()

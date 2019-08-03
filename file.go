@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"time"
 
 	"github.com/gobuffalo/here"
@@ -62,12 +63,8 @@ func (f *File) Close() error {
 }
 
 func (f *File) Read(p []byte) (int, error) {
-	if len(f.data) > 0 && len(f.data) <= len(p) {
-		return copy(p, f.data), io.EOF
-	}
-
-	if len(f.data) > 0 {
-		f.reader = ioutil.NopCloser(bytes.NewReader(f.data))
+	if len(f.data) > 0 && f.reader == nil {
+		f.reader = bytes.NewReader(f.data)
 	}
 
 	if f.reader != nil {
@@ -168,6 +165,7 @@ func (f *File) Open(name string) (http.File, error) {
 		return f, nil
 	}
 
+	pt.Name = path.Join(f.Path().Name, pt.Name)
 	return rootIndex.Open(pt)
 }
 

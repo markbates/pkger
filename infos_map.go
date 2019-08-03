@@ -16,11 +16,14 @@ import (
 // value: here.Info
 type infosMap struct {
 	data *sync.Map
-	init sync.Once
+	once *sync.Once
 }
 
 func (m *infosMap) Data() *sync.Map {
-	m.init.Do(func() {
+	if m.once == nil {
+		m.once = &sync.Once{}
+	}
+	m.once.Do(func() {
 		if m.data == nil {
 			m.data = &sync.Map{}
 		}

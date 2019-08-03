@@ -8,7 +8,7 @@ import (
 )
 
 func list(args []string) error {
-	info, err := pkger.Current()
+	info, err := pkger.Stat()
 	if err != nil {
 		return err
 	}

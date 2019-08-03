@@ -12,7 +12,7 @@ import (
 const outName = "pkged.go"
 
 func pack(args []string) error {
-	info, err := pkger.Current()
+	info, err := pkger.Stat()
 	if err != nil {
 		return err
 	}
@@ -41,7 +41,7 @@ func Package(out string, paths []pkger.Path) error {
 		return err
 	}
 
-	c, err := pkger.Current()
+	c, err := pkger.Stat()
 	if err != nil {
 		return err
 	}
