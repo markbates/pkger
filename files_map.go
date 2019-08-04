@@ -4,6 +4,7 @@ package pkger
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 	"sync"
 )
@@ -136,4 +137,8 @@ func (m *filesMap) Keys() []Path {
 		return keys[a].String() <= keys[b].String()
 	})
 	return keys
+}
+
+func (m *filesMap) String() string {
+	return fmt.Sprintf("%v", m.Keys())
 }

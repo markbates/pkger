@@ -17,18 +17,23 @@ func build(p, pkg, name string) (Path, error) {
 		Name: name,
 	}
 
-	info, err := Stat()
+	current, err := Stat()
 	if err != nil {
 		return pt, err
 	}
 
 	if strings.HasPrefix(pt.Pkg, "/") || len(pt.Pkg) == 0 {
 		pt.Name = pt.Pkg
-		pt.Pkg = info.ImportPath
+		pt.Pkg = current.ImportPath
 	}
 
-	if pt.Pkg == pt.Name || len(pt.Name) == 0 {
-		pt.Pkg = info.ImportPath
+	if len(pt.Name) == 0 {
+		pt.Name = "/"
+	}
+
+	if pt.Pkg == pt.Name {
+		pt.Pkg = current.ImportPath
+		pt.Name = "/"
 	}
 
 	if !strings.HasPrefix(pt.Name, "/") {

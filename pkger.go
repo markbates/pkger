@@ -60,8 +60,21 @@ func Pack(out io.Writer, paths []Path) error {
 		if err != nil {
 			return err
 		}
+
+		fi, err := f.Stat()
+		if err != nil {
+			return err
+		}
+		if fi.IsDir() {
+			rootIndex.Files.Store(p, f)
+			f.Close()
+			continue
+		}
+
+		rootIndex.debug("Pack", "%s", p)
 		rootIndex.Files.Store(p, f)
 		f.Close()
+
 	}
 
 	if err := json.NewEncoder(gz).Encode(rootIndex); err != nil {
@@ -71,6 +84,6 @@ func Pack(out io.Writer, paths []Path) error {
 		return err
 	}
 	s := hex.EncodeToString(bb.Bytes())
-	fmt.Fprint(out, s)
-	return nil
+	_, err := fmt.Fprint(out, s)
+	return err
 }

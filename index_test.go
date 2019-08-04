@@ -106,3 +106,25 @@ func Test_index_JSON(t *testing.T) {
 	r.NoError(err)
 	r.Equal(f.data, f2.data)
 }
+
+func Test_index_Parse(t *testing.T) {
+	table := []struct {
+		in  string
+		out string
+	}{
+		{in: "", out: curPkg + ":/"},
+		{in: curPkg, out: curPkg + ":/"},
+		// {in: curPkg + "/foo.go", out: curPkg + ":/foo.go"},
+		// {in: "/foo.go", out: curPkg + ":/foo.go"},
+		{in: "github.com/markbates/pkger/internal/examples/app", out: "github.com/markbates/pkger/internal/examples/app:/"},
+	}
+
+	for _, tt := range table {
+		t.Run(tt.in, func(st *testing.T) {
+			r := require.New(st)
+			pt, err := Parse(tt.in)
+			r.NoError(err)
+			r.Equal(tt.out, pt.String())
+		})
+	}
+}

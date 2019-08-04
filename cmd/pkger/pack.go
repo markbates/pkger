@@ -1,9 +1,9 @@
 package main
 
 import (
-	"bytes"
+	"flag"
+	"fmt"
 	"os"
-	"text/template"
 
 	"github.com/markbates/pkger"
 	"github.com/markbates/pkger/parser"
@@ -11,19 +11,46 @@ import (
 
 const outName = "pkged.go"
 
+type packOptions struct {
+	*flag.FlagSet
+	List bool
+}
+
+var packFlags = func() *packOptions {
+	rd := &packOptions{}
+	fs := flag.NewFlagSet("", flag.ExitOnError)
+	fs.BoolVar(&rd.List, "list", false, "prints a list of files/dirs to be packaged")
+	rd.FlagSet = fs
+	return rd
+}()
+
 func pack(args []string) error {
+	if err := packFlags.Parse(args); err != nil {
+		return err
+	}
+	args = packFlags.Args()
+
 	info, err := pkger.Stat()
 	if err != nil {
 		return err
 	}
 
-	fp := info.FilePath(outName)
-	os.RemoveAll(fp)
-
 	res, err := parser.Parse(info.Dir)
 	if err != nil {
 		return err
 	}
+
+	if packFlags.List {
+		fmt.Println(res.Path)
+
+		for _, p := range res.Paths {
+			fmt.Printf("  > %s\n", p)
+		}
+		return nil
+	}
+
+	fp := info.FilePath(outName)
+	os.RemoveAll(fp)
 
 	if err := Package(fp, res.Paths); err != nil {
 		return err
@@ -35,9 +62,8 @@ func pack(args []string) error {
 func Package(out string, paths []pkger.Path) error {
 	os.RemoveAll(out)
 
-	bb := &bytes.Buffer{}
-
-	if err := pkger.Pack(bb, paths); err != nil {
+	f, err := os.Create(out)
+	if err != nil {
 		return err
 	}
 
@@ -45,28 +71,15 @@ func Package(out string, paths []pkger.Path) error {
 	if err != nil {
 		return err
 	}
-	d := struct {
-		Pkg  string
-		Data string
-	}{
-		Pkg:  c.Name,
-		Data: bb.String(),
+	fmt.Fprintf(f, "package %s\n\n", c.Name)
+	fmt.Fprintf(f, "import \"github.com/markbates/pkger\"\n\n")
+	fmt.Fprintf(f, "var _ = pkger.Unpack(`")
+
+	if err := pkger.Pack(f, paths); err != nil {
+		return err
 	}
 
-	f, err := os.Create(out)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
+	fmt.Fprintf(f, "`)\n")
 
-	t, err := template.New(outName).Parse(outTmpl)
-	if err != nil {
-		return err
-	}
-	if err := t.Execute(f, d); err != nil {
-		return err
-	}
 	return nil
 }
-
-const outTmpl = "package {{.Pkg}}\nimport \"github.com/markbates/pkger\"\nvar _ = pkger.Unpack(`{{.Data}}`) "

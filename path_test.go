@@ -15,6 +15,7 @@ func Test_Path_String(t *testing.T) {
 		{in: Path{Pkg: curPkg}, out: curPkg + ":/"},
 		{in: Path{Pkg: curPkg, Name: "/foo.go"}, out: curPkg + ":/foo.go"},
 		{in: Path{Name: "/foo.go"}, out: ":/foo.go"},
+		{in: Path{Pkg: "github.com/markbates/pkger/internal/examples/app"}, out: "github.com/markbates/pkger/internal/examples/app:/"},
 	}
 
 	for _, tt := range table {

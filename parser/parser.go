@@ -78,6 +78,12 @@ func Parse(name string) (Results, error) {
 		}
 
 		if info.IsDir() {
+			n := strings.TrimPrefix(name, her.Dir)
+			pt, err := pkger.Parse(n)
+			if err != nil {
+				return err
+			}
+			m[pt] = true
 			return nil
 		}
 

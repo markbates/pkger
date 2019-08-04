@@ -1,7 +1,7 @@
 package pkger
 
 import (
-	"github.com/gobuffalo/here"
+	"github.com/markbates/pkger/here"
 )
 
 func Info(p string) (here.Info, error) {

@@ -1,5 +1,5 @@
 // +build !debug
 
-package pkger
+package debug
 
 func Debug(format string, a ...interface{}) {}

@@ -1,6 +1,7 @@
 package pkger
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -8,7 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gobuffalo/here"
+	"github.com/markbates/pkger/here"
+	"github.com/markbates/pkger/internal/debug"
 )
 
 type index struct {
@@ -16,10 +18,16 @@ type index struct {
 	Infos   *infosMap `json:"infos"`
 	Paths   *pathsMap `json:"paths"`
 	Current here.Info `json:"current"`
-	once    sync.Once
+	once    *sync.Once
+}
+
+func (i *index) debug(key, format string, args ...interface{}) {
+	s := fmt.Sprintf(format, args...)
+	debug.Debug("[*index|%s|%s] %s", i.Current.ImportPath, key, s)
 }
 
 func (i *index) Parse(p string) (Path, error) {
+	i.debug("Parse", p)
 	pt, ok := i.Paths.Load(p)
 	if ok {
 		return pt, nil
@@ -40,7 +48,6 @@ func (i *index) Parse(p string) (Path, error) {
 	}
 
 	return build(p, matches[1], matches[3])
-	return rootIndex.Parse(p)
 }
 
 func (i *index) Info(p string) (here.Info, error) {
@@ -49,7 +56,7 @@ func (i *index) Info(p string) (here.Info, error) {
 		return info, nil
 	}
 
-	info, err := here.Cache(p, here.Package)
+	info, err := here.Package(p)
 	if err != nil {
 		return info, err
 	}
@@ -58,13 +65,14 @@ func (i *index) Info(p string) (here.Info, error) {
 }
 
 func (i *index) Stat() (here.Info, error) {
+	var err error
 	i.once.Do(func() {
-		i.Current, _ = here.Cache("", func(string) (here.Info, error) {
-			return here.Current()
-		})
+		if i.Current.IsZero() {
+			i.Current, err = here.Current()
+		}
 	})
 
-	return i.Current, nil
+	return i.Current, err
 }
 
 func (i *index) Create(pt Path) (*File, error) {
@@ -90,59 +98,43 @@ func (i *index) Create(pt Path) (*File, error) {
 	return f, nil
 }
 
-// func (i *index) MarshalJSON() ([]byte, error) {
-// 	m := map[string]interface{}{}
-//
-// 	m["files"] = i.Files
-// 	m["infos"] = i.Infos
-// 	m["current"] = i.Current
-//
-// 	b, err := json.Marshal(m)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	hep := hepa.New()
-// 	hep = hepa.With(hep, filters.Golang())
-// 	hep = hepa.With(hep, filters.Secrets())
-// 	return hep.Filter(b)
-// }
+func (i *index) UnmarshalJSON(b []byte) error {
+	i.once = &sync.Once{}
+	m := map[string]json.RawMessage{}
 
-// func (i *index) UnmarshalJSON(b []byte) error {
-// 	m := map[string]json.RawMessage{}
-//
-// 	if err := json.Unmarshal(b, &m); err != nil {
-// 		return err
-// 	}
-//
-// 	infos, ok := m["infos"]
-// 	if !ok {
-// 		return fmt.Errorf("missing infos")
-// 	}
-// 	i.Infos = &infosMap{}
-// 	if err := json.Unmarshal(infos, i.Infos); err != nil {
-// 		return err
-// 	}
-//
-// 	files, ok := m["files"]
-// 	if !ok {
-// 		return fmt.Errorf("missing files")
-// 	}
-//
-// 	i.Files = &filesMap{}
-// 	if err := json.Unmarshal(files, i.Files); err != nil {
-// 		return err
-// 	}
-//
-// 	current, ok := m["current"]
-// 	if !ok {
-// 		return fmt.Errorf("missing current")
-// 	}
-// 	if err := json.Unmarshal(current, &i.Current); err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
+	if err := json.Unmarshal(b, &m); err != nil {
+		return err
+	}
+
+	infos, ok := m["infos"]
+	if !ok {
+		return fmt.Errorf("missing infos")
+	}
+	i.Infos = &infosMap{}
+	if err := json.Unmarshal(infos, i.Infos); err != nil {
+		return err
+	}
+
+	files, ok := m["files"]
+	if !ok {
+		return fmt.Errorf("missing files")
+	}
+
+	i.Files = &filesMap{}
+	if err := json.Unmarshal(files, i.Files); err != nil {
+		return err
+	}
+
+	current, ok := m["current"]
+	if !ok {
+		return fmt.Errorf("missing current")
+	}
+	if err := json.Unmarshal(current, &i.Current); err != nil {
+		return err
+	}
+	i.debug("UnmarshalJSON", "%v", i)
+	return nil
+}
 
 func (i index) Walk(pt Path, wf WalkFunc) error {
 	var err error
@@ -193,6 +185,7 @@ func (i index) Walk(pt Path, wf WalkFunc) error {
 }
 
 func (i *index) Open(pt Path) (*File, error) {
+	i.debug("Open", pt.String())
 	f, ok := i.Files.Load(pt)
 	if !ok {
 		return i.openDisk(pt)
@@ -208,6 +201,7 @@ func (i *index) Open(pt Path) (*File, error) {
 }
 
 func (i index) openDisk(pt Path) (*File, error) {
+	i.debug("openDisk", pt.String())
 	info, err := Info(pt.Pkg)
 	if err != nil {
 		return nil, err
@@ -234,6 +228,7 @@ func newIndex() *index {
 		Files: &filesMap{},
 		Infos: &infosMap{},
 		Paths: &pathsMap{},
+		once:  &sync.Once{},
 	}
 }
 

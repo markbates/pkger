@@ -10,7 +10,7 @@ import (
 func Test_Parser(t *testing.T) {
 	r := require.New(t)
 
-	res, err := Parse("/internal/app")
+	res, err := Parse("github.com/markbates/pkger/internal/examples/app")
 
 	r.NoError(err)
 

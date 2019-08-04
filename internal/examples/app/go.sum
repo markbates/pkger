@@ -6,6 +6,8 @@ github.com/gobuffalo/here v0.2.2/go.mod h1:2a6G14FaAKOGJMK/5UNa4Og/+iyFS5cq3Mnlv
 github.com/markbates/errx v1.1.0/go.mod h1:PLa46Oex9KNbVDZhKel8v1OT7hD5JZ2eI7AHhA0wswc=
 github.com/markbates/hepa v0.0.0-20190718154049-1d900199db5b h1:ns0oO2sMEoFJMmrbiWzGQO5AR3GgqfYRAos0gz8C0Cw=
 github.com/markbates/hepa v0.0.0-20190718154049-1d900199db5b/go.mod h1:jHlCX3RNqF+epcY1FxjLyDGzr3l9+mNCh3YDDw6BFvY=
+github.com/markbates/pkger v0.0.0-20190803203656-a4a55a52dc5d h1:uu7nHVFsVBjS7Uzv5Q9U7hA5cpsL3tmwOJ8KDDt9IMI=
+github.com/markbates/pkger v0.0.0-20190803203656-a4a55a52dc5d/go.mod h1:2JPlcJvXSHDXTwhR0Fp7IvfGpSCRQ3WQpn4mn899KPw=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
