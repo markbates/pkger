@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -89,73 +88,6 @@ func (f *File) Write(b []byte) (int, error) {
 
 func (f File) Info() here.Info {
 	return f.her
-}
-
-func (f File) MarshalJSON() ([]byte, error) {
-	m := map[string]interface{}{}
-	m["info"] = f.info
-	m["her"] = f.her
-	m["path"] = f.path
-	m["data"] = f.data
-	m["parent"] = f.parent
-	if !f.info.virtual {
-		if len(f.data) == 0 && !f.info.IsDir() {
-			b, err := ioutil.ReadAll(&f)
-			if err != nil {
-				return nil, err
-			}
-			m["data"] = b
-		}
-	}
-
-	return json.Marshal(m)
-}
-
-func (f *File) UnmarshalJSON(b []byte) error {
-	m := map[string]json.RawMessage{}
-	if err := json.Unmarshal(b, &m); err != nil {
-		return err
-	}
-
-	info, ok := m["info"]
-	if !ok {
-		return fmt.Errorf("missing info")
-	}
-
-	f.info = &FileInfo{}
-	if err := json.Unmarshal(info, f.info); err != nil {
-		return err
-	}
-
-	her, ok := m["her"]
-	if !ok {
-		return fmt.Errorf("missing her")
-	}
-	if err := json.Unmarshal(her, &f.her); err != nil {
-		return err
-	}
-
-	path, ok := m["path"]
-	if !ok {
-		return fmt.Errorf("missing path")
-	}
-	if err := json.Unmarshal(path, &f.path); err != nil {
-		return err
-	}
-
-	parent, ok := m["parent"]
-	if !ok {
-		return fmt.Errorf("missing parent")
-	}
-	if err := json.Unmarshal(parent, &f.parent); err != nil {
-		return err
-	}
-
-	if err := json.Unmarshal(m["data"], &f.data); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (f File) Stat() (os.FileInfo, error) {

@@ -30,7 +30,7 @@ func (f *FileInfo) MarshalJSON() ([]byte, error) {
 		"mode":    f.mode,
 		"modTime": f.modTime.Format(timeFmt),
 		"isDir":   f.isDir,
-		"virtual": f.virtual,
+		"virtual": true,
 		"sys":     f.sys,
 	})
 }
@@ -75,6 +75,7 @@ func (f *FileInfo) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("could not determine isDir %q", m["isDir"])
 	}
 	f.sys = m["sys"]
+	f.virtual = true
 	return nil
 }
 

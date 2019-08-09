@@ -20,12 +20,16 @@ var pathsCache = &pathsMap{}
 var curOnce = &sync.Once{}
 var currentInfo here.Info
 
+var packMU = &sync.RWMutex{}
+
 func dubeg(key, format string, args ...interface{}) {
 	s := fmt.Sprintf(format, args...)
 	debug.Debug("[%s|%s] %s", key, s)
 }
 
 func Unpack(ind string) error {
+	packMU.Lock()
+	defer packMU.Unlock()
 	b, err := hex.DecodeString(ind)
 	if err != nil {
 		log.Fatal("hex.DecodeString", err)
@@ -43,15 +47,25 @@ func Unpack(ind string) error {
 	if err := json.NewDecoder(gz).Decode(&jay); err != nil {
 		return err
 	}
-
-	filesCache = jay.Files
-	infosCache = jay.Infos
-	pathsCache = jay.Paths
+	jay.Files.Range(func(key Path, value *File) bool {
+		filesCache.Store(key, value)
+		return true
+	})
+	jay.Infos.Range(func(key string, value here.Info) bool {
+		infosCache.Store(key, value)
+		return true
+	})
+	jay.Paths.Range(func(key string, value Path) bool {
+		pathsCache.Store(key, value)
+		return true
+	})
 	currentInfo = jay.CurrentInfo
 	return nil
 }
 
 func Pack(out io.Writer, paths []Path) error {
+	packMU.RLock()
+	defer packMU.RUnlock()
 	bb := &bytes.Buffer{}
 	gz := gzip.NewWriter(bb)
 	defer gz.Close()
