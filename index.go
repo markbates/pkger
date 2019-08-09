@@ -87,6 +87,7 @@ func (i *index) Create(pt Path) (*File, error) {
 			name:    strings.TrimPrefix(pt.Name, "/"),
 			mode:    0666,
 			modTime: time.Now(),
+			virtual: true,
 		},
 	}
 
@@ -95,6 +96,12 @@ func (i *index) Create(pt Path) (*File, error) {
 	}
 
 	i.Files.Store(pt, f)
+
+	dir := Path{
+		Pkg:  pt.Pkg,
+		Name: filepath.Dir(pt.Name),
+	}
+	i.MkdirAll(dir, 0644)
 	return f, nil
 }
 
@@ -125,6 +132,16 @@ func (i *index) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
+	paths, ok := m["paths"]
+	if !ok {
+		return fmt.Errorf("missing paths")
+	}
+
+	i.Paths = &pathsMap{}
+	if err := json.Unmarshal(paths, i.Paths); err != nil {
+		return err
+	}
+
 	current, ok := m["current"]
 	if !ok {
 		return fmt.Errorf("missing current")
@@ -134,70 +151,6 @@ func (i *index) UnmarshalJSON(b []byte) error {
 	}
 	i.debug("UnmarshalJSON", "%v", i)
 	return nil
-}
-
-func (i index) Walk(pt Path, wf WalkFunc) error {
-	var err error
-	i.Files.Range(func(k Path, v *File) bool {
-		if k.Pkg != pt.Pkg {
-			return true
-		}
-		if err = wf(k, v.info); err != nil {
-			return false
-		}
-		return true
-	})
-
-	if err != nil {
-		return err
-	}
-
-	var info here.Info
-	if pt.Pkg == "." {
-		info, err = Stat()
-		if err != nil {
-			return err
-		}
-		pt.Pkg = info.ImportPath
-	}
-
-	if info.IsZero() {
-		info, err = Info(pt.Pkg)
-		if err != nil {
-			return fmt.Errorf("%s: %s", pt, err)
-		}
-	}
-	fp := filepath.Join(info.Dir, pt.Name)
-	err = filepath.Walk(fp, func(path string, fi os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		path = strings.TrimPrefix(path, info.Dir)
-		pt, err := Parse(fmt.Sprintf("%s:%s", pt.Pkg, path))
-		if err != nil {
-			return err
-		}
-		return wf(pt, NewFileInfo(fi))
-	})
-
-	return err
-}
-
-func (i *index) Open(pt Path) (*File, error) {
-	i.debug("Open", pt.String())
-	f, ok := i.Files.Load(pt)
-	if !ok {
-		return i.openDisk(pt)
-	}
-	nf := &File{
-		info: f.info,
-		path: f.path,
-		data: f.data,
-		her:  f.her,
-	}
-
-	return nf, nil
 }
 
 func (i index) openDisk(pt Path) (*File, error) {
@@ -216,7 +169,7 @@ func (i index) openDisk(pt Path) (*File, error) {
 		return nil, err
 	}
 	f := &File{
-		info: WithName(strings.TrimPrefix(pt.Name, "/"), NewFileInfo(fi)),
+		info: WithName(pt.Name, NewFileInfo(fi)),
 		her:  info,
 		path: pt,
 	}

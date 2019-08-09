@@ -45,7 +45,7 @@ func Parse(name string) (Results, error) {
 		root = filepath.Join(her.Dir, root)
 	}
 
-	if name != her.Dir {
+	if !strings.HasPrefix(root, her.Dir) {
 		_, err = os.Stat(filepath.Join(root, "go.mod"))
 		if err == nil {
 			return Results{}, nil
@@ -58,7 +58,7 @@ func Parse(name string) (Results, error) {
 		}
 
 		if info.IsDir() {
-			if path != c.Dir {
+			if path != her.Dir {
 				_, err = os.Stat(filepath.Join(path, "go.mod"))
 				if err == nil {
 					return filepath.SkipDir
@@ -78,10 +78,9 @@ func Parse(name string) (Results, error) {
 		}
 
 		if info.IsDir() {
-			n := strings.TrimPrefix(name, her.Dir)
-			pt, err := pkger.Parse(n)
-			if err != nil {
-				return err
+			pt := pkger.Path{
+				Pkg:  her.ImportPath,
+				Name: strings.TrimPrefix(path, her.Dir),
 			}
 			m[pt] = true
 			return nil

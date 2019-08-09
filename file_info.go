@@ -13,6 +13,7 @@ type FileInfo struct {
 	mode    os.FileMode
 	modTime time.Time
 	isDir   bool
+	virtual bool
 	sys     interface{}
 }
 
@@ -28,6 +29,7 @@ func (f *FileInfo) MarshalJSON() ([]byte, error) {
 		"mode":    f.mode,
 		"modTime": f.modTime.Format(timeFmt),
 		"isDir":   f.isDir,
+		"virtual": f.virtual,
 		"sys":     f.sys,
 	})
 }

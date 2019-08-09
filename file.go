@@ -8,10 +8,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path"
+	"strings"
 	"time"
 
 	"github.com/markbates/pkger/here"
+	"github.com/markbates/pkger/internal/debug"
 )
 
 const timeFmt = time.RFC3339Nano
@@ -95,12 +96,14 @@ func (f File) MarshalJSON() ([]byte, error) {
 	m["her"] = f.her
 	m["path"] = f.path
 	m["data"] = f.data
-	if len(f.data) == 0 && !f.info.IsDir() {
-		b, err := ioutil.ReadAll(&f)
-		if err != nil {
-			return nil, err
+	if !f.info.virtual {
+		if len(f.data) == 0 && !f.info.IsDir() {
+			b, err := ioutil.ReadAll(&f)
+			if err != nil {
+				return nil, err
+			}
+			m["data"] = b
 		}
-		m["data"] = b
 	}
 
 	return json.Marshal(m)
@@ -143,20 +146,6 @@ func (f *File) UnmarshalJSON(b []byte) error {
 	}
 
 	return nil
-}
-
-func (f *File) Open(name string) (http.File, error) {
-	pt, err := Parse(name)
-	if err != nil {
-		return nil, err
-	}
-
-	if pt == f.path {
-		return f, nil
-	}
-
-	pt.Name = path.Join(f.Path().Name, pt.Name)
-	return rootIndex.Open(pt)
 }
 
 func (f File) Stat() (os.FileInfo, error) {
@@ -208,10 +197,31 @@ func (f File) Format(st fmt.State, verb rune) {
 //
 // If n <= 0, Readdir returns all the FileInfo from the directory in a single slice. In this case, if Readdir succeeds (reads all the way to the end of the directory), it returns the slice and a nil error. If it encounters an error before the end of the directory, Readdir returns the FileInfo read until that point and a non-nil error.
 func (f *File) Readdir(count int) ([]os.FileInfo, error) {
-	of, err := f.her.Open(f.FilePath())
-	if err != nil {
+	var infos []os.FileInfo
+	err := Walk(f.Name(), func(pt Path, info os.FileInfo) error {
+		if count > 0 && len(infos) == count {
+			return io.EOF
+		}
+		debug.Debug("[PKGER] [*file|Readdir] %d %q %q", count, f, pt)
+
+		if !strings.HasPrefix(info.Name(), f.Name()) {
+			return nil
+		}
+		infos = append(infos, info)
+		return nil
+	})
+
+	if err != nil && err != io.EOF {
 		return nil, err
 	}
-	defer of.Close()
-	return of.Readdir(count)
+
+	fmt.Printf("### file.go:235 infos (%T) -> %q %+v\n", infos, infos, infos)
+	return infos, nil
+
+	// of, err := f.her.Open(f.FilePath())
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// defer of.Close()
+	// return of.Readdir(count)
 }

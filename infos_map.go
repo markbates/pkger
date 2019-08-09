@@ -62,7 +62,8 @@ func (m *infosMap) Delete(key string) {
 // A false return indicates either the key was not found
 // or the value is not of type here.Info
 func (m *infosMap) Load(key string) (here.Info, bool) {
-	i, ok := m.Data().Load(key)
+	m.Data()
+	i, ok := m.data.Load(key)
 	if !ok {
 		return here.Info{}, false
 	}
