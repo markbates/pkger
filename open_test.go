@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_HTTP_File(t *testing.T) {
+func Test_Open_File(t *testing.T) {
 	r := require.New(t)
 
 	f, err := Open(".")
@@ -29,7 +29,7 @@ func Test_HTTP_File(t *testing.T) {
 	r.NoError(f.Close())
 }
 
-func Test_HTTP_Dir(t *testing.T) {
+func Test_Open_Dir(t *testing.T) {
 	r := require.New(t)
 
 	f, err := Open("/")
@@ -49,7 +49,7 @@ func Test_HTTP_Dir(t *testing.T) {
 	r.NoError(f.Close())
 }
 
-func Test_HTTP_File_Memory(t *testing.T) {
+func Test_Open_File_Memory(t *testing.T) {
 	r := require.New(t)
 
 	f, err := Create("/suit/case.txt")
@@ -77,7 +77,7 @@ func Test_HTTP_File_Memory(t *testing.T) {
 
 }
 
-func Test_HTTP_Dir_Memory(t *testing.T) {
+func Test_Open_Dir_Memory(t *testing.T) {
 	r := require.New(t)
 
 	f, err := Create("/public/radio.radio")

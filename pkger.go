@@ -8,7 +8,22 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"sync"
+
+	"github.com/markbates/pkger/here"
+	"github.com/markbates/pkger/internal/debug"
 )
+
+var filesCache = &filesMap{}
+var infosCache = &infosMap{}
+var pathsCache = &pathsMap{}
+var curOnce = &sync.Once{}
+var currentInfo here.Info
+
+func dubeg(key, format string, args ...interface{}) {
+	s := fmt.Sprintf(format, args...)
+	debug.Debug("[%s|%s] %s", key, s)
+}
 
 func Unpack(ind string) error {
 	b, err := hex.DecodeString(ind)
