@@ -3,6 +3,7 @@ package pkger
 import (
 	"os"
 	"path/filepath"
+	"time"
 )
 
 func MkdirAll(p string, perm os.FileMode) error {
@@ -12,12 +13,32 @@ func MkdirAll(p string, perm os.FileMode) error {
 	}
 	root := path.Name
 
+	cur, err := Stat()
+	if err != nil {
+		return err
+	}
 	for root != "" && root != "/" {
 		pt := Path{
 			Pkg:  path.Pkg,
 			Name: root,
 		}
-		f, err := Create(pt.String())
+		if _, ok := filesCache.Load(pt); ok {
+			panic(pt)
+			root = filepath.Dir(root)
+			continue
+		}
+		f := &File{
+			path: pt,
+			her:  cur,
+			info: &FileInfo{
+				name:    pt.Name,
+				mode:    0666,
+				modTime: time.Now(),
+				virtual: true,
+			},
+		}
+
+		filesCache.Store(pt, f)
 		if err != nil {
 			return err
 		}

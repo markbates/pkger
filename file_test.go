@@ -16,7 +16,7 @@ func Test_File_Open(t *testing.T) {
 	f, err := Open("/file_test.go")
 	r.NoError(err)
 
-	r.Equal("file_test.go", f.Name())
+	r.Equal("/file_test.go", f.Name())
 
 	b, err := ioutil.ReadAll(f)
 	r.NoError(err)
@@ -30,7 +30,7 @@ func Test_File_Open_Dir(t *testing.T) {
 	f, err := Open("/cmd")
 	r.NoError(err)
 
-	r.Equal("cmd", f.Name())
+	r.Equal("/cmd", f.Name())
 
 	r.NoError(f.Close())
 }
@@ -42,7 +42,7 @@ func Test_File_Read_Memory(t *testing.T) {
 	r.NoError(err)
 	f.data = []byte("hi!")
 
-	r.Equal("file_test.go", f.Name())
+	r.Equal("/file_test.go", f.Name())
 
 	b, err := ioutil.ReadAll(f)
 	r.NoError(err)
@@ -61,7 +61,7 @@ func Test_File_Write(t *testing.T) {
 	r.NoError(err)
 	r.Zero(fi.Size())
 
-	r.Equal("hello.txt", fi.Name())
+	r.Equal("/hello.txt", fi.Name())
 
 	mt := fi.ModTime()
 	r.NotZero(mt)
@@ -79,7 +79,7 @@ func Test_File_Write(t *testing.T) {
 func Test_File_JSON(t *testing.T) {
 	r := require.New(t)
 
-	f, err := createFile("radio.radio")
+	f, err := createFile("/radio.radio")
 	r.NoError(err)
 	r.NotNil(f)
 

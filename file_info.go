@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -78,6 +79,9 @@ func (f *FileInfo) UnmarshalJSON(b []byte) error {
 }
 
 func (f *FileInfo) Name() string {
+	if !strings.HasPrefix(f.name, "/") {
+		f.name = "/" + f.name
+	}
 	return f.name
 }
 

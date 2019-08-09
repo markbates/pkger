@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -23,12 +24,15 @@ func Unpack(ind string) error {
 	}
 	defer gz.Close()
 
-	// TODO:
-	// if err := json.NewDecoder(gz).Decode(rootIndex); err != nil {
-	// 	log.Fatal("json.NewDecoder", err)
-	// 	return err
-	// }
+	var jay jason
+	if err := json.NewDecoder(gz).Decode(&jay); err != nil {
+		return err
+	}
 
+	filesCache = jay.Files
+	infosCache = jay.Infos
+	pathsCache = jay.Paths
+	currentInfo = jay.CurrentInfo
 	return nil
 }
 
@@ -59,10 +63,16 @@ func Pack(out io.Writer, paths []Path) error {
 
 	}
 
-	// TODO
-	// if err := json.NewEncoder(gz).Encode(rootIndex); err != nil {
-	// 	return err
-	// }
+	jay := jason{
+		Files:       filesCache,
+		Infos:       infosCache,
+		Paths:       pathsCache,
+		CurrentInfo: currentInfo,
+	}
+
+	if err := json.NewEncoder(gz).Encode(jay); err != nil {
+		return err
+	}
 	if err := gz.Close(); err != nil {
 		return err
 	}

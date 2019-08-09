@@ -2,10 +2,7 @@ package pkger
 
 import (
 	"net/http"
-	"os"
 	"path"
-	"path/filepath"
-	"strings"
 )
 
 func (f *File) Open(name string) (http.File, error) {
@@ -22,12 +19,15 @@ func (f *File) Open(name string) (http.File, error) {
 
 	di, err := Open(pt.String())
 	if err != nil {
-		if filepath.Base(name) == "index.html" {
-			if _, ok := err.(*os.PathError); ok {
-				return f, nil
-			}
-		}
-		return f, err
+		return nil, err
+	}
+
+	fi, err := di.Stat()
+	if err != nil {
+		return nil, err
+	}
+	if fi.IsDir() {
+		di.parent = f.path
 	}
 	return di, nil
 }
@@ -44,7 +44,7 @@ func Open(name string) (*File, error) {
 		return openDisk(pt)
 	}
 	nf := &File{
-		info: WithName(strings.TrimPrefix(f.info.Name(), "/"), f.info),
+		info: WithName(f.info.Name(), f.info),
 		path: f.path,
 		data: f.data,
 		her:  f.her,

@@ -16,8 +16,12 @@ func Walk(p string, wf WalkFunc) error {
 	if err != nil {
 		return err
 	}
+
 	filesCache.Range(func(k Path, v *File) bool {
 		if k.Pkg != pt.Pkg {
+			return true
+		}
+		if !strings.HasPrefix(k.Name, pt.Name) {
 			return true
 		}
 		if err = wf(k, v.info); err != nil {
@@ -28,10 +32,6 @@ func Walk(p string, wf WalkFunc) error {
 		}
 		return true
 	})
-
-	if err != nil {
-		return err
-	}
 
 	var info here.Info
 	if pt.Pkg == "." {

@@ -19,7 +19,7 @@ func Test_index_Create(t *testing.T) {
 	fi, err := f.Stat()
 	r.NoError(err)
 
-	r.Equal("hello.txt", fi.Name())
+	r.Equal("/hello.txt", fi.Name())
 	r.Equal(os.FileMode(0666), fi.Mode())
 	r.NotZero(fi.ModTime())
 
@@ -39,7 +39,7 @@ func Test_index_Create_Write(t *testing.T) {
 	r.NoError(err)
 	r.Zero(fi.Size())
 
-	r.Equal("hello.txt", fi.Name())
+	r.Equal("/hello.txt", fi.Name())
 
 	mt := fi.ModTime()
 	r.NotZero(mt)

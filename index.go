@@ -1,7 +1,6 @@
 package pkger
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -87,7 +86,7 @@ func Create(name string) (*File, error) {
 		path: pt,
 		her:  her,
 		info: &FileInfo{
-			name:    strings.TrimPrefix(pt.Name, "/"),
+			name:    pt.Name,
 			mode:    0666,
 			modTime: time.Now(),
 			virtual: true,
@@ -96,56 +95,11 @@ func Create(name string) (*File, error) {
 
 	filesCache.Store(pt, f)
 
-	if err := MkdirAll(filepath.Dir(pt.Name), 0644); err != nil {
+	dir := filepath.Dir(pt.Name)
+	if err := MkdirAll(dir, 0644); err != nil {
 		return nil, err
 	}
 	return f, nil
-}
-
-func UnmarshalJSON(b []byte) error {
-	m := map[string]json.RawMessage{}
-
-	if err := json.Unmarshal(b, &m); err != nil {
-		return err
-	}
-
-	infos, ok := m["infos"]
-	if !ok {
-		return fmt.Errorf("missing infos")
-	}
-	infosCache = &infosMap{}
-	if err := json.Unmarshal(infos, infosCache); err != nil {
-		return err
-	}
-
-	files, ok := m["files"]
-	if !ok {
-		return fmt.Errorf("missing files")
-	}
-
-	filesCache = &filesMap{}
-	if err := json.Unmarshal(files, filesCache); err != nil {
-		return err
-	}
-
-	paths, ok := m["paths"]
-	if !ok {
-		return fmt.Errorf("missing paths")
-	}
-
-	pathsCache = &pathsMap{}
-	if err := json.Unmarshal(paths, pathsCache); err != nil {
-		return err
-	}
-
-	current, ok := m["current"]
-	if !ok {
-		return fmt.Errorf("missing current")
-	}
-	if err := json.Unmarshal(current, &currentInfo); err != nil {
-		return err
-	}
-	return nil
 }
 
 func openDisk(pt Path) (*File, error) {

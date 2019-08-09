@@ -24,6 +24,7 @@ type File struct {
 	her    here.Info
 	path   Path
 	data   []byte
+	parent Path
 	writer *bytes.Buffer
 	reader io.Reader
 }
@@ -96,6 +97,7 @@ func (f File) MarshalJSON() ([]byte, error) {
 	m["her"] = f.her
 	m["path"] = f.path
 	m["data"] = f.data
+	m["parent"] = f.parent
 	if !f.info.virtual {
 		if len(f.data) == 0 && !f.info.IsDir() {
 			b, err := ioutil.ReadAll(&f)
@@ -138,6 +140,14 @@ func (f *File) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("missing path")
 	}
 	if err := json.Unmarshal(path, &f.path); err != nil {
+		return err
+	}
+
+	parent, ok := m["parent"]
+	if !ok {
+		return fmt.Errorf("missing parent")
+	}
+	if err := json.Unmarshal(parent, &f.parent); err != nil {
 		return err
 	}
 
@@ -198,29 +208,31 @@ func (f File) Format(st fmt.State, verb rune) {
 // If n <= 0, Readdir returns all the FileInfo from the directory in a single slice. In this case, if Readdir succeeds (reads all the way to the end of the directory), it returns the slice and a nil error. If it encounters an error before the end of the directory, Readdir returns the FileInfo read until that point and a non-nil error.
 func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 	var infos []os.FileInfo
+	defer func() {
+		fmt.Println(f.Name(), len(infos))
+	}()
 	err := Walk(f.Name(), func(pt Path, info os.FileInfo) error {
 		if count > 0 && len(infos) == count {
 			return io.EOF
 		}
 		debug.Debug("[PKGER] [*file|Readdir] %d %q %q", count, f, pt)
 
-		if !strings.HasPrefix(info.Name(), f.Name()) {
-			return nil
+		if f.parent.Name != "/" {
+			info = WithName(strings.TrimPrefix(info.Name(), f.parent.Name), info)
 		}
 		infos = append(infos, info)
 		return nil
 	})
 
-	if err != nil && err != io.EOF {
-		return nil, err
+	if err != nil {
+		if _, ok := err.(*os.PathError); ok {
+			return infos, nil
+		}
+		if err != io.EOF {
+			return nil, err
+		}
 	}
 
 	return infos, nil
 
-	// of, err := f.her.Open(f.FilePath())
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer of.Close()
-	// return of.Readdir(count)
 }

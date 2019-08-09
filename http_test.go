@@ -32,7 +32,7 @@ func Test_HTTP_File(t *testing.T) {
 func Test_HTTP_Dir(t *testing.T) {
 	r := require.New(t)
 
-	f, err := Open(".")
+	f, err := Open("/")
 	r.NoError(err)
 
 	ts := httptest.NewServer(http.FileServer(f))
@@ -44,7 +44,7 @@ func Test_HTTP_Dir(t *testing.T) {
 
 	b, err := ioutil.ReadAll(res.Body)
 	r.NoError(err)
-	r.Contains(string(b), `<a href="main.go">main.go</a>`)
+	r.Contains(string(b), `<a href="/main.go">/main.go</a>`)
 
 	r.NoError(f.Close())
 }
@@ -109,5 +109,5 @@ func Test_HTTP_Dir_Memory(t *testing.T) {
 
 	b, _ = ioutil.ReadAll(res.Body)
 	// r.NoError(err)
-	r.Contains(string(b), "I wanna bite the hand that feeds me")
+	r.Contains(string(b), `<a href="/radio.radio">/radio.radio</a>`)
 }
