@@ -4,29 +4,10 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 )
-
-// Open opens the named file for reading.
-func Open(p string) (*File, error) {
-	pt, err := Parse(p)
-	if err != nil {
-		return nil, err
-	}
-	return rootIndex.Open(pt)
-}
-
-// Create creates the named file with mode 0666 (before umask), truncating it if it already exists. If successful, methods on the returned File can be used for I/O; the associated file descriptor has mode O_RDWR. If there is an error, it will be of type *PathError.
-func Create(p string) (*File, error) {
-	pt, err := Parse(p)
-	if err != nil {
-		return nil, err
-	}
-	return rootIndex.Create(pt)
-}
 
 func Unpack(ind string) error {
 	b, err := hex.DecodeString(ind)
@@ -42,10 +23,11 @@ func Unpack(ind string) error {
 	}
 	defer gz.Close()
 
-	if err := json.NewDecoder(gz).Decode(rootIndex); err != nil {
-		log.Fatal("json.NewDecoder", err)
-		return err
-	}
+	// TODO:
+	// if err := json.NewDecoder(gz).Decode(rootIndex); err != nil {
+	// 	log.Fatal("json.NewDecoder", err)
+	// 	return err
+	// }
 
 	return nil
 }
@@ -66,20 +48,21 @@ func Pack(out io.Writer, paths []Path) error {
 			return err
 		}
 		if fi.IsDir() {
-			rootIndex.Files.Store(p, f)
+			filesCache.Store(p, f)
 			f.Close()
 			continue
 		}
 
-		rootIndex.debug("Pack", "%s", p)
-		rootIndex.Files.Store(p, f)
+		dubeg("Pack", "%s", p)
+		filesCache.Store(p, f)
 		f.Close()
 
 	}
 
-	if err := json.NewEncoder(gz).Encode(rootIndex); err != nil {
-		return err
-	}
+	// TODO
+	// if err := json.NewEncoder(gz).Encode(rootIndex); err != nil {
+	// 	return err
+	// }
 	if err := gz.Close(); err != nil {
 		return err
 	}

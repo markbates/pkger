@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
 func (f *File) Open(name string) (http.File, error) {
@@ -19,7 +20,7 @@ func (f *File) Open(name string) (http.File, error) {
 
 	pt.Name = path.Join(f.Path().Name, pt.Name)
 
-	di, err := rootIndex.Open(pt)
+	di, err := Open(pt.String())
 	if err != nil {
 		if filepath.Base(name) == "index.html" {
 			if _, ok := err.(*os.PathError); ok {
@@ -31,14 +32,19 @@ func (f *File) Open(name string) (http.File, error) {
 	return di, nil
 }
 
-func (i *index) Open(pt Path) (*File, error) {
-	i.debug("Open", pt.String())
-	f, ok := i.Files.Load(pt)
+func Open(name string) (*File, error) {
+	pt, err := Parse(name)
+	if err != nil {
+		return nil, err
+	}
+
+	dubeg("Open", pt.String())
+	f, ok := filesCache.Load(pt)
 	if !ok {
-		return i.openDisk(pt)
+		return openDisk(pt)
 	}
 	nf := &File{
-		info: f.info,
+		info: WithName(strings.TrimPrefix(f.info.Name(), "/"), f.info),
 		path: f.path,
 		data: f.data,
 		her:  f.her,

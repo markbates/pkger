@@ -215,7 +215,6 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 		return nil, err
 	}
 
-	fmt.Printf("### file.go:235 infos (%T) -> %q %+v\n", infos, infos, infos)
 	return infos, nil
 
 	// of, err := f.her.Open(f.FilePath())

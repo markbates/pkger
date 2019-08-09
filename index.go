@@ -13,22 +13,20 @@ import (
 	"github.com/markbates/pkger/internal/debug"
 )
 
-type index struct {
-	Files   *filesMap `json:"files"`
-	Infos   *infosMap `json:"infos"`
-	Paths   *pathsMap `json:"paths"`
-	Current here.Info `json:"current"`
-	once    *sync.Once
-}
+var filesCache = &filesMap{}
+var infosCache = &infosMap{}
+var pathsCache = &pathsMap{}
+var curOnce = &sync.Once{}
+var currentInfo here.Info
 
-func (i *index) debug(key, format string, args ...interface{}) {
+func dubeg(key, format string, args ...interface{}) {
 	s := fmt.Sprintf(format, args...)
-	debug.Debug("[*index|%s|%s] %s", i.Current.ImportPath, key, s)
+	debug.Debug("[%s|%s] %s", key, s)
 }
 
-func (i *index) Parse(p string) (Path, error) {
-	i.debug("Parse", p)
-	pt, ok := i.Paths.Load(p)
+func Parse(p string) (Path, error) {
+	dubeg("Parse", p)
+	pt, ok := pathsCache.Load(p)
 	if ok {
 		return pt, nil
 	}
@@ -50,8 +48,8 @@ func (i *index) Parse(p string) (Path, error) {
 	return build(p, matches[1], matches[3])
 }
 
-func (i *index) Info(p string) (here.Info, error) {
-	info, ok := i.Infos.Load(p)
+func Info(p string) (here.Info, error) {
+	info, ok := infosCache.Load(p)
 	if ok {
 		return info, nil
 	}
@@ -60,22 +58,27 @@ func (i *index) Info(p string) (here.Info, error) {
 	if err != nil {
 		return info, err
 	}
-	i.Infos.Store(p, info)
+	infosCache.Store(p, info)
 	return info, nil
 }
 
-func (i *index) Stat() (here.Info, error) {
+func Stat() (here.Info, error) {
 	var err error
-	i.once.Do(func() {
-		if i.Current.IsZero() {
-			i.Current, err = here.Current()
+	curOnce.Do(func() {
+		if currentInfo.IsZero() {
+			currentInfo, err = here.Current()
 		}
 	})
 
-	return i.Current, err
+	return currentInfo, err
 }
 
-func (i *index) Create(pt Path) (*File, error) {
+func Create(name string) (*File, error) {
+	pt, err := Parse(name)
+	if err != nil {
+		return nil, err
+	}
+
 	her, err := Info(pt.Pkg)
 	if err != nil {
 		return nil, err
@@ -91,22 +94,15 @@ func (i *index) Create(pt Path) (*File, error) {
 		},
 	}
 
-	if i.Files == nil {
-		i.Files = &filesMap{}
-	}
+	filesCache.Store(pt, f)
 
-	i.Files.Store(pt, f)
-
-	dir := Path{
-		Pkg:  pt.Pkg,
-		Name: filepath.Dir(pt.Name),
+	if err := MkdirAll(filepath.Dir(pt.Name), 0644); err != nil {
+		return nil, err
 	}
-	i.MkdirAll(dir, 0644)
 	return f, nil
 }
 
-func (i *index) UnmarshalJSON(b []byte) error {
-	i.once = &sync.Once{}
+func UnmarshalJSON(b []byte) error {
 	m := map[string]json.RawMessage{}
 
 	if err := json.Unmarshal(b, &m); err != nil {
@@ -117,8 +113,8 @@ func (i *index) UnmarshalJSON(b []byte) error {
 	if !ok {
 		return fmt.Errorf("missing infos")
 	}
-	i.Infos = &infosMap{}
-	if err := json.Unmarshal(infos, i.Infos); err != nil {
+	infosCache = &infosMap{}
+	if err := json.Unmarshal(infos, infosCache); err != nil {
 		return err
 	}
 
@@ -127,8 +123,8 @@ func (i *index) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("missing files")
 	}
 
-	i.Files = &filesMap{}
-	if err := json.Unmarshal(files, i.Files); err != nil {
+	filesCache = &filesMap{}
+	if err := json.Unmarshal(files, filesCache); err != nil {
 		return err
 	}
 
@@ -137,8 +133,8 @@ func (i *index) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("missing paths")
 	}
 
-	i.Paths = &pathsMap{}
-	if err := json.Unmarshal(paths, i.Paths); err != nil {
+	pathsCache = &pathsMap{}
+	if err := json.Unmarshal(paths, pathsCache); err != nil {
 		return err
 	}
 
@@ -146,15 +142,14 @@ func (i *index) UnmarshalJSON(b []byte) error {
 	if !ok {
 		return fmt.Errorf("missing current")
 	}
-	if err := json.Unmarshal(current, &i.Current); err != nil {
+	if err := json.Unmarshal(current, &currentInfo); err != nil {
 		return err
 	}
-	i.debug("UnmarshalJSON", "%v", i)
 	return nil
 }
 
-func (i index) openDisk(pt Path) (*File, error) {
-	i.debug("openDisk", pt.String())
+func openDisk(pt Path) (*File, error) {
+	dubeg("openDisk", pt.String())
 	info, err := Info(pt.Pkg)
 	if err != nil {
 		return nil, err
@@ -169,23 +164,9 @@ func (i index) openDisk(pt Path) (*File, error) {
 		return nil, err
 	}
 	f := &File{
-		info: WithName(pt.Name, NewFileInfo(fi)),
+		info: WithName(strings.TrimPrefix(pt.Name, "/"), NewFileInfo(fi)),
 		her:  info,
 		path: pt,
 	}
 	return f, nil
 }
-
-func newIndex() *index {
-	return &index{
-		Files: &filesMap{},
-		Infos: &infosMap{},
-		Paths: &pathsMap{},
-		once:  &sync.Once{},
-	}
-}
-
-var rootIndex = func() *index {
-	i := newIndex()
-	return i
-}()

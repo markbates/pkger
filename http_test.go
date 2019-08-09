@@ -80,11 +80,7 @@ func Test_HTTP_File_Memory(t *testing.T) {
 func Test_HTTP_Dir_Memory(t *testing.T) {
 	r := require.New(t)
 
-	i := rootIndex
-
-	rr, err := i.Parse("/public/radio.radio")
-	r.NoError(err)
-	f, err := i.Create(rr)
+	f, err := Create("/public/radio.radio")
 	r.NoError(err)
 	f.Write([]byte(radio))
 	r.NoError(f.Close())
@@ -92,10 +88,7 @@ func Test_HTTP_Dir_Memory(t *testing.T) {
 	r.Equal([]byte(radio), f.data)
 	r.Contains(string(f.data), "I wanna bite the hand that feeds me")
 
-	pt, err := i.Parse("/public")
-	r.NoError(err)
-
-	dir, err := i.Open(pt)
+	dir, err := Open("/public")
 	r.NoError(err)
 	r.NoError(dir.Close())
 

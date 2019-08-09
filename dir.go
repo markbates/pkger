@@ -5,15 +5,11 @@ import (
 	"path/filepath"
 )
 
-func MkdirAll(path string, perm os.FileMode) error {
-	pt, err := rootIndex.Parse(path)
+func MkdirAll(p string, perm os.FileMode) error {
+	path, err := Parse(p)
 	if err != nil {
 		return err
 	}
-	return rootIndex.MkdirAll(pt, perm)
-}
-
-func (i *index) MkdirAll(path Path, perm os.FileMode) error {
 	root := path.Name
 
 	for root != "" && root != "/" {
@@ -21,7 +17,7 @@ func (i *index) MkdirAll(path Path, perm os.FileMode) error {
 			Pkg:  path.Pkg,
 			Name: root,
 		}
-		f, err := i.Create(pt)
+		f, err := Create(pt.String())
 		if err != nil {
 			return err
 		}
@@ -31,7 +27,7 @@ func (i *index) MkdirAll(path Path, perm os.FileMode) error {
 		if err := f.Close(); err != nil {
 			return err
 		}
-		i.Files.Store(pt, f)
+		filesCache.Store(pt, f)
 		root = filepath.Dir(root)
 	}
 

@@ -7,10 +7,6 @@ import (
 
 var pathrx = regexp.MustCompile("([^:]+)(:(/.+))?")
 
-func Parse(p string) (Path, error) {
-	return rootIndex.Parse(p)
-}
-
 func build(p, pkg, name string) (Path, error) {
 	pt := Path{
 		Pkg:  pkg,
@@ -39,6 +35,6 @@ func build(p, pkg, name string) (Path, error) {
 	if !strings.HasPrefix(pt.Name, "/") {
 		pt.Name = "/" + pt.Name
 	}
-	rootIndex.Paths.Store(p, pt)
+	pathsCache.Store(p, pt)
 	return pt, nil
 }

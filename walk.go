@@ -16,12 +16,7 @@ func Walk(p string, wf WalkFunc) error {
 	if err != nil {
 		return err
 	}
-	return rootIndex.Walk(pt, wf)
-}
-
-func (i index) Walk(pt Path, wf WalkFunc) error {
-	var err error
-	i.Files.Range(func(k Path, v *File) bool {
+	filesCache.Range(func(k Path, v *File) bool {
 		if k.Pkg != pt.Pkg {
 			return true
 		}
