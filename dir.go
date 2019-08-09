@@ -23,7 +23,6 @@ func MkdirAll(p string, perm os.FileMode) error {
 			Name: root,
 		}
 		if _, ok := filesCache.Load(pt); ok {
-			panic(pt)
 			root = filepath.Dir(root)
 			continue
 		}

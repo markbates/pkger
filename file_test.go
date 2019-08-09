@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -70,6 +71,11 @@ func Test_File_Write(t *testing.T) {
 	r.NoError(err)
 	r.Equal(int64(1381), sz)
 
+	// because windows can't handle the time precisely
+	// enough, we have to *force* just a smidge of time
+	// to ensure the two ModTime's are different.
+	// i know, i hate it too.
+	time.Sleep(time.Millisecond)
 	r.NoError(f.Close())
 	r.Equal(int64(1381), fi.Size())
 	r.NotZero(fi.ModTime())
