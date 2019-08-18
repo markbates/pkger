@@ -16,4 +16,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	err = pkger.Walk("/", func(path pkger.Path, info os.FileInfo) error {
+		fmt.Println(path)
+		return nil
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 }
