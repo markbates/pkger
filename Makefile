@@ -1,12 +1,12 @@
 TAGS ?= ""
 GO_BIN ?= "go"
 
-tidy:
-	$(GO_BIN) mod tidy
-
 install: tidy
 	cd ./cmd/pkger && $(GO_BIN) install -tags ${TAGS} -v .
 	make tidy
+
+tidy:
+	$(GO_BIN) mod tidy
 
 build: tidy
 	$(GO_BIN) build -v .

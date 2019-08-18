@@ -45,25 +45,9 @@ func Parse(name string) (Results, error) {
 		root = filepath.Join(her.Dir, root)
 	}
 
-	if !strings.HasPrefix(root, her.Dir) {
-		_, err = os.Stat(filepath.Join(root, "go.mod"))
-		if err == nil {
-			return Results{}, nil
-		}
-	}
-
 	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
-		}
-
-		if info.IsDir() {
-			if path != her.Dir {
-				_, err = os.Stat(filepath.Join(path, "go.mod"))
-				if err == nil {
-					return filepath.SkipDir
-				}
-			}
 		}
 
 		base := filepath.Base(path)
@@ -154,23 +138,9 @@ func sourceFiles(pt pkger.Path) ([]pkger.Path, error) {
 		return res, nil
 	}
 
-	c, err := pkger.Stat()
-	if err != nil {
-		return res, err
-	}
-
 	err = filepath.Walk(fp, func(p string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
-		}
-
-		if info.IsDir() {
-			if p != c.Dir {
-				_, err = os.Stat(filepath.Join(p, "go.mod"))
-				if err == nil {
-					return filepath.SkipDir
-				}
-			}
 		}
 
 		base := filepath.Base(p)

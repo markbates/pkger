@@ -20,6 +20,8 @@ var pathsCache = &pathsMap{}
 var curOnce = &sync.Once{}
 var currentInfo here.Info
 
+var packed bool
+
 var packMU = &sync.RWMutex{}
 
 func dubeg(key, format string, args ...interface{}) {
@@ -28,6 +30,7 @@ func dubeg(key, format string, args ...interface{}) {
 }
 
 func Unpack(ind string) error {
+	packed = true
 	packMU.Lock()
 	defer packMU.Unlock()
 	b, err := hex.DecodeString(ind)
