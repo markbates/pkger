@@ -3,9 +3,19 @@ package pkger
 import (
 	"io"
 	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 const curPkg = "github.com/markbates/pkger"
+
+func Test_ReadFile(t *testing.T) {
+	r := require.New(t)
+	b, err := ReadFile("/LICENSE")
+	r.NoError(err)
+	r.Contains(string(b), "MIT")
+}
 
 func createFile(p string, body ...string) (*File, error) {
 	if len(body) == 0 {

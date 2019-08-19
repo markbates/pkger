@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"sync"
 
@@ -23,6 +24,15 @@ var currentInfo here.Info
 var packed bool
 
 var packMU = &sync.RWMutex{}
+
+func ReadFile(s string) ([]byte, error) {
+	f, err := Open(s)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return ioutil.ReadAll(f)
+}
 
 func dubeg(key, format string, args ...interface{}) {
 	s := fmt.Sprintf(format, args...)
