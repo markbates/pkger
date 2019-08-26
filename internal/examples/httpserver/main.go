@@ -12,17 +12,17 @@ import (
 )
 
 func main() {
-	f, err := pkger.Open("github.com/gobuffalo/buffalo")
+	dir, err := pkger.Open("/public")
 	if err != nil {
 		log.Fatal("1", err)
 	}
-	defer f.Close()
+	defer dir.Close()
 
-	fmt.Println(f.Path())
+	fmt.Println(dir.Path())
 
 	go func() {
 		time.Sleep(1 * time.Second)
-		res, err := http.Get("http://127.0.0.1:3000/app.go")
+		res, err := http.Get("http://127.0.0.1:3000/assets/radio.radio")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -39,5 +39,5 @@ func main() {
 
 	}()
 
-	log.Fatal(http.ListenAndServe(":3000", http.FileServer(f)))
+	log.Fatal(http.ListenAndServe(":3000", http.StripPrefix("/assets/", http.FileServer(dir))))
 }

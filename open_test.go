@@ -77,25 +77,13 @@ func Test_Open_File_Memory(t *testing.T) {
 
 }
 
-func Test_Open_Dir_Memory(t *testing.T) {
+func Test_Open_Dir_StripPrefix(t *testing.T) {
 	r := require.New(t)
 
-	f, err := Create("/public/radio.radio")
-	r.NoError(err)
-	f.Write([]byte(radio))
-	r.NoError(f.Close())
-
-	r.Equal([]byte(radio), f.data)
-	r.Contains(string(f.data), "I wanna bite the hand that feeds me")
-
-	dir, err := Open("/public")
-	r.NoError(err)
-	r.NoError(dir.Close())
-
-	ts := httptest.NewServer(http.FileServer(dir))
+	ts := httptest.NewServer(http.StripPrefix("/assets/", http.FileServer(http.Dir("./testdata/public"))))
 	defer ts.Close()
 
-	res, err := http.Get(ts.URL + "/radio.radio")
+	res, err := http.Get(ts.URL + "/assets/radio.radio")
 	r.NoError(err)
 	r.Equal(200, res.StatusCode)
 
@@ -103,11 +91,43 @@ func Test_Open_Dir_Memory(t *testing.T) {
 	// r.NoError(err)
 	r.Contains(string(b), "I wanna bite the hand that feeds me")
 
-	res, err = http.Get(ts.URL + "/")
+	res, err = http.Get(ts.URL + "/assets/")
+	r.NoError(err)
+	r.Equal(200, res.StatusCode)
+
+	b, _ = ioutil.ReadAll(res.Body)
+	// r.NoError(err)
+	r.Contains(string(b), `<a href="radio.radio">radio.radio</a>`)
+}
+
+func Test_Open_Dir_Memory_StripPrefix(t *testing.T) {
+	r := require.New(t)
+
+	err := MkdirAll("/testdata/public", 0755)
+	r.NoError(err)
+
+	dir, err := Open("/testdata/public")
+	r.NoError(err)
+	defer dir.Close()
+
+	ts := httptest.NewServer(http.StripPrefix("/assets/", http.FileServer(dir)))
+	defer ts.Close()
+
+	res, err := http.Get(ts.URL + "/assets/radio.radio")
+	r.NoError(err)
+	r.Equal(200, res.StatusCode)
+
+	b, _ := ioutil.ReadAll(res.Body)
+	// r.NoError(err)
+	r.Contains(string(b), "I wanna bite the hand that feeds me")
+
+	res, err = http.Get(ts.URL + "/assets/")
 	r.NoError(err)
 	r.Equal(200, res.StatusCode)
 
 	b, _ = ioutil.ReadAll(res.Body)
 	// r.NoError(err)
 	r.Contains(string(b), `<a href="/radio.radio">/radio.radio</a>`)
+	r.NotContains(string(b), `/public`)
+	r.NotContains(string(b), `//`)
 }
