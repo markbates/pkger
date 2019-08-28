@@ -10,25 +10,24 @@ import (
 	"github.com/markbates/pkger"
 )
 
-type readOptions struct {
+type readCmd struct {
 	*flag.FlagSet
 	JSON bool
 }
 
-var readFlags = func() *readOptions {
-	rd := &readOptions{}
-	fs := flag.NewFlagSet("read", flag.ExitOnError)
-	fs.BoolVar(&rd.JSON, "json", false, "print as JSON")
-	rd.FlagSet = fs
-	return rd
-}()
+func (s *readCmd) Name() string {
+	return s.Flags().Name()
+}
 
-func read(args []string) error {
-	if err := readFlags.Parse(args); err != nil {
-		return err
+func (r *readCmd) Flags() *flag.FlagSet {
+	if r.FlagSet == nil {
+		r.FlagSet = flag.NewFlagSet("pkger read", flag.ExitOnError)
+		r.FlagSet.BoolVar(&r.JSON, "json", false, "print as JSON")
 	}
-	args = readFlags.Args()
+	return r.FlagSet
+}
 
+func (r *readCmd) Exec(args []string) error {
 	if len(args) == 0 {
 		args = []string{"."}
 	}
@@ -44,10 +43,10 @@ func read(args []string) error {
 			return err
 		}
 
-		if fi.IsDir() && !readFlags.JSON {
+		if fi.IsDir() && !r.JSON {
 			return fmt.Errorf("can not read a dir %s", a)
 		}
-		if readFlags.JSON {
+		if r.JSON {
 			err = json.NewEncoder(os.Stdout).Encode(f)
 			if err != nil {
 				return err

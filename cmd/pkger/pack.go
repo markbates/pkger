@@ -11,25 +11,16 @@ import (
 
 const outName = "pkged.go"
 
-type packOptions struct {
+type packCmd struct {
 	*flag.FlagSet
-	List bool
+	list bool
 }
 
-var packFlags = func() *packOptions {
-	rd := &packOptions{}
-	fs := flag.NewFlagSet("", flag.ExitOnError)
-	fs.BoolVar(&rd.List, "list", false, "prints a list of files/dirs to be packaged")
-	rd.FlagSet = fs
-	return rd
-}()
+func (e *packCmd) Name() string {
+	return e.Flags().Name()
+}
 
-func pack(args []string) error {
-	if err := packFlags.Parse(args); err != nil {
-		return err
-	}
-	args = packFlags.Args()
-
+func (e *packCmd) Exec(args []string) error {
 	info, err := pkger.Stat()
 	if err != nil {
 		return err
@@ -40,7 +31,7 @@ func pack(args []string) error {
 		return err
 	}
 
-	if packFlags.List {
+	if e.list {
 		fmt.Println(res.Path)
 
 		for _, p := range res.Paths {
@@ -57,6 +48,14 @@ func pack(args []string) error {
 	}
 
 	return nil
+}
+
+func (e *packCmd) Flags() *flag.FlagSet {
+	if e.FlagSet == nil {
+		e.FlagSet = flag.NewFlagSet("pkger", flag.ExitOnError)
+		e.BoolVar(&e.list, "list", false, "prints a list of files/dirs to be packaged")
+	}
+	return e.FlagSet
 }
 
 func Package(out string, paths []pkger.Path) error {

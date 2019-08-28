@@ -44,7 +44,7 @@ func Test_Open_Dir(t *testing.T) {
 
 	b, err := ioutil.ReadAll(res.Body)
 	r.NoError(err)
-	r.Contains(string(b), `<a href="/main.go">/main.go</a>`)
+	r.Contains(string(b), `<a href="/cmd/pkger/main.go">/cmd/pkger/main.go</a>`)
 
 	r.NoError(f.Close())
 }

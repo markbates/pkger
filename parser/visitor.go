@@ -39,6 +39,7 @@ func (v *visitor) Run() ([]pkger.Path, error) {
 }
 
 func (v *visitor) addPath(p string) error {
+
 	p, _ = strconv.Unquote(p)
 	pt, err := pkger.Parse(p)
 	if err != nil {

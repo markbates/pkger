@@ -1,12 +1,28 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 
 	"github.com/markbates/pkger"
 )
 
-func info(args []string) error {
+type infoCmd struct {
+	*flag.FlagSet
+}
+
+func (s *infoCmd) Name() string {
+	return s.Flags().Name()
+}
+
+func (f *infoCmd) Flags() *flag.FlagSet {
+	if f.FlagSet == nil {
+		f.FlagSet = flag.NewFlagSet("pkger info", flag.ExitOnError)
+	}
+	return f.FlagSet
+}
+
+func (f *infoCmd) Exec(args []string) error {
 	if len(args) == 0 {
 		args = []string{"."}
 	}

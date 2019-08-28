@@ -7,11 +7,12 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/markbates/pkger/here"
-	"github.com/markbates/pkger/internal/debug"
 )
 
 const timeFmt = time.RFC3339Nano
@@ -19,13 +20,14 @@ const timeFmt = time.RFC3339Nano
 var _ http.File = &File{}
 
 type File struct {
-	info   *FileInfo
-	her    here.Info
-	path   Path
-	data   []byte
-	parent Path
-	writer *bytes.Buffer
-	reader io.Reader
+	info     *FileInfo
+	her      here.Info
+	path     Path
+	data     []byte
+	parent   Path
+	writer   *bytes.Buffer
+	reader   io.Reader
+	excludes []string
 }
 
 func (f *File) Seek(offset int64, whence int) (int64, error) {
@@ -135,14 +137,23 @@ func (f File) Format(st fmt.State, verb rune) {
 
 func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 	var infos []os.FileInfo
-	defer func() {
-		fmt.Println(f.Name(), len(infos))
-	}()
 	err := Walk(f.Name(), func(pt Path, info os.FileInfo) error {
 		if count > 0 && len(infos) == count {
 			return io.EOF
 		}
-		debug.Debug("[PKGER] [*file|Readdir] %d %q %q", count, f, pt)
+
+		for _, x := range f.excludes {
+			rx, err := regexp.Compile(x)
+			if err != nil {
+				return err
+			}
+			if rx.MatchString(pt.Name) {
+				if info.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+		}
 
 		if pt.Name == f.parent.Name {
 			return nil

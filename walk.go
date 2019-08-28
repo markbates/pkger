@@ -63,7 +63,7 @@ func Walk(p string, wf WalkFunc) error {
 		if err != nil {
 			return err
 		}
-		return wf(pt, NewFileInfo(fi))
+		return wf(pt, WithName(path, NewFileInfo(fi)))
 	})
 
 	return err

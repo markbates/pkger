@@ -1,23 +1,47 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/markbates/pkger"
 )
 
-func serve(args []string) error {
+type serveCmd struct {
+	*flag.FlagSet
+	excludes arrayFlags
+}
+
+func (s *serveCmd) Name() string {
+	return s.Flags().Name()
+}
+
+func (f *serveCmd) Flags() *flag.FlagSet {
+	if f.FlagSet == nil {
+		f.FlagSet = flag.NewFlagSet("pkger serve", flag.ExitOnError)
+		f.Var(&f.excludes, "exclude", "slice of regexp patterns to exclude")
+	}
+	return f.FlagSet
+}
+
+var defaultExcludes = []string{"testdata", "node_modules", "(\\/|\\\\)_.+", "(\\/|\\\\)\\.git.*", ".DS_Store"}
+
+func (s *serveCmd) Exec(args []string) error {
 	if len(args) == 0 {
 		args = []string{"."}
 	}
+
 	f, err := pkger.Open(args[0])
 	if err != nil {
-		log.Fatal("1", err)
+		return err
+	}
+
+	ex := append(defaultExcludes, s.excludes...)
+	if err := pkger.Exclude(f, ex...); err != nil {
+		return err
 	}
 	defer f.Close()
-
 	fmt.Println(f.Path())
 
 	return http.ListenAndServe(":3000", http.FileServer(f))

@@ -28,11 +28,11 @@ func main() {
 	mux.Handle("/logo", http.StripPrefix("/logo", logoHandler()))
 	mux.Handle("/", http.FileServer(pub))
 
-	f, err := pkger.Open("/public/images/mark.png")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
+	// f, err := pkger.Open("/public/images/mark.png")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// defer f.Close()
 
 	// lcl, err := os.Create("me.png")
 	// if err != nil {

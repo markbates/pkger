@@ -31,6 +31,7 @@ func (f *File) Open(name string) (http.File, error) {
 	}
 	if fi.IsDir() {
 		di.parent = f.path
+		di.excludes = f.excludes
 	}
 	return di, nil
 }
