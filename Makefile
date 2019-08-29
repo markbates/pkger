@@ -6,7 +6,7 @@ install: tidy
 	make tidy
 
 tidy:
-	$(GO_BIN) mod tidy
+	$(GO_BIN) mod tidy -v
 
 build: tidy
 	$(GO_BIN) build -v .
