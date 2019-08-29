@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -62,10 +63,11 @@ func Parse(name string) (Results, error) {
 		}
 
 		if info.IsDir() {
-			pt := pkger.Path{
-				Pkg:  her.ImportPath,
-				Name: strings.TrimPrefix(path, her.Dir),
+			pt, err := pkger.Parse(fmt.Sprintf("%s:%s", her.ImportPath, strings.TrimPrefix(path, her.Dir)))
+			if err != nil {
+				return err
 			}
+
 			m[pt] = true
 			return nil
 		}
@@ -163,6 +165,7 @@ func sourceFiles(pt pkger.Path) ([]pkger.Path, error) {
 		}
 
 		n := strings.TrimPrefix(p, her.Dir)
+		n = strings.Replace(n, "\\", "/", -1)
 		pt := pkger.Path{
 			Name: n,
 		}

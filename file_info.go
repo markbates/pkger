@@ -80,9 +80,6 @@ func (f *FileInfo) UnmarshalJSON(b []byte) error {
 }
 
 func (f *FileInfo) Name() string {
-	if !strings.HasPrefix(f.name, "/") {
-		f.name = "/" + f.name
-	}
 	return f.name
 }
 
@@ -110,7 +107,7 @@ var _ os.FileInfo = &FileInfo{}
 
 func NewFileInfo(info os.FileInfo) *FileInfo {
 	fi := &FileInfo{
-		name:    info.Name(),
+		name:    cleanName(info.Name()),
 		size:    info.Size(),
 		mode:    info.Mode(),
 		modTime: info.ModTime(),
@@ -122,11 +119,21 @@ func NewFileInfo(info os.FileInfo) *FileInfo {
 
 func WithName(name string, info os.FileInfo) *FileInfo {
 	if ft, ok := info.(*FileInfo); ok {
-		ft.name = name
+		ft.name = cleanName(name)
 		return ft
 	}
 
 	fo := NewFileInfo(info)
-	fo.name = name
+	fo.name = cleanName(name)
 	return fo
+}
+
+func cleanName(s string) string {
+	if strings.Contains(s, "\\") {
+		s = strings.Replace(s, "\\", "/", -1)
+	}
+	if !strings.HasPrefix(s, "/") {
+		s = "/" + s
+	}
+	return s
 }
