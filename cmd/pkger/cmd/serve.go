@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"flag"
@@ -19,7 +19,7 @@ func (s *serveCmd) Name() string {
 
 func (f *serveCmd) Flags() *flag.FlagSet {
 	if f.FlagSet == nil {
-		f.FlagSet = flag.NewFlagSet("pkger serve", flag.ExitOnError)
+		f.FlagSet = flag.NewFlagSet("serve", flag.ExitOnError)
 		f.Var(&f.excludes, "exclude", "slice of regexp patterns to exclude")
 	}
 	return f.FlagSet

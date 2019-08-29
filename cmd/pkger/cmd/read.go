@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"encoding/json"
@@ -21,7 +21,7 @@ func (s *readCmd) Name() string {
 
 func (r *readCmd) Flags() *flag.FlagSet {
 	if r.FlagSet == nil {
-		r.FlagSet = flag.NewFlagSet("pkger read", flag.ExitOnError)
+		r.FlagSet = flag.NewFlagSet("read", flag.ExitOnError)
 		r.FlagSet.BoolVar(&r.JSON, "json", false, "print as JSON")
 	}
 	return r.FlagSet

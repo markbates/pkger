@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"flag"
@@ -17,7 +17,7 @@ func (s *infoCmd) Name() string {
 
 func (f *infoCmd) Flags() *flag.FlagSet {
 	if f.FlagSet == nil {
-		f.FlagSet = flag.NewFlagSet("pkger info", flag.ExitOnError)
+		f.FlagSet = flag.NewFlagSet("info", flag.ExitOnError)
 	}
 	return f.FlagSet
 }
