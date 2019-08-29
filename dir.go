@@ -17,7 +17,7 @@ func MkdirAll(p string, perm os.FileMode) error {
 	if err != nil {
 		return err
 	}
-	for root != "" && root != "/" {
+	for root != "" && root != "/" && root != "\\" {
 		pt := Path{
 			Pkg:  path.Pkg,
 			Name: root,
@@ -37,7 +37,6 @@ func MkdirAll(p string, perm os.FileMode) error {
 			},
 		}
 
-		filesCache.Store(pt, f)
 		if err != nil {
 			return err
 		}

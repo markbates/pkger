@@ -2,6 +2,7 @@ package parser
 
 import (
 	"os"
+	"path/filepath"
 	"sort"
 	"testing"
 
@@ -30,7 +31,7 @@ func Test_Parser(t *testing.T) {
 	r := require.New(t)
 	pwd, err := os.Getwd()
 	r.NoError(err)
-	r.NoError(os.Chdir("../internal/examples/app"))
+	r.NoError(os.Chdir(filepath.Join("..", "internal", "examples", "app")))
 	defer os.Chdir(pwd)
 
 	res, err := Parse("")
@@ -38,7 +39,6 @@ func Test_Parser(t *testing.T) {
 	r.NoError(err)
 
 	exp := []string{
-		"github.com/gobuffalo/buffalo:/logo.svg",
 		"github.com/markbates/pkger/internal/examples/app:/",
 		"github.com/markbates/pkger/internal/examples/app:/public",
 		"github.com/markbates/pkger/internal/examples/app:/templates",
