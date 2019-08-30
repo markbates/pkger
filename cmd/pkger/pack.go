@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"flag"
@@ -13,8 +13,7 @@ const outName = "pkged.go"
 
 type packCmd struct {
 	*flag.FlagSet
-	list    bool
-	subCmds []command
+	list bool
 }
 
 func (e *packCmd) Name() string {
@@ -22,21 +21,6 @@ func (e *packCmd) Name() string {
 }
 
 func (e *packCmd) Exec(args []string) error {
-	if len(args) > 0 {
-		a := args[0]
-		for _, c := range e.subCmds {
-			if a == c.Name() {
-				return c.Exec(args[1:])
-			}
-		}
-	}
-	return e.pack(args)
-}
-
-func (e *packCmd) pack(args []string) error {
-	e.Flags().Parse(args)
-	args = e.Args()
-
 	info, err := pkger.Stat()
 	if err != nil {
 		return err
@@ -67,7 +51,6 @@ func (e *packCmd) pack(args []string) error {
 }
 
 func (e *packCmd) Flags() *flag.FlagSet {
-
 	if e.FlagSet == nil {
 		e.FlagSet = flag.NewFlagSet("pkger", flag.ExitOnError)
 		e.BoolVar(&e.list, "list", false, "prints a list of files/dirs to be packaged")
