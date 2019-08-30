@@ -4,14 +4,10 @@ import (
 	"bytes"
 	"os"
 	"os/exec"
-
-	"github.com/markbates/pkger/internal/debug"
 )
 
 func run(n string, args ...string) ([]byte, error) {
 	c := exec.Command(n, args...)
-
-	debug.Debug("[HERE] %s", c.Args)
 
 	bb := &bytes.Buffer{}
 	c.Stdout = bb

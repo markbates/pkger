@@ -42,7 +42,6 @@ func Open(name string) (*File, error) {
 		return nil, err
 	}
 
-	dubeg("Open", pt.String())
 	f, ok := filesCache.Load(pt)
 	if !ok {
 		return openDisk(pt)
@@ -58,7 +57,6 @@ func Open(name string) (*File, error) {
 }
 
 func openDisk(pt Path) (*File, error) {
-	dubeg("openDisk", pt.String())
 	info, err := Info(pt.Pkg)
 	if err != nil {
 		return nil, err

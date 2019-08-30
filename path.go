@@ -14,7 +14,6 @@ type Path struct {
 }
 
 func Parse(p string) (Path, error) {
-	dubeg("Parse", p)
 	p = strings.Replace(p, "\\", "/", -1)
 	pt, ok := pathsCache.Load(p)
 	if ok {

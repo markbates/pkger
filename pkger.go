@@ -12,7 +12,6 @@ import (
 	"sync"
 
 	"github.com/markbates/pkger/here"
-	"github.com/markbates/pkger/internal/debug"
 )
 
 var filesCache = &filesMap{}
@@ -32,11 +31,6 @@ func ReadFile(s string) ([]byte, error) {
 	}
 	defer f.Close()
 	return ioutil.ReadAll(f)
-}
-
-func dubeg(key, format string, args ...interface{}) {
-	s := fmt.Sprintf(format, args...)
-	debug.Debug("[%s|%s] %s", key, s)
 }
 
 func Unpack(ind string) error {
@@ -99,7 +93,6 @@ func Pack(out io.Writer, paths []Path) error {
 			continue
 		}
 
-		dubeg("Pack", "%s", p)
 		filesCache.Store(p, f)
 		f.Close()
 
