@@ -1,30 +1,34 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
 )
 
 func main() {
-	defer func() {
+	clean := func() {
 		c := exec.Command("go", "mod", "tidy", "-v")
-		fmt.Println(c.Args)
 		c.Stdout = os.Stdout
 		c.Stderr = os.Stderr
 		c.Stdin = os.Stdin
 		c.Run()
-	}()
+	}
+	defer clean()
 
+	if err := run(); err != nil {
+		clean()
+		log.Fatal(err)
+	}
+}
+
+func run() error {
 	root, err := New()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	if err := root.Route(os.Args[1:]); err != nil {
-		log.Fatal(err)
-	}
+	return root.Route(os.Args[1:])
 }
 
 // does not computee
