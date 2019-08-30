@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	dir, err := pkger.Open("/public")
+	dir, err := pkger.Open(".:/public")
 	if err != nil {
 		log.Fatal("1", err)
 	}

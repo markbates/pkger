@@ -4,27 +4,31 @@ import (
 	"fmt"
 	"go/ast"
 	"strconv"
+	"strings"
 
 	"github.com/markbates/pkger"
+	"github.com/markbates/pkger/here"
 )
 
 type visitor struct {
 	File   string
 	Found  map[pkger.Path]bool
+	info   here.Info
 	errors []error
 }
 
-func newVisitor(p string) (*visitor, error) {
+func newVisitor(p string, info here.Info) (*visitor, error) {
 	return &visitor{
 		File:  p,
 		Found: map[pkger.Path]bool{},
+		info:  info,
 	}, nil
 }
 
 func (v *visitor) Run() ([]pkger.Path, error) {
 	pf, err := parseFile(v.File)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %v", v.File, err)
 	}
 
 	ast.Walk(v, pf.Ast)
@@ -39,11 +43,13 @@ func (v *visitor) Run() ([]pkger.Path, error) {
 }
 
 func (v *visitor) addPath(p string) error {
-
 	p, _ = strconv.Unquote(p)
 	pt, err := pkger.Parse(p)
 	if err != nil {
 		return err
+	}
+	if strings.HasPrefix(p, ":") {
+		pt.Pkg = v.info.ImportPath
 	}
 
 	v.Found[pt] = true

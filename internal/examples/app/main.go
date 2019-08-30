@@ -12,7 +12,7 @@ import (
 func main() {
 	mux := http.NewServeMux()
 
-	pub, err := pkger.Open("/public")
+	pub, err := pkger.Open(":/public")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,7 +32,7 @@ func main() {
 
 func tmplHandler() http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		t, err := pkger.Open("/templates/a.txt")
+		t, err := pkger.Open(":/templates/a.txt")
 		if err != nil {
 			http.Error(res, err.Error(), 500)
 		}
@@ -41,4 +41,3 @@ func tmplHandler() http.HandlerFunc {
 		io.Copy(res, t)
 	}
 }
-

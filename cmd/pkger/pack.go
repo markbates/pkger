@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 
 	"github.com/markbates/pkger"
 	"github.com/markbates/pkger/parser"
@@ -13,7 +14,9 @@ const outName = "pkged.go"
 
 type packCmd struct {
 	*flag.FlagSet
+	help bool
 	list bool
+	subs []command
 }
 
 func (e *packCmd) Name() string {
@@ -50,11 +53,66 @@ func (e *packCmd) Exec(args []string) error {
 	return nil
 }
 
+func (e *packCmd) Route(args []string) error {
+	e.Parse(args)
+
+	if e.help {
+		e.Usage()
+		return nil
+	}
+
+	args = e.Args()
+
+	if len(args) == 0 {
+		return e.Exec(args)
+	}
+
+	k := args[0]
+	for _, c := range e.subs {
+		if k == c.Name() {
+			args = args[1:]
+			for _, a := range args {
+				if a == "-h" {
+					Usage(os.Stderr, c.Flags())()
+					return nil
+				}
+			}
+			return c.Exec(args)
+		}
+	}
+
+	return e.Exec(args)
+}
+
+func New() (*packCmd, error) {
+	c := &packCmd{}
+
+	c.subs = []command{
+		&readCmd{}, &serveCmd{}, &infoCmd{},
+	}
+	sort.Slice(c.subs, func(a, b int) bool {
+		return c.subs[a].Name() <= c.subs[b].Name()
+	})
+
+	c.FlagSet = flag.NewFlagSet("pkger", flag.ExitOnError)
+	c.BoolVar(&c.list, "list", false, "prints a list of files/dirs to be packaged")
+	c.BoolVar(&c.help, "h", false, "prints help information")
+	c.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage:\n\n")
+		Usage(os.Stderr, c.FlagSet)()
+		for _, s := range c.subs {
+			Usage(os.Stderr, s.Flags())()
+		}
+	}
+	return c, nil
+}
+
 func (e *packCmd) Flags() *flag.FlagSet {
 	if e.FlagSet == nil {
-		e.FlagSet = flag.NewFlagSet("pkger", flag.ExitOnError)
+		e.FlagSet = flag.NewFlagSet("", flag.ExitOnError)
 		e.BoolVar(&e.list, "list", false, "prints a list of files/dirs to be packaged")
 	}
+	e.Usage = Usage(os.Stderr, e.FlagSet)
 	return e.FlagSet
 }
 

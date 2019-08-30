@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/markbates/pkger"
+	"github.com/markbates/pkger/here"
 )
 
 var DefaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "_fixtures", "testdata"}
@@ -19,7 +20,7 @@ func Parse(name string) (Results, error) {
 		return r, err
 	}
 
-	if name == "" || name == "." {
+	if name == "" {
 		name = c.ImportPath
 	}
 
@@ -63,7 +64,14 @@ func Parse(name string) (Results, error) {
 		}
 
 		if info.IsDir() {
-			pt, err := pkger.Parse(fmt.Sprintf("%s:%s", her.ImportPath, strings.TrimPrefix(path, her.Dir)))
+			if _, err := os.Stat(filepath.Join(path, "go.mod")); err == nil {
+				her, err = here.Dir(path)
+				if err != nil {
+					return err
+				}
+			}
+			n := fmt.Sprintf("%s:%s", her.ImportPath, strings.TrimPrefix(path, her.Dir))
+			pt, err := pkger.Parse(n)
 			if err != nil {
 				return err
 			}
@@ -77,7 +85,7 @@ func Parse(name string) (Results, error) {
 			return nil
 		}
 
-		v, err := newVisitor(path)
+		v, err := newVisitor(path, her)
 		if err != nil {
 			return err
 		}
@@ -88,6 +96,9 @@ func Parse(name string) (Results, error) {
 		}
 
 		for _, p := range found {
+			if p.Pkg == "." {
+				p.Pkg = her.ImportPath
+			}
 			if _, ok := m[p]; ok {
 				continue
 			}
