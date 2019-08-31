@@ -16,6 +16,11 @@ test: tidy
 	$(GO_BIN) test -cover -tags ${TAGS} -timeout 5s ./...
 	make tidy
 
+cov:
+	$(GO_BIN) test -coverprofile cover.out -tags ${TAGS} ./...
+	go tool cover -html cover.out
+	make tidy
+
 ci-test:
 	$(GO_BIN) test -tags ${TAGS} -race ./...
 
@@ -41,6 +46,5 @@ release:
 	make tidy
 	release -y -f version.go --skip-packr
 	make tidy
-
 
 

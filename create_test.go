@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Testg_Create(t *testing.T) {
+func Test_Create(t *testing.T) {
 	r := require.New(t)
 
 	f, err := Create("/hello.txt")
@@ -28,7 +28,7 @@ func Testg_Create(t *testing.T) {
 	r.Equal("github.com/markbates/pkger", her.ImportPath)
 }
 
-func Testg_Create_Write(t *testing.T) {
+func Test_Create_Write(t *testing.T) {
 	r := require.New(t)
 
 	f, err := Create("/hello.txt")
