@@ -1,4 +1,4 @@
-package memfs
+package memwh
 
 // func Test_Walk(t *testing.T) {
 // 	r := require.New(t)

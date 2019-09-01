@@ -1,4 +1,4 @@
-package memfs
+package memwh
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package memfs
+package memwh
 
 // func Test_HTTP_Dir(t *testing.T) {
 // 	r := require.New(t)
