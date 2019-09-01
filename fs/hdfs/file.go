@@ -3,6 +3,7 @@ package hdfs
 import (
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/markbates/pkger/fs"
 	"github.com/markbates/pkger/here"
@@ -20,12 +21,16 @@ type File struct {
 }
 
 func NewFile(fx fs.FileSystem, osf *os.File) (*File, error) {
-	info, err := osf.Stat()
+
+	cur, err := fx.Current()
 	if err != nil {
 		return nil, err
 	}
+	pt := fs.Path{
+		Name: strings.TrimPrefix(osf.Name(), cur.Dir),
+	}
 
-	pt, err := fx.Parse(info.Name())
+	info, err := osf.Stat()
 	if err != nil {
 		return nil, err
 	}

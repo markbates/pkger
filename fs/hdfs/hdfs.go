@@ -36,6 +36,9 @@ func (fx *FS) Create(name string) (fs.File, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := fx.MkdirAll(filepath.Dir(name), 0755); err != nil {
+		return nil, err
+	}
 	f, err := os.Create(name)
 	if err != nil {
 		return nil, err
@@ -66,6 +69,7 @@ func (f *FS) MkdirAll(p string, perm os.FileMode) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println(">>>TODO fs/hdfs/hdfs.go:73: pp ", p)
 	return os.MkdirAll(p, perm)
 }
 
@@ -128,26 +132,5 @@ func (f *FS) Walk(p string, wf filepath.WalkFunc) error {
 }
 
 func (f *FS) locate(p string) (string, error) {
-	pt, err := f.Parse(p)
-	if err != nil {
-		return "", err
-	}
-
-	var info here.Info
-	if pt.Pkg == "." {
-		info, err = f.Current()
-		if err != nil {
-			return "", err
-		}
-		pt.Pkg = info.ImportPath
-	}
-
-	if info.IsZero() {
-		info, err = f.Info(pt.Pkg)
-		if err != nil {
-			return "", fmt.Errorf("%s: %s", pt, err)
-		}
-	}
-	fp := filepath.Join(info.Dir, pt.Name)
-	return fp, nil
+	return f.current.FilePath(p), nil
 }
