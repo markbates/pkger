@@ -1,4 +1,4 @@
-package hdwh
+package hdware
 
 import (
 	"path/filepath"

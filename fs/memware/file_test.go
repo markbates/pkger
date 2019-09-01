@@ -1,4 +1,4 @@
-package memwh
+package memware
 
 // func Test_File_Read_Memory(t *testing.T) {
 // 	r := require.New(t)

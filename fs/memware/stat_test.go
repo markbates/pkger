@@ -1,4 +1,4 @@
-package memwh
+package memware
 
 // func Test_Stat(t *testing.T) {
 // 	r := require.New(t)
