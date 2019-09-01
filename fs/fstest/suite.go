@@ -92,7 +92,11 @@ func (s *FileSystem) Test_Create(t *testing.T) {
 }
 
 func (s *FileSystem) Test_Current(t *testing.T) {
-	panic("not implemented")
+	r := require.New(t)
+
+	info, err := s.FS.Current()
+	r.NoError(err)
+	r.NotZero(info)
 }
 
 func (s *FileSystem) Test_Info(t *testing.T) {

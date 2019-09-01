@@ -15,9 +15,10 @@ var _ fs.FileSystem = &FS{}
 
 func New(info here.Info) (*FS, error) {
 	f := &FS{
-		infos: &maps.Infos{},
-		paths: &maps.Paths{},
-		files: &maps.Files{},
+		infos:   &maps.Infos{},
+		paths:   &maps.Paths{},
+		files:   &maps.Files{},
+		current: info,
 	}
 	return f, nil
 }
