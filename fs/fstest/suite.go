@@ -13,6 +13,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const mould = "/easy/listening/sugar.file"
+const hart = "/easy/listening/grant.hart"
+const husker = "github.com/husker/du"
+
 type FileSystem struct {
 	fs.FileSystem
 }
@@ -84,7 +88,7 @@ func (s *FileSystem) Clean() error {
 func (s *FileSystem) Test_Create(t *testing.T) {
 	r := require.New(t)
 
-	pt, err := s.Parse("/i/want/candy.song")
+	pt, err := s.Parse(mould)
 	r.NoError(err)
 
 	f, err := s.Create(pt.Name)
@@ -139,15 +143,15 @@ func (s *FileSystem) Test_Parse(t *testing.T) {
 		in  string
 		exp fs.Path
 	}{
-		{in: "/foo.go", exp: fs.Path{Pkg: ip, Name: "/foo.go"}},
-		{in: filepath.Join(cur.Dir, "foo.go"), exp: fs.Path{Pkg: ip, Name: "/foo.go"}},
-		{in: ":/foo.go", exp: fs.Path{Pkg: ip, Name: "/foo.go"}},
-		{in: ip + ":/foo.go", exp: fs.Path{Pkg: ip, Name: "/foo.go"}},
+		{in: mould, exp: fs.Path{Pkg: ip, Name: mould}},
+		{in: filepath.Join(cur.Dir, mould), exp: fs.Path{Pkg: ip, Name: mould}},
+		{in: ":" + mould, exp: fs.Path{Pkg: ip, Name: mould}},
+		{in: ip + ":" + mould, exp: fs.Path{Pkg: ip, Name: mould}},
 		{in: ip, exp: fs.Path{Pkg: ip, Name: "/"}},
 		{in: ":", exp: fs.Path{Pkg: ip, Name: "/"}},
-		{in: "github.com/old/97s:/foo.go", exp: fs.Path{Pkg: "github.com/old/97s", Name: "/foo.go"}},
-		{in: "github.com/old/97s", exp: fs.Path{Pkg: "github.com/old/97s", Name: "/"}},
-		{in: "github.com/old/97s:", exp: fs.Path{Pkg: "github.com/old/97s", Name: "/"}},
+		{in: husker + ":" + mould, exp: fs.Path{Pkg: husker, Name: mould}},
+		{in: husker, exp: fs.Path{Pkg: husker, Name: "/"}},
+		{in: husker + ":", exp: fs.Path{Pkg: husker, Name: "/"}},
 	}
 
 	for _, tt := range table {
@@ -165,22 +169,22 @@ func (s *FileSystem) Test_ReadFile(t *testing.T) {
 	panic("not implemented")
 }
 
-func (s *FileSystem) Test_Stat(t *testing.T) {
+func (s *FileSystem) Test_Stat_Error(t *testing.T) {
 	r := require.New(t)
 
 	cur, err := s.Current()
 	r.NoError(err)
 
 	ip := cur.ImportPath
+
 	table := []struct {
-		in  string
-		err bool
+		in string
 	}{
-		{in: "/foo.go", err: false},
-		{in: ":/foo.go", err: false},
-		{in: ip + ":/foo.go", err: false},
-		{in: ip, err: false},
-		{in: "/no.go", err: true},
+		{in: hart},
+		{in: ":" + hart},
+		{in: ip},
+		{in: ip + ":"},
+		{in: ip + ":" + hart},
 	}
 
 	for _, tt := range table {
@@ -193,21 +197,73 @@ func (s *FileSystem) Test_Stat(t *testing.T) {
 
 			r.NoError(s.RemoveAll(pt.String()))
 
-			if tt.err {
-				_, err := s.Stat(tt.in)
-				r.Error(err)
-				return
-			}
+			_, err = s.Stat(tt.in)
+			r.Error(err)
+		})
+	}
+}
 
-			isDir := filepath.Ext(pt.Name) == ""
+func (s *FileSystem) Test_Stat_Dir(t *testing.T) {
+	r := require.New(t)
 
-			if isDir {
-				r.NoError(s.MkdirAll(pt.Name, 0755))
-				info, err := s.Stat(tt.in)
-				r.NoError(err)
-				r.Equal(pt.Name, info.Name())
-				return
-			}
+	cur, err := s.Current()
+	r.NoError(err)
+
+	dir := filepath.Dir(mould)
+	ip := cur.ImportPath
+
+	table := []struct {
+		in string
+	}{
+		{in: ip},
+		{in: dir},
+		{in: ":" + dir},
+		{in: ip + ":" + dir},
+	}
+
+	for _, tt := range table {
+		t.Run(tt.in, func(st *testing.T) {
+
+			r := require.New(st)
+
+			pt, err := s.Parse(tt.in)
+			r.NoError(err)
+
+			r.NoError(s.RemoveAll(pt.String()))
+
+			r.NoError(s.MkdirAll(pt.Name, 0755))
+			info, err := s.Stat(tt.in)
+			r.NoError(err)
+			r.Equal(pt.Name, info.Name())
+		})
+	}
+}
+
+func (s *FileSystem) Test_Stat_File(t *testing.T) {
+	r := require.New(t)
+
+	cur, err := s.Current()
+	r.NoError(err)
+
+	ip := cur.ImportPath
+	table := []struct {
+		in string
+	}{
+		{in: mould},
+		{in: ":" + mould},
+		{in: ip + ":" + mould},
+		{in: hart},
+	}
+
+	for _, tt := range table {
+		t.Run(tt.in, func(st *testing.T) {
+
+			r := require.New(st)
+
+			pt, err := s.Parse(tt.in)
+			r.NoError(err)
+
+			r.NoError(s.RemoveAll(pt.String()))
 
 			f, err := s.Create(tt.in)
 			r.NoError(err)
