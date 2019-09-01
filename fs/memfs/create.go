@@ -23,7 +23,7 @@ func (fx *FS) Create(name string) (fs.File, error) {
 		info: &fs.FileInfo{
 			Details: fs.Details{
 				Name:    pt.Name,
-				Mode:    0666,
+				Mode:    0644,
 				ModTime: fs.ModTime(time.Now()),
 			},
 		},

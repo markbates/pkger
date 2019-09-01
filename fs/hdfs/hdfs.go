@@ -69,7 +69,6 @@ func (f *FS) MkdirAll(p string, perm os.FileMode) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(">>>TODO fs/hdfs/hdfs.go:73: pp ", p)
 	return os.MkdirAll(p, perm)
 }
 
@@ -133,4 +132,20 @@ func (f *FS) Walk(p string, wf filepath.WalkFunc) error {
 
 func (f *FS) locate(p string) (string, error) {
 	return f.current.FilePath(p), nil
+}
+
+func (fx *FS) Remove(name string) error {
+	name, err := fx.locate(name)
+	if err != nil {
+		return err
+	}
+	return os.Remove(name)
+}
+
+func (fx *FS) RemoveAll(name string) error {
+	name, err := fx.locate(name)
+	if err != nil {
+		return err
+	}
+	return os.RemoveAll(name)
 }

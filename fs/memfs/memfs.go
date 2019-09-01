@@ -1,7 +1,10 @@
 package memfs
 
 import (
+	"fmt"
 	"io/ioutil"
+	"os"
+	"strings"
 
 	"github.com/markbates/pkger/fs"
 	"github.com/markbates/pkger/here"
@@ -55,4 +58,48 @@ func (fx *FS) ReadFile(s string) ([]byte, error) {
 	}
 	defer f.Close()
 	return ioutil.ReadAll(f)
+}
+
+func (fx *FS) Remove(name string) error {
+	pt, err := fx.Parse(name)
+	if err != nil {
+		return err
+	}
+
+	if _, ok := fx.files.Load(pt); !ok {
+		return &os.PathError{"remove", pt.String(), fmt.Errorf("no such file or directory")}
+	}
+
+	fx.files.Delete(pt)
+	return nil
+}
+
+func (fx *FS) RemoveAll(name string) error {
+	pt, err := fx.Parse(name)
+	if err != nil {
+		return err
+	}
+
+	return fx.Walk("/", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !strings.HasPrefix(path, pt.String()) {
+			return nil
+		}
+
+		ph, err := fx.Parse(path)
+		if err != nil {
+			return err
+		}
+		fx.files.Delete(ph)
+		return nil
+	})
+	if _, ok := fx.files.Load(pt); !ok {
+		return &os.PathError{"remove", pt.String(), fmt.Errorf("no such file or directory")}
+	}
+
+	fx.files.Delete(pt)
+	return nil
 }
