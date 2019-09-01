@@ -185,7 +185,13 @@ func (s *FileSystem) Test_Stat(t *testing.T) {
 
 	for _, tt := range table {
 		t.Run(tt.in, func(st *testing.T) {
+
 			r := require.New(st)
+
+			pt, err := s.Parse(tt.in)
+			r.NoError(err)
+
+			r.NoError(s.RemoveAll(pt.String()))
 
 			if tt.err {
 				_, err := s.Stat(tt.in)
@@ -193,8 +199,15 @@ func (s *FileSystem) Test_Stat(t *testing.T) {
 				return
 			}
 
-			pt, err := s.Parse(tt.in)
-			r.NoError(err)
+			isDir := filepath.Ext(pt.Name) == ""
+
+			if isDir {
+				r.NoError(s.MkdirAll(pt.Name, 0755))
+				info, err := s.Stat(tt.in)
+				r.NoError(err)
+				r.Equal(pt.Name, info.Name())
+				return
+			}
 
 			f, err := s.Create(tt.in)
 			r.NoError(err)

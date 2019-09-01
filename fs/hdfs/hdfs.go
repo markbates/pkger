@@ -119,11 +119,24 @@ func (f *FS) ReadFile(s string) ([]byte, error) {
 }
 
 func (f *FS) Stat(name string) (os.FileInfo, error) {
-	name, err := f.Abs(name)
+	pt, err := f.Parse(name)
 	if err != nil {
 		return nil, err
 	}
-	return os.Stat(name)
+
+	abs, err := f.AbsPath(pt)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := os.Stat(abs)
+	if err != nil {
+		return nil, err
+	}
+
+	info = fs.WithName(pt.Name, fs.NewFileInfo(info))
+
+	return info, nil
 }
 
 func (f *FS) Walk(p string, wf filepath.WalkFunc) error {
