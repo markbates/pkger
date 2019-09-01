@@ -17,7 +17,7 @@ func Test_FS(t *testing.T) {
 	myfs.current.Dir = filepath.Join(myfs.current.Dir, ".fstest")
 	myfs.paths.Current = myfs.current
 
-	suite, err := fstest.NewFileSystem(myfs)
+	suite, err := fstest.NewSuite(myfs)
 	r.NoError(err)
 
 	suite.Test(t)

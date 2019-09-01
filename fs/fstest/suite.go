@@ -17,18 +17,18 @@ const mould = "/easy/listening/sugar.file"
 const hart = "/easy/listening/grant.hart"
 const husker = "github.com/husker/du"
 
-type FileSystem struct {
+type Suite struct {
 	fs.FileSystem
 }
 
-func NewFileSystem(yourfs fs.FileSystem) (*FileSystem, error) {
-	suite := &FileSystem{
+func NewSuite(yourfs fs.FileSystem) (Suite, error) {
+	suite := Suite{
 		FileSystem: yourfs,
 	}
 	return suite, nil
 }
 
-func (s *FileSystem) Test(t *testing.T) {
+func (s Suite) Test(t *testing.T) {
 	rv := reflect.ValueOf(s)
 	rt := rv.Type()
 	if rt.NumMethod() == 0 {
@@ -43,7 +43,7 @@ func (s *FileSystem) Test(t *testing.T) {
 	}
 }
 
-func (s *FileSystem) sub(t *testing.T, m reflect.Method) {
+func (s Suite) sub(t *testing.T, m reflect.Method) {
 	name := strings.TrimPrefix(m.Name, "Test_")
 	name = fmt.Sprintf("%T_%s", s.FileSystem, name)
 	t.Run(name, func(st *testing.T) {
@@ -68,7 +68,7 @@ func (s *FileSystem) sub(t *testing.T, m reflect.Method) {
 	})
 }
 
-func (s *FileSystem) Clean() error {
+func (s Suite) Clean() error {
 	pt, err := s.Parse("/")
 	if err != nil {
 		return err
@@ -85,7 +85,7 @@ func (s *FileSystem) Clean() error {
 	return nil
 }
 
-func (s *FileSystem) Test_Create(t *testing.T) {
+func (s Suite) Test_Create(t *testing.T) {
 	r := require.New(t)
 
 	pt, err := s.Parse(mould)
@@ -104,7 +104,7 @@ func (s *FileSystem) Test_Create(t *testing.T) {
 	r.NoError(s.RemoveAll(pt.String()))
 }
 
-func (s *FileSystem) Test_Current(t *testing.T) {
+func (s Suite) Test_Current(t *testing.T) {
 	r := require.New(t)
 
 	info, err := s.Current()
@@ -112,7 +112,7 @@ func (s *FileSystem) Test_Current(t *testing.T) {
 	r.NotZero(info)
 }
 
-func (s *FileSystem) Test_Info(t *testing.T) {
+func (s Suite) Test_Info(t *testing.T) {
 	r := require.New(t)
 
 	cur, err := s.Current()
@@ -124,15 +124,15 @@ func (s *FileSystem) Test_Info(t *testing.T) {
 
 }
 
-func (s *FileSystem) Test_MkdirAll(t *testing.T) {
+func (s Suite) Test_MkdirAll(t *testing.T) {
 	panic("not implemented")
 }
 
-func (s *FileSystem) Test_Open(t *testing.T) {
+func (s Suite) Test_Open(t *testing.T) {
 	panic("not implemented")
 }
 
-func (s *FileSystem) Test_Parse(t *testing.T) {
+func (s Suite) Test_Parse(t *testing.T) {
 	r := require.New(t)
 
 	cur, err := s.Current()
@@ -165,11 +165,11 @@ func (s *FileSystem) Test_Parse(t *testing.T) {
 	}
 }
 
-func (s *FileSystem) Test_ReadFile(t *testing.T) {
+func (s Suite) Test_ReadFile(t *testing.T) {
 	panic("not implemented")
 }
 
-func (s *FileSystem) Test_Stat_Error(t *testing.T) {
+func (s Suite) Test_Stat_Error(t *testing.T) {
 	r := require.New(t)
 
 	cur, err := s.Current()
@@ -203,7 +203,7 @@ func (s *FileSystem) Test_Stat_Error(t *testing.T) {
 	}
 }
 
-func (s *FileSystem) Test_Stat_Dir(t *testing.T) {
+func (s Suite) Test_Stat_Dir(t *testing.T) {
 	r := require.New(t)
 
 	cur, err := s.Current()
@@ -239,7 +239,7 @@ func (s *FileSystem) Test_Stat_Dir(t *testing.T) {
 	}
 }
 
-func (s *FileSystem) Test_Stat_File(t *testing.T) {
+func (s Suite) Test_Stat_File(t *testing.T) {
 	r := require.New(t)
 
 	cur, err := s.Current()
@@ -278,6 +278,6 @@ func (s *FileSystem) Test_Stat_File(t *testing.T) {
 	}
 }
 
-func (s *FileSystem) Test_Walk(t *testing.T) {
+func (s Suite) Test_Walk(t *testing.T) {
 	panic("not implemented")
 }

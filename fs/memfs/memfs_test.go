@@ -20,7 +20,7 @@ func Test_FS(t *testing.T) {
 
 	WithInfo(myfs, info)
 
-	suite, err := fstest.NewFileSystem(myfs)
+	suite, err := fstest.NewSuite(myfs)
 	r.NoError(err)
 
 	suite.Test(t)
