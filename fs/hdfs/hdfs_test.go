@@ -1,6 +1,7 @@
 package hdfs
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/markbates/pkger/fs/fstest"
@@ -12,6 +13,9 @@ func Test_FS(t *testing.T) {
 
 	myfs, err := New()
 	r.NoError(err)
+
+	myfs.current.Dir = filepath.Join(myfs.current.Dir, ".fstest")
+	myfs.paths.Current = myfs.current
 
 	suite, err := fstest.NewFileSystem(myfs)
 	r.NoError(err)

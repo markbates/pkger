@@ -2,6 +2,7 @@ package fstest
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -70,9 +71,9 @@ func (s *FileSystem) Clean() error {
 	}
 
 	_ = pt
-	// if err := s.RemoveAll(pt.Name); err != nil {
-	// 	return err
-	// }
+	if err := s.RemoveAll(pt.Name); err != nil {
+		return err
+	}
 	//
 	// if _, err := s.Stat(pt.Name); err == nil {
 	// 	return fmt.Errorf("expected %q to be, you know, not there any more", pt)
@@ -195,12 +196,12 @@ func (s *FileSystem) Test_Stat(t *testing.T) {
 			pt, err := s.Parse(tt.in)
 			r.NoError(err)
 
-			// r.Fail(pt.String())
-			// f, err := s.Create(tt.in)
-			// r.NoError(err)
-			// _, err = io.Copy(f, strings.NewReader("!"+pt.String()))
-			// r.NoError(err)
-			// r.NoError(f.Close())
+			r.Fail(pt.String())
+			f, err := s.Create(tt.in)
+			r.NoError(err)
+			_, err = io.Copy(f, strings.NewReader("!"+pt.String()))
+			r.NoError(err)
+			r.NoError(f.Close())
 
 			info, err := s.Stat(tt.in)
 			r.NoError(err)
