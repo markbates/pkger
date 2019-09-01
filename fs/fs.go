@@ -7,7 +7,7 @@ import (
 	"github.com/markbates/pkger/here"
 )
 
-type FileSystem interface {
+type Warehouse interface {
 	Parse(p string) (Path, error)
 	Abs(string) (string, error)
 	AbsPath(Path) (string, error)

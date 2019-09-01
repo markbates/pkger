@@ -18,12 +18,12 @@ const hart = "/easy/listening/grant.hart"
 const husker = "github.com/husker/du"
 
 type Suite struct {
-	fs.FileSystem
+	fs.Warehouse
 }
 
-func NewSuite(yourfs fs.FileSystem) (Suite, error) {
+func NewSuite(yourfs fs.Warehouse) (Suite, error) {
 	suite := Suite{
-		FileSystem: yourfs,
+		Warehouse: yourfs,
 	}
 	return suite, nil
 }
@@ -45,7 +45,7 @@ func (s Suite) Test(t *testing.T) {
 
 func (s Suite) sub(t *testing.T, m reflect.Method) {
 	name := strings.TrimPrefix(m.Name, "Test_")
-	name = fmt.Sprintf("%T_%s", s.FileSystem, name)
+	name = fmt.Sprintf("%T_%s", s.Warehouse, name)
 	t.Run(name, func(st *testing.T) {
 		defer func() {
 			if err := recover(); err != nil {

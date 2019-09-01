@@ -15,10 +15,10 @@ type File struct {
 	info *fs.FileInfo
 	her  here.Info
 	path fs.Path
-	fs   fs.FileSystem
+	fs   fs.Warehouse
 }
 
-func NewFile(fx fs.FileSystem, osf *os.File) (*File, error) {
+func NewFile(fx fs.Warehouse, osf *os.File) (*File, error) {
 
 	pt, err := fx.Parse(osf.Name())
 	if err != nil {

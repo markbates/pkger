@@ -27,7 +27,7 @@ type File struct {
 	parent fs.Path
 	writer *bytes.Buffer
 	reader io.Reader
-	fs     fs.FileSystem
+	fs     fs.Warehouse
 }
 
 func (f *File) Seek(offset int64, whence int) (int64, error) {

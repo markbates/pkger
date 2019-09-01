@@ -4,7 +4,7 @@ import (
 	"github.com/markbates/pkger/fs"
 )
 
-func Files(fx fs.FileSystem) (TestFiles, error) {
+func Files(fx fs.Warehouse) (TestFiles, error) {
 	tf := TestFiles{}
 	for _, f := range fileList {
 		pt, err := fx.Parse(f)

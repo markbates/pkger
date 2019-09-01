@@ -11,7 +11,7 @@ import (
 	"github.com/markbates/pkger/internal/maps"
 )
 
-var _ fs.FileSystem = &FS{}
+var _ fs.Warehouse = &FS{}
 
 func WithInfo(fx *FS, infos ...here.Info) {
 	for _, info := range infos {

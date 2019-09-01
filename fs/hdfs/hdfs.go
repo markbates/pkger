@@ -12,7 +12,7 @@ import (
 	"github.com/markbates/pkger/internal/maps"
 )
 
-var _ fs.FileSystem = &FS{}
+var _ fs.Warehouse = &FS{}
 
 type FS struct {
 	infos   *maps.Infos
