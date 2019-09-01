@@ -11,16 +11,16 @@ import (
 	"github.com/markbates/pkger/internal/maps"
 )
 
-var _ fs.Warehouse = &FS{}
+var _ fs.Warehouse = &Warehouse{}
 
-func WithInfo(fx *FS, infos ...here.Info) {
+func WithInfo(fx *Warehouse, infos ...here.Info) {
 	for _, info := range infos {
 		fx.infos.Store(info.ImportPath, info)
 	}
 }
 
-func New(info here.Info) (*FS, error) {
-	f := &FS{
+func New(info here.Info) (*Warehouse, error) {
+	f := &Warehouse{
 		infos: &maps.Infos{},
 		paths: &maps.Paths{
 			Current: info,
@@ -31,14 +31,14 @@ func New(info here.Info) (*FS, error) {
 	return f, nil
 }
 
-type FS struct {
+type Warehouse struct {
 	infos   *maps.Infos
 	paths   *maps.Paths
 	files   *maps.Files
 	current here.Info
 }
 
-func (f *FS) Abs(p string) (string, error) {
+func (f *Warehouse) Abs(p string) (string, error) {
 	pt, err := f.Parse(p)
 	if err != nil {
 		return "", err
@@ -46,15 +46,15 @@ func (f *FS) Abs(p string) (string, error) {
 	return f.AbsPath(pt)
 }
 
-func (f *FS) AbsPath(pt fs.Path) (string, error) {
+func (f *Warehouse) AbsPath(pt fs.Path) (string, error) {
 	return pt.String(), nil
 }
 
-func (f *FS) Current() (here.Info, error) {
+func (f *Warehouse) Current() (here.Info, error) {
 	return f.current, nil
 }
 
-func (f *FS) Info(p string) (here.Info, error) {
+func (f *Warehouse) Info(p string) (here.Info, error) {
 	info, ok := f.infos.Load(p)
 	if !ok {
 		return info, fmt.Errorf("no such package %q", p)
@@ -63,11 +63,11 @@ func (f *FS) Info(p string) (here.Info, error) {
 	return info, nil
 }
 
-func (f *FS) Parse(p string) (fs.Path, error) {
+func (f *Warehouse) Parse(p string) (fs.Path, error) {
 	return f.paths.Parse(p)
 }
 
-func (fx *FS) ReadFile(s string) ([]byte, error) {
+func (fx *Warehouse) ReadFile(s string) ([]byte, error) {
 	f, err := fx.Open(s)
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func (fx *FS) ReadFile(s string) ([]byte, error) {
 	return ioutil.ReadAll(f)
 }
 
-func (fx *FS) Remove(name string) error {
+func (fx *Warehouse) Remove(name string) error {
 	pt, err := fx.Parse(name)
 	if err != nil {
 		return err
@@ -90,7 +90,7 @@ func (fx *FS) Remove(name string) error {
 	return nil
 }
 
-func (fx *FS) RemoveAll(name string) error {
+func (fx *Warehouse) RemoveAll(name string) error {
 	pt, err := fx.Parse(name)
 	if err != nil {
 		return err

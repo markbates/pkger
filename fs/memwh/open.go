@@ -6,7 +6,7 @@ import (
 	"github.com/markbates/pkger/fs"
 )
 
-func (fx *FS) Open(name string) (fs.File, error) {
+func (fx *Warehouse) Open(name string) (fs.File, error) {
 	pt, err := fx.Parse(name)
 	if err != nil {
 		return nil, err

@@ -8,7 +8,7 @@ import (
 	"github.com/markbates/pkger/fs"
 )
 
-func (fx *FS) MkdirAll(p string, perm os.FileMode) error {
+func (fx *Warehouse) MkdirAll(p string, perm os.FileMode) error {
 	path, err := fx.Parse(p)
 	if err != nil {
 		return err

@@ -3,7 +3,7 @@ package memwh
 // func Test_HTTP_Dir(t *testing.T) {
 // 	r := require.New(t)
 //
-// 	fs := NewFS()
+// 	fs := NewWarehouse()
 //
 // 	r.NoError(Folder.Create(fs))
 //
@@ -24,7 +24,7 @@ package memwh
 // func Test_HTTP_File_Memory(t *testing.T) {
 // 	r := require.New(t)
 //
-// 	fs := NewFS()
+// 	fs := NewWarehouse()
 // 	r.NoError(Folder.Create(fs))
 //
 // 	dir, err := fs.Open("/")
@@ -44,7 +44,7 @@ package memwh
 // func Test_HTTP_Dir_Memory_StripPrefix(t *testing.T) {
 // 	r := require.New(t)
 //
-// 	fs := NewFS()
+// 	fs := NewWarehouse()
 // 	r.NoError(Folder.Create(fs))
 //
 // 	dir, err := fs.Open("/public")

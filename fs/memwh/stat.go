@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func (fx *FS) Stat(name string) (os.FileInfo, error) {
+func (fx *Warehouse) Stat(name string) (os.FileInfo, error) {
 	pt, err := fx.Parse(name)
 	if err != nil {
 		return nil, err

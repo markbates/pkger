@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_FS(t *testing.T) {
+func Test_Warehouse(t *testing.T) {
 	r := require.New(t)
 
 	info, err := here.Current()

@@ -8,7 +8,7 @@ import (
 	"github.com/markbates/pkger/fs"
 )
 
-func (f *FS) Walk(p string, wf filepath.WalkFunc) error {
+func (f *Warehouse) Walk(p string, wf filepath.WalkFunc) error {
 	keys := f.files.Keys()
 
 	pt, err := f.Parse(p)
