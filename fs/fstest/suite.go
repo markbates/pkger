@@ -196,7 +196,6 @@ func (s *FileSystem) Test_Stat(t *testing.T) {
 			pt, err := s.Parse(tt.in)
 			r.NoError(err)
 
-			r.Fail(pt.String())
 			f, err := s.Create(tt.in)
 			r.NoError(err)
 			_, err = io.Copy(f, strings.NewReader("!"+pt.String()))

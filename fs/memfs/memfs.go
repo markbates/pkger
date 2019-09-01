@@ -38,6 +38,18 @@ type FS struct {
 	current here.Info
 }
 
+func (f *FS) Abs(p string) (string, error) {
+	pt, err := f.Parse(p)
+	if err != nil {
+		return "", err
+	}
+	return f.AbsPath(pt)
+}
+
+func (f *FS) AbsPath(pt fs.Path) (string, error) {
+	return pt.String(), nil
+}
+
 func (f *FS) Current() (here.Info, error) {
 	return f.current, nil
 }

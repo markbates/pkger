@@ -20,6 +20,25 @@ type FS struct {
 	current here.Info
 }
 
+func (f *FS) Abs(p string) (string, error) {
+	pt, err := f.Parse(p)
+	if err != nil {
+		return "", err
+	}
+	return f.AbsPath(pt)
+}
+
+func (f *FS) AbsPath(pt fs.Path) (string, error) {
+	if pt.Pkg == f.current.ImportPath {
+		return filepath.Join(f.current.Dir, pt.Name), nil
+	}
+	info, err := f.Info(pt.Pkg)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(info.Dir, pt.Name), nil
+}
+
 func New() (*FS, error) {
 	info, err := here.Current()
 	if err != nil {
@@ -35,7 +54,7 @@ func New() (*FS, error) {
 }
 
 func (fx *FS) Create(name string) (fs.File, error) {
-	name, err := fx.locate(name)
+	name, err := fx.Abs(name)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +87,7 @@ func (f *FS) Info(p string) (here.Info, error) {
 }
 
 func (f *FS) MkdirAll(p string, perm os.FileMode) error {
-	p, err := f.locate(p)
+	p, err := f.Abs(p)
 	if err != nil {
 		return err
 	}
@@ -76,7 +95,7 @@ func (f *FS) MkdirAll(p string, perm os.FileMode) error {
 }
 
 func (fx *FS) Open(name string) (fs.File, error) {
-	name, err := fx.locate(name)
+	name, err := fx.Abs(name)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +111,7 @@ func (f *FS) Parse(p string) (fs.Path, error) {
 }
 
 func (f *FS) ReadFile(s string) ([]byte, error) {
-	s, err := f.locate(s)
+	s, err := f.Abs(s)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +119,7 @@ func (f *FS) ReadFile(s string) ([]byte, error) {
 }
 
 func (f *FS) Stat(name string) (os.FileInfo, error) {
-	name, err := f.locate(name)
+	name, err := f.Abs(name)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +127,7 @@ func (f *FS) Stat(name string) (os.FileInfo, error) {
 }
 
 func (f *FS) Walk(p string, wf filepath.WalkFunc) error {
-	fp, err := f.locate(p)
+	fp, err := f.Abs(p)
 	if err != nil {
 		return err
 	}
@@ -133,17 +152,8 @@ func (f *FS) Walk(p string, wf filepath.WalkFunc) error {
 	return err
 }
 
-func (f *FS) locate(p string) (string, error) {
-	pt, err := f.Parse(p)
-	if err != nil {
-		return p, err
-	}
-	p = f.current.FilePath(pt.Name)
-	return p, nil
-}
-
 func (fx *FS) Remove(name string) error {
-	name, err := fx.locate(name)
+	name, err := fx.Abs(name)
 	if err != nil {
 		return err
 	}
@@ -151,7 +161,7 @@ func (fx *FS) Remove(name string) error {
 }
 
 func (fx *FS) RemoveAll(name string) error {
-	name, err := fx.locate(name)
+	name, err := fx.Abs(name)
 	if err != nil {
 		return err
 	}

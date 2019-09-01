@@ -98,8 +98,8 @@ func (f File) Name() string {
 	return f.info.Name()
 }
 
-func (f File) FilePath() string {
-	return f.her.FilePath(f.Name())
+func (f File) Abs() (string, error) {
+	return f.fs.AbsPath(f.Path())
 }
 
 func (f File) Path() fs.Path {

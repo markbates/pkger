@@ -9,7 +9,7 @@ import (
 
 type File interface {
 	Close() error
-	FilePath() string
+	Abs() (string, error)
 	Info() here.Info
 	Name() string
 	Open(name string) (http.File, error)

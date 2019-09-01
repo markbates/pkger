@@ -3,7 +3,6 @@ package hdfs
 import (
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/markbates/pkger/fs"
 	"github.com/markbates/pkger/here"
@@ -13,21 +12,17 @@ var _ fs.File = &File{}
 
 type File struct {
 	*os.File
-	filePath string
-	info     *fs.FileInfo
-	her      here.Info
-	path     fs.Path
-	fs       fs.FileSystem
+	info *fs.FileInfo
+	her  here.Info
+	path fs.Path
+	fs   fs.FileSystem
 }
 
 func NewFile(fx fs.FileSystem, osf *os.File) (*File, error) {
 
-	cur, err := fx.Current()
+	pt, err := fx.Parse(osf.Name())
 	if err != nil {
 		return nil, err
-	}
-	pt := fs.Path{
-		Name: strings.TrimPrefix(osf.Name(), cur.Dir),
 	}
 
 	info, err := osf.Stat()
@@ -36,10 +31,9 @@ func NewFile(fx fs.FileSystem, osf *os.File) (*File, error) {
 	}
 
 	f := &File{
-		File:     osf,
-		filePath: info.Name(),
-		path:     pt,
-		fs:       fx,
+		File: osf,
+		path: pt,
+		fs:   fx,
 	}
 	f.info = fs.WithName(pt.Name, info)
 
@@ -55,8 +49,8 @@ func (f *File) Close() error {
 	return f.File.Close()
 }
 
-func (f *File) FilePath() string {
-	return f.filePath
+func (f *File) Abs() (string, error) {
+	return f.fs.AbsPath(f.path)
 }
 
 func (f *File) Info() here.Info {
@@ -76,12 +70,19 @@ func (f *File) Path() fs.Path {
 }
 
 func (f *File) Stat() (os.FileInfo, error) {
-	if f.info == nil {
-		info, err := os.Stat(f.filePath)
-		if err != nil {
-			return nil, err
-		}
-		f.info = fs.NewFileInfo(info)
+	if f.info != nil {
+		return f.info, nil
 	}
-	return f.info, nil
+
+	abs, err := f.Abs()
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := os.Stat(abs)
+	if err != nil {
+		return nil, err
+	}
+	f.info = fs.NewFileInfo(info)
+	return info, nil
 }
