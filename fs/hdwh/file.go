@@ -1,4 +1,4 @@
-package hdfs
+package hdwh
 
 import (
 	"net/http"
