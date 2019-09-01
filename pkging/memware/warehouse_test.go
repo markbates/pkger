@@ -15,12 +15,12 @@ func Test_Warehouse(t *testing.T) {
 	r.NoError(err)
 	r.NotZero(info)
 
-	mypkging, err := New(info)
+	wh, err := New(info)
 	r.NoError(err)
 
-	WithInfo(mypkging, info)
+	WithInfo(wh, info)
 
-	suite, err := waretest.NewSuite(mypkging)
+	suite, err := waretest.NewSuite(wh)
 	r.NoError(err)
 
 	suite.Test(t)
