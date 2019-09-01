@@ -130,12 +130,14 @@ func (m *Paths) Keys() []string {
 
 func (m *Paths) Parse(p string) (fs.Path, error) {
 	p = strings.Replace(p, "\\", "/", -1)
+	p = strings.TrimSpace(p)
+
 	pt, ok := m.Load(p)
 	if ok {
 		return pt, nil
 	}
-	if len(p) == 0 {
-		return m.build(p, "", "")
+	if len(p) == 0 || p == ":" {
+		return m.build("", "", "")
 	}
 
 	res := pathrx.FindAllStringSubmatch(p, -1)

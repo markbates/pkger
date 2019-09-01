@@ -63,7 +63,7 @@ func (s *FileSystem) sub(t *testing.T, m reflect.Method) {
 }
 
 func (s *FileSystem) Clean() error {
-	pt, err := Path(s)
+	pt, err := Path(s, "/")
 	if err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ func (s *FileSystem) Clean() error {
 func (s *FileSystem) Test_Create(t *testing.T) {
 	r := require.New(t)
 
-	pt, err := Path(s, "i", "want", "candy.song")
+	pt, err := Path(s, "i/want/candy.song")
 	r.NoError(err)
 
 	f, err := s.Create(pt.Name)
@@ -139,6 +139,10 @@ func (s *FileSystem) Test_Parse(t *testing.T) {
 		{in: ":/foo.go", exp: fs.Path{Pkg: ip, Name: "/foo.go"}},
 		{in: ip + ":/foo.go", exp: fs.Path{Pkg: ip, Name: "/foo.go"}},
 		{in: ip, exp: fs.Path{Pkg: ip, Name: "/"}},
+		{in: ":", exp: fs.Path{Pkg: ip, Name: "/"}},
+		{in: "github.com/old/97s:/foo.go", exp: fs.Path{Pkg: "github.com/old/97s", Name: "/foo.go"}},
+		{in: "github.com/old/97s", exp: fs.Path{Pkg: "github.com/old/97s", Name: "/"}},
+		{in: "github.com/old/97s:", exp: fs.Path{Pkg: "github.com/old/97s", Name: "/"}},
 	}
 
 	for _, tt := range table {
@@ -157,7 +161,50 @@ func (s *FileSystem) Test_ReadFile(t *testing.T) {
 }
 
 func (s *FileSystem) Test_Stat(t *testing.T) {
-	panic("not implemented")
+	r := require.New(t)
+
+	cur, err := s.Current()
+	r.NoError(err)
+
+	ip := cur.ImportPath
+	table := []struct {
+		in  string
+		err bool
+	}{
+		{in: "/foo.go", err: false},
+		{in: ":/foo.go", err: false},
+		{in: ip + ":/foo.go", err: false},
+		{in: ip, err: false},
+		{in: "/no.go", err: true},
+	}
+
+	for _, tt := range table {
+		t.Run(tt.in, func(st *testing.T) {
+			r := require.New(st)
+
+			if tt.err {
+				_, err := s.Stat(tt.in)
+				r.Error(err)
+				return
+			}
+
+			pt, err := Path(s, tt.in)
+			fmt.Println(">>>TODO fs/fstest/suite.go:189: tt.in ", tt.in)
+			fmt.Println(">>>TODO fs/fstest/suite.go:189: pt ", pt)
+			r.NoError(err)
+
+			// r.Fail(pt.String())
+			// f, err := s.Create(tt.in)
+			// r.NoError(err)
+			// _, err = io.Copy(f, strings.NewReader("!"+pt.String()))
+			// r.NoError(err)
+			// r.NoError(f.Close())
+
+			info, err := s.Stat(tt.in)
+			r.NoError(err)
+			r.Equal(pt.Name, info.Name())
+		})
+	}
 }
 
 func (s *FileSystem) Test_Walk(t *testing.T) {

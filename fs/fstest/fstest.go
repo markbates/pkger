@@ -2,7 +2,6 @@ package fstest
 
 import (
 	"path"
-	"strings"
 
 	"github.com/markbates/pkger/fs"
 )
@@ -23,14 +22,13 @@ func Files(fx fs.FileSystem) (TestFiles, error) {
 	return tf, nil
 }
 
-func Path(fx fs.FileSystem, ps ...string) (fs.Path, error) {
-	name := path.Join(ps...)
-	name = path.Join(".fstest", name)
-	if !strings.HasPrefix(name, "/") {
-		name = "/" + name
+func Path(fx fs.FileSystem, p string) (fs.Path, error) {
+	pt, err := fx.Parse(p)
+	if err != nil {
+		return pt, err
 	}
-
-	return fx.Parse(name)
+	pt.Name = path.Join("/.fstest", pt.Name)
+	return pt, nil
 }
 
 var fileList = []string{

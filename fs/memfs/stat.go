@@ -14,5 +14,5 @@ func (fx *FS) Stat(name string) (os.FileInfo, error) {
 	if ok {
 		return f.Stat()
 	}
-	return nil, fmt.Errorf("could not stat %s", name)
+	return nil, fmt.Errorf("could not stat %s", pt)
 }
