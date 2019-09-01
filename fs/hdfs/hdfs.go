@@ -134,7 +134,12 @@ func (f *FS) Walk(p string, wf filepath.WalkFunc) error {
 }
 
 func (f *FS) locate(p string) (string, error) {
-	return f.current.FilePath(p), nil
+	pt, err := f.Parse(p)
+	if err != nil {
+		return p, err
+	}
+	p = f.current.FilePath(pt.Name)
+	return p, nil
 }
 
 func (fx *FS) Remove(name string) error {

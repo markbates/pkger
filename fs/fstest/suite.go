@@ -3,6 +3,7 @@ package fstest
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -63,25 +64,26 @@ func (s *FileSystem) sub(t *testing.T, m reflect.Method) {
 }
 
 func (s *FileSystem) Clean() error {
-	pt, err := Path(s, "/")
+	pt, err := s.Parse("/")
 	if err != nil {
 		return err
 	}
 
-	if err := s.RemoveAll(pt.Name); err != nil {
-		return err
-	}
-
-	if _, err := s.Stat(pt.Name); err == nil {
-		return fmt.Errorf("expected %q to be, you know, not there any more", pt)
-	}
+	_ = pt
+	// if err := s.RemoveAll(pt.Name); err != nil {
+	// 	return err
+	// }
+	//
+	// if _, err := s.Stat(pt.Name); err == nil {
+	// 	return fmt.Errorf("expected %q to be, you know, not there any more", pt)
+	// }
 	return nil
 }
 
 func (s *FileSystem) Test_Create(t *testing.T) {
 	r := require.New(t)
 
-	pt, err := Path(s, "i/want/candy.song")
+	pt, err := s.Parse("/i/want/candy.song")
 	r.NoError(err)
 
 	f, err := s.Create(pt.Name)
@@ -94,6 +96,7 @@ func (s *FileSystem) Test_Create(t *testing.T) {
 	r.Equal(pt.Name, fi.Name())
 	r.Equal(os.FileMode(0644), fi.Mode())
 	r.NotZero(fi.ModTime())
+	r.NoError(s.RemoveAll(pt.String()))
 }
 
 func (s *FileSystem) Test_Current(t *testing.T) {
@@ -136,6 +139,7 @@ func (s *FileSystem) Test_Parse(t *testing.T) {
 		exp fs.Path
 	}{
 		{in: "/foo.go", exp: fs.Path{Pkg: ip, Name: "/foo.go"}},
+		{in: filepath.Join(cur.Dir, "foo.go"), exp: fs.Path{Pkg: ip, Name: "/foo.go"}},
 		{in: ":/foo.go", exp: fs.Path{Pkg: ip, Name: "/foo.go"}},
 		{in: ip + ":/foo.go", exp: fs.Path{Pkg: ip, Name: "/foo.go"}},
 		{in: ip, exp: fs.Path{Pkg: ip, Name: "/"}},
@@ -188,9 +192,7 @@ func (s *FileSystem) Test_Stat(t *testing.T) {
 				return
 			}
 
-			pt, err := Path(s, tt.in)
-			fmt.Println(">>>TODO fs/fstest/suite.go:189: tt.in ", tt.in)
-			fmt.Println(">>>TODO fs/fstest/suite.go:189: pt ", pt)
+			pt, err := s.Parse(tt.in)
 			r.NoError(err)
 
 			// r.Fail(pt.String())

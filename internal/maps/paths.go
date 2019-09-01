@@ -179,6 +179,7 @@ func (m *Paths) build(p, pkg, name string) (fs.Path, error) {
 	if !strings.HasPrefix(pt.Name, "/") {
 		pt.Name = "/" + pt.Name
 	}
+	pt.Name = strings.TrimPrefix(pt.Name, m.Current.Dir)
 	m.Store(p, pt)
 	return pt, nil
 }

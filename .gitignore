@@ -1,3 +1,4 @@
+.fstest
 *.log
 .DS_Store
 doc
