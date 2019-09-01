@@ -74,10 +74,10 @@ func (s *FileSystem) Clean() error {
 	if err := s.RemoveAll(pt.Name); err != nil {
 		return err
 	}
-	//
-	// if _, err := s.Stat(pt.Name); err == nil {
-	// 	return fmt.Errorf("expected %q to be, you know, not there any more", pt)
-	// }
+
+	if _, err := s.Stat(pt.Name); err == nil {
+		return fmt.Errorf("expected %q to be, you know, not there any more", pt)
+	}
 	return nil
 }
 
