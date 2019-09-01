@@ -4,21 +4,21 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/markbates/pkger/fs"
 	"github.com/markbates/pkger/here"
+	"github.com/markbates/pkger/pkging"
 )
 
-var _ fs.File = &File{}
+var _ pkging.File = &File{}
 
 type File struct {
 	*os.File
-	info *fs.FileInfo
-	her  here.Info
-	path fs.Path
-	fs   fs.Warehouse
+	info   *pkging.FileInfo
+	her    here.Info
+	path   pkging.Path
+	pkging pkging.Warehouse
 }
 
-func NewFile(fx fs.Warehouse, osf *os.File) (*File, error) {
+func NewFile(fx pkging.Warehouse, osf *os.File) (*File, error) {
 
 	pt, err := fx.Parse(osf.Name())
 	if err != nil {
@@ -31,11 +31,11 @@ func NewFile(fx fs.Warehouse, osf *os.File) (*File, error) {
 	}
 
 	f := &File{
-		File: osf,
-		path: pt,
-		fs:   fx,
+		File:   osf,
+		path:   pt,
+		pkging: fx,
 	}
-	f.info = fs.WithName(pt.Name, info)
+	f.info = pkging.WithName(pt.Name, info)
 
 	her, err := here.Package(pt.Pkg)
 	if err != nil {
@@ -50,7 +50,7 @@ func (f *File) Close() error {
 }
 
 func (f *File) Abs() (string, error) {
-	return f.fs.AbsPath(f.path)
+	return f.pkging.AbsPath(f.path)
 }
 
 func (f *File) Info() here.Info {
@@ -65,7 +65,7 @@ func (f *File) Open(name string) (http.File, error) {
 	return f.File, nil
 }
 
-func (f *File) Path() fs.Path {
+func (f *File) Path() pkging.Path {
 	return f.path
 }
 
@@ -83,6 +83,6 @@ func (f *File) Stat() (os.FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	f.info = fs.NewFileInfo(info)
+	f.info = pkging.NewFileInfo(info)
 	return info, nil
 }

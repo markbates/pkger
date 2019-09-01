@@ -7,12 +7,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/markbates/pkger/fs"
 	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/internal/maps"
+	"github.com/markbates/pkger/pkging"
 )
 
-var _ fs.Warehouse = &Warehouse{}
+var _ pkging.Warehouse = &Warehouse{}
 
 type Warehouse struct {
 	infos   *maps.Infos
@@ -28,7 +28,7 @@ func (f *Warehouse) Abs(p string) (string, error) {
 	return f.AbsPath(pt)
 }
 
-func (f *Warehouse) AbsPath(pt fs.Path) (string, error) {
+func (f *Warehouse) AbsPath(pt pkging.Path) (string, error) {
 	if pt.Pkg == f.current.ImportPath {
 		return filepath.Join(f.current.Dir, pt.Name), nil
 	}
@@ -53,7 +53,7 @@ func New() (*Warehouse, error) {
 	}, nil
 }
 
-func (fx *Warehouse) Create(name string) (fs.File, error) {
+func (fx *Warehouse) Create(name string) (pkging.File, error) {
 	name, err := fx.Abs(name)
 	if err != nil {
 		return nil, err
@@ -94,7 +94,7 @@ func (f *Warehouse) MkdirAll(p string, perm os.FileMode) error {
 	return os.MkdirAll(p, perm)
 }
 
-func (fx *Warehouse) Open(name string) (fs.File, error) {
+func (fx *Warehouse) Open(name string) (pkging.File, error) {
 	name, err := fx.Abs(name)
 	if err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func (fx *Warehouse) Open(name string) (fs.File, error) {
 	return NewFile(fx, f)
 }
 
-func (f *Warehouse) Parse(p string) (fs.Path, error) {
+func (f *Warehouse) Parse(p string) (pkging.Path, error) {
 	return f.paths.Parse(p)
 }
 
@@ -134,7 +134,7 @@ func (f *Warehouse) Stat(name string) (os.FileInfo, error) {
 		return nil, err
 	}
 
-	info = fs.WithName(pt.Name, fs.NewFileInfo(info))
+	info = pkging.WithName(pt.Name, pkging.NewFileInfo(info))
 
 	return info, nil
 }
@@ -159,7 +159,7 @@ func (f *Warehouse) Walk(p string, wf filepath.WalkFunc) error {
 		if err != nil {
 			return err
 		}
-		return wf(pt.String(), fs.WithName(path, fs.NewFileInfo(fi)), nil)
+		return wf(pt.String(), pkging.WithName(path, pkging.NewFileInfo(fi)), nil)
 	})
 
 	return err

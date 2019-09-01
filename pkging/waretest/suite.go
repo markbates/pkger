@@ -1,4 +1,4 @@
-package fstest
+package waretest
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/markbates/pkger/fs"
+	"github.com/markbates/pkger/pkging"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,12 +18,12 @@ const hart = "/easy/listening/grant.hart"
 const husker = "github.com/husker/du"
 
 type Suite struct {
-	fs.Warehouse
+	pkging.Warehouse
 }
 
-func NewSuite(yourfs fs.Warehouse) (Suite, error) {
+func NewSuite(yourpkging pkging.Warehouse) (Suite, error) {
 	suite := Suite{
-		Warehouse: yourfs,
+		Warehouse: yourpkging,
 	}
 	return suite, nil
 }
@@ -141,17 +141,17 @@ func (s Suite) Test_Parse(t *testing.T) {
 	ip := cur.ImportPath
 	table := []struct {
 		in  string
-		exp fs.Path
+		exp pkging.Path
 	}{
-		{in: mould, exp: fs.Path{Pkg: ip, Name: mould}},
-		{in: filepath.Join(cur.Dir, mould), exp: fs.Path{Pkg: ip, Name: mould}},
-		{in: ":" + mould, exp: fs.Path{Pkg: ip, Name: mould}},
-		{in: ip + ":" + mould, exp: fs.Path{Pkg: ip, Name: mould}},
-		{in: ip, exp: fs.Path{Pkg: ip, Name: "/"}},
-		{in: ":", exp: fs.Path{Pkg: ip, Name: "/"}},
-		{in: husker + ":" + mould, exp: fs.Path{Pkg: husker, Name: mould}},
-		{in: husker, exp: fs.Path{Pkg: husker, Name: "/"}},
-		{in: husker + ":", exp: fs.Path{Pkg: husker, Name: "/"}},
+		{in: mould, exp: pkging.Path{Pkg: ip, Name: mould}},
+		{in: filepath.Join(cur.Dir, mould), exp: pkging.Path{Pkg: ip, Name: mould}},
+		{in: ":" + mould, exp: pkging.Path{Pkg: ip, Name: mould}},
+		{in: ip + ":" + mould, exp: pkging.Path{Pkg: ip, Name: mould}},
+		{in: ip, exp: pkging.Path{Pkg: ip, Name: "/"}},
+		{in: ":", exp: pkging.Path{Pkg: ip, Name: "/"}},
+		{in: husker + ":" + mould, exp: pkging.Path{Pkg: husker, Name: mould}},
+		{in: husker, exp: pkging.Path{Pkg: husker, Name: "/"}},
+		{in: husker + ":", exp: pkging.Path{Pkg: husker, Name: "/"}},
 	}
 
 	for _, tt := range table {

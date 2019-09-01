@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/markbates/pkger/fs"
+	"github.com/markbates/pkger/pkging"
 )
 
 func (f File) MarshalJSON() ([]byte, error) {
@@ -29,7 +29,7 @@ func (f *File) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("missing info")
 	}
 
-	f.info = &fs.FileInfo{}
+	f.info = &pkging.FileInfo{}
 	if err := json.Unmarshal(info, f.info); err != nil {
 		return err
 	}

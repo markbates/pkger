@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/markbates/pkger/fs"
+	"github.com/markbates/pkger/pkging"
 )
 
 func (fx *Warehouse) MkdirAll(p string, perm os.FileMode) error {
@@ -20,7 +20,7 @@ func (fx *Warehouse) MkdirAll(p string, perm os.FileMode) error {
 		return err
 	}
 	for root != "" {
-		pt := fs.Path{
+		pt := pkging.Path{
 			Pkg:  path.Pkg,
 			Name: root,
 		}
@@ -32,14 +32,14 @@ func (fx *Warehouse) MkdirAll(p string, perm os.FileMode) error {
 			continue
 		}
 		f := &File{
-			fs:   fx,
-			path: pt,
-			her:  cur,
-			info: &fs.FileInfo{
-				Details: fs.Details{
+			pkging: fx,
+			path:   pt,
+			her:    cur,
+			info: &pkging.FileInfo{
+				Details: pkging.Details{
 					Name:    pt.Name,
 					Mode:    perm,
-					ModTime: fs.ModTime(time.Now()),
+					ModTime: pkging.ModTime(time.Now()),
 				},
 			},
 		}

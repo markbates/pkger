@@ -4,10 +4,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/markbates/pkger/fs"
+	"github.com/markbates/pkger/pkging"
 )
 
-func (fx *Warehouse) Create(name string) (fs.File, error) {
+func (fx *Warehouse) Create(name string) (pkging.File, error) {
 	pt, err := fx.Parse(name)
 	if err != nil {
 		return nil, err
@@ -20,14 +20,14 @@ func (fx *Warehouse) Create(name string) (fs.File, error) {
 	f := &File{
 		path: pt,
 		her:  her,
-		info: &fs.FileInfo{
-			Details: fs.Details{
+		info: &pkging.FileInfo{
+			Details: pkging.Details{
 				Name:    pt.Name,
 				Mode:    0644,
-				ModTime: fs.ModTime(time.Now()),
+				ModTime: pkging.ModTime(time.Now()),
 			},
 		},
-		fs: fx,
+		pkging: fx,
 	}
 
 	fx.files.Store(pt, f)

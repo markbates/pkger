@@ -10,8 +10,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/markbates/pkger/fs"
 	"github.com/markbates/pkger/here"
+	"github.com/markbates/pkger/pkging"
 )
 
 // Paths wraps sync.Map and uses the following types:
@@ -45,7 +45,7 @@ func (m *Paths) MarshalJSON() ([]byte, error) {
 }
 
 func (m *Paths) UnmarshalJSON(b []byte) error {
-	mm := map[string]fs.Path{}
+	mm := map[string]pkging.Path{}
 
 	if err := json.Unmarshal(b, &mm); err != nil {
 		return err
@@ -65,26 +65,26 @@ func (m *Paths) Delete(key string) {
 // Returns Path or bool.
 // A false return indicates either the key was not found
 // or the value is not of type Path
-func (m *Paths) Load(key string) (fs.Path, bool) {
+func (m *Paths) Load(key string) (pkging.Path, bool) {
 	i, ok := m.Data().Load(key)
 	if !ok {
-		return fs.Path{}, false
+		return pkging.Path{}, false
 	}
-	s, ok := i.(fs.Path)
+	s, ok := i.(pkging.Path)
 	return s, ok
 }
 
 // LoadOrStore will return an existing key or
 // store the value if not already in the map
-func (m *Paths) LoadOrStore(key string, value fs.Path) (fs.Path, bool) {
+func (m *Paths) LoadOrStore(key string, value pkging.Path) (pkging.Path, bool) {
 	i, _ := m.Data().LoadOrStore(key, value)
-	s, ok := i.(fs.Path)
+	s, ok := i.(pkging.Path)
 	return s, ok
 }
 
 // LoadOr will return an existing key or
 // run the function and store the results
-func (m *Paths) LoadOr(key string, fn func(*Paths) (fs.Path, bool)) (fs.Path, bool) {
+func (m *Paths) LoadOr(key string, fn func(*Paths) (pkging.Path, bool)) (pkging.Path, bool) {
 	i, ok := m.Load(key)
 	if ok {
 		return i, ok
@@ -98,13 +98,13 @@ func (m *Paths) LoadOr(key string, fn func(*Paths) (fs.Path, bool)) (fs.Path, bo
 }
 
 // Range over the Path values in the map
-func (m *Paths) Range(f func(key string, value fs.Path) bool) {
+func (m *Paths) Range(f func(key string, value pkging.Path) bool) {
 	m.Data().Range(func(k, v interface{}) bool {
 		key, ok := k.(string)
 		if !ok {
 			return false
 		}
-		value, ok := v.(fs.Path)
+		value, ok := v.(pkging.Path)
 		if !ok {
 			return false
 		}
@@ -113,14 +113,14 @@ func (m *Paths) Range(f func(key string, value fs.Path) bool) {
 }
 
 // Store a Path in the map
-func (m *Paths) Store(key string, value fs.Path) {
+func (m *Paths) Store(key string, value pkging.Path) {
 	m.Data().Store(key, value)
 }
 
 // Keys returns a list of keys in the map
 func (m *Paths) Keys() []string {
 	var keys []string
-	m.Range(func(key string, value fs.Path) bool {
+	m.Range(func(key string, value pkging.Path) bool {
 		keys = append(keys, key)
 		return true
 	})
@@ -128,7 +128,7 @@ func (m *Paths) Keys() []string {
 	return keys
 }
 
-func (m *Paths) Parse(p string) (fs.Path, error) {
+func (m *Paths) Parse(p string) (pkging.Path, error) {
 	p = strings.Replace(p, "\\", "/", -1)
 	p = strings.TrimSpace(p)
 
@@ -156,8 +156,8 @@ func (m *Paths) Parse(p string) (fs.Path, error) {
 
 var pathrx = regexp.MustCompile("([^:]+)(:(/.+))?")
 
-func (m *Paths) build(p, pkg, name string) (fs.Path, error) {
-	pt := fs.Path{
+func (m *Paths) build(p, pkg, name string) (pkging.Path, error) {
+	pt := pkging.Path{
 		Pkg:  pkg,
 		Name: name,
 	}

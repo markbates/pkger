@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/markbates/pkger/fs"
+	"github.com/markbates/pkger/pkging"
 )
 
 func (f *Warehouse) Walk(p string, wf filepath.WalkFunc) error {
@@ -28,7 +28,7 @@ func (f *Warehouse) Walk(p string, wf filepath.WalkFunc) error {
 			return err
 		}
 
-		fi = fs.WithName(strings.TrimPrefix(k.Name, pt.Name), fi)
+		fi = pkging.WithName(strings.TrimPrefix(k.Name, pt.Name), fi)
 		err = wf(k.String(), fi, nil)
 		if err != nil {
 			return err

@@ -3,10 +3,10 @@ package memware
 import (
 	"fmt"
 
-	"github.com/markbates/pkger/fs"
+	"github.com/markbates/pkger/pkging"
 )
 
-func (fx *Warehouse) Open(name string) (fs.File, error) {
+func (fx *Warehouse) Open(name string) (pkging.File, error) {
 	pt, err := fx.Parse(name)
 	if err != nil {
 		return nil, err
@@ -21,11 +21,11 @@ func (fx *Warehouse) Open(name string) (fs.File, error) {
 		return nil, fmt.Errorf("could not open %s", name)
 	}
 	nf := &File{
-		fs:   fx,
-		info: fs.WithName(f.info.Name(), f.info),
-		path: f.path,
-		data: f.data,
-		her:  f.her,
+		pkging: fx,
+		info:   pkging.WithName(f.info.Name(), f.info),
+		path:   f.path,
+		data:   f.data,
+		her:    f.her,
 	}
 
 	return nf, nil

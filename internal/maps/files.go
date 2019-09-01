@@ -8,12 +8,12 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/markbates/pkger/fs"
+	"github.com/markbates/pkger/pkging"
 )
 
 // Files wraps sync.Map and uses the following types:
-// key:   fs.Path
-// value: fs.File
+// key:   pkging.Path
+// value: pkging.File
 type Files struct {
 	data *sync.Map
 	once *sync.Once
@@ -52,13 +52,13 @@ func (m *Files) MarshalJSON() ([]byte, error) {
 }
 
 func (m *Files) UnmarshalJSON(b []byte) error {
-	mm := map[string]fs.File{}
+	mm := map[string]pkging.File{}
 
 	if err := json.Unmarshal(b, &mm); err != nil {
 		return err
 	}
 	for k, v := range mm {
-		var pt fs.Path
+		var pt pkging.Path
 		if err := json.Unmarshal([]byte(k), &pt); err != nil {
 			return err
 		}
@@ -68,34 +68,34 @@ func (m *Files) UnmarshalJSON(b []byte) error {
 }
 
 // Delete the key from the map
-func (m *Files) Delete(key fs.Path) {
+func (m *Files) Delete(key pkging.Path) {
 	m.Data().Delete(key)
 }
 
 // Load the key from the map.
-// Returns fs.File or bool.
+// Returns pkging.File or bool.
 // A false return indicates either the key was not found
-// or the value is not of type fs.File
-func (m *Files) Load(key fs.Path) (fs.File, bool) {
+// or the value is not of type pkging.File
+func (m *Files) Load(key pkging.Path) (pkging.File, bool) {
 	i, ok := m.Data().Load(key)
 	if !ok {
 		return nil, false
 	}
-	s, ok := i.(fs.File)
+	s, ok := i.(pkging.File)
 	return s, ok
 }
 
 // LoadOrStore will return an existing key or
 // store the value if not already in the map
-func (m *Files) LoadOrStore(key fs.Path, value fs.File) (fs.File, bool) {
+func (m *Files) LoadOrStore(key pkging.Path, value pkging.File) (pkging.File, bool) {
 	i, _ := m.Data().LoadOrStore(key, value)
-	s, ok := i.(fs.File)
+	s, ok := i.(pkging.File)
 	return s, ok
 }
 
 // LoadOr will return an existing key or
 // run the function and store the results
-func (m *Files) LoadOr(key fs.Path, fn func(*Files) (fs.File, bool)) (fs.File, bool) {
+func (m *Files) LoadOr(key pkging.Path, fn func(*Files) (pkging.File, bool)) (pkging.File, bool) {
 	i, ok := m.Load(key)
 	if ok {
 		return i, ok
@@ -108,14 +108,14 @@ func (m *Files) LoadOr(key fs.Path, fn func(*Files) (fs.File, bool)) (fs.File, b
 	return i, false
 }
 
-// Range over the fs.File values in the map
-func (m *Files) Range(f func(key fs.Path, value fs.File) bool) {
+// Range over the pkging.File values in the map
+func (m *Files) Range(f func(key pkging.Path, value pkging.File) bool) {
 	m.Data().Range(func(k, v interface{}) bool {
-		key, ok := k.(fs.Path)
+		key, ok := k.(pkging.Path)
 		if !ok {
 			return false
 		}
-		value, ok := v.(fs.File)
+		value, ok := v.(pkging.File)
 		if !ok {
 			return false
 		}
@@ -123,15 +123,15 @@ func (m *Files) Range(f func(key fs.Path, value fs.File) bool) {
 	})
 }
 
-// Store a fs.File in the map
-func (m *Files) Store(key fs.Path, value fs.File) {
+// Store a pkging.File in the map
+func (m *Files) Store(key pkging.Path, value pkging.File) {
 	m.Data().Store(key, value)
 }
 
 // Keys returns a list of keys in the map
-func (m *Files) Keys() []fs.Path {
-	var keys []fs.Path
-	m.Range(func(key fs.Path, value fs.File) bool {
+func (m *Files) Keys() []pkging.Path {
+	var keys []pkging.Path
+	m.Range(func(key pkging.Path, value pkging.File) bool {
 		keys = append(keys, key)
 		return true
 	})

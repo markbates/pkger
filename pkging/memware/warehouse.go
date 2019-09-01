@@ -6,12 +6,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/markbates/pkger/fs"
 	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/internal/maps"
+	"github.com/markbates/pkger/pkging"
 )
 
-var _ fs.Warehouse = &Warehouse{}
+var _ pkging.Warehouse = &Warehouse{}
 
 func WithInfo(fx *Warehouse, infos ...here.Info) {
 	for _, info := range infos {
@@ -46,7 +46,7 @@ func (f *Warehouse) Abs(p string) (string, error) {
 	return f.AbsPath(pt)
 }
 
-func (f *Warehouse) AbsPath(pt fs.Path) (string, error) {
+func (f *Warehouse) AbsPath(pt pkging.Path) (string, error) {
 	return pt.String(), nil
 }
 
@@ -63,7 +63,7 @@ func (f *Warehouse) Info(p string) (here.Info, error) {
 	return info, nil
 }
 
-func (f *Warehouse) Parse(p string) (fs.Path, error) {
+func (f *Warehouse) Parse(p string) (pkging.Path, error) {
 	return f.paths.Parse(p)
 }
 

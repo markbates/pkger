@@ -11,28 +11,28 @@ import (
 	"strings"
 	"time"
 
-	"github.com/markbates/pkger/fs"
 	"github.com/markbates/pkger/here"
+	"github.com/markbates/pkger/pkging"
 )
 
 const timeFmt = time.RFC3339Nano
 
-var _ fs.File = &File{}
+var _ pkging.File = &File{}
 
 type File struct {
-	info   *fs.FileInfo
+	info   *pkging.FileInfo
 	her    here.Info
-	path   fs.Path
+	path   pkging.Path
 	data   []byte
-	parent fs.Path
+	parent pkging.Path
 	writer *bytes.Buffer
 	reader io.Reader
-	fs     fs.Warehouse
+	pkging pkging.Warehouse
 }
 
-func (f *File) Seek(offset int64, whence int) (int64, error) {
+func (f *File) Seek(ofpkginget int64, whence int) (int64, error) {
 	if sk, ok := f.reader.(io.Seeker); ok {
-		return sk.Seek(offset, whence)
+		return sk.Seek(ofpkginget, whence)
 	}
 	return 0, nil
 }
@@ -58,7 +58,7 @@ func (f *File) Close() error {
 
 	fi := f.info
 	fi.Details.Size = int64(len(f.data))
-	fi.Details.ModTime = fs.ModTime(time.Now())
+	fi.Details.ModTime = pkging.ModTime(time.Now())
 	f.info = fi
 	return nil
 }
@@ -99,10 +99,10 @@ func (f File) Name() string {
 }
 
 func (f File) Abs() (string, error) {
-	return f.fs.AbsPath(f.Path())
+	return f.pkging.AbsPath(f.Path())
 }
 
-func (f File) Path() fs.Path {
+func (f File) Path() pkging.Path {
 	return f.path
 }
 
@@ -133,7 +133,7 @@ func (f File) Format(st fmt.State, verb rune) {
 func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 	var infos []os.FileInfo
 	root := f.Path().String()
-	err := f.fs.Walk(root, func(path string, info os.FileInfo, err error) error {
+	err := f.pkging.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -142,7 +142,7 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 			return io.EOF
 		}
 
-		pt, err := f.fs.Parse(path)
+		pt, err := f.pkging.Parse(path)
 		if err != nil {
 			return err
 		}
@@ -150,7 +150,7 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 			return nil
 		}
 		// if f.parent.Name != "/" {
-		info = fs.WithName(strings.TrimPrefix(info.Name(), f.parent.Name), info)
+		info = pkging.WithName(strings.TrimPrefix(info.Name(), f.parent.Name), info)
 		// }
 		infos = append(infos, info)
 		return nil
@@ -169,7 +169,7 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 }
 
 func (f *File) Open(name string) (http.File, error) {
-	pt, err := f.fs.Parse(name)
+	pt, err := f.pkging.Parse(name)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func (f *File) Open(name string) (http.File, error) {
 
 	pt.Name = path.Join(f.Path().Name, pt.Name)
 
-	di, err := f.fs.Open(pt.String())
+	di, err := f.pkging.Open(pt.String())
 	if err != nil {
 		return nil, err
 	}
@@ -191,11 +191,11 @@ func (f *File) Open(name string) (http.File, error) {
 	}
 	if fi.IsDir() {
 		d2 := &File{
-			info:   fs.NewFileInfo(fi),
+			info:   pkging.NewFileInfo(fi),
 			her:    di.Info(),
 			path:   pt,
 			parent: f.path,
-			fs:     f.fs,
+			pkging: f.pkging,
 		}
 		di = d2
 	}

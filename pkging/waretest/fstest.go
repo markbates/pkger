@@ -1,10 +1,10 @@
-package fstest
+package waretest
 
 import (
-	"github.com/markbates/pkger/fs"
+	"github.com/markbates/pkger/pkging"
 )
 
-func Files(fx fs.Warehouse) (TestFiles, error) {
+func Files(fx pkging.Warehouse) (TestFiles, error) {
 	tf := TestFiles{}
 	for _, f := range fileList {
 		pt, err := fx.Parse(f)
