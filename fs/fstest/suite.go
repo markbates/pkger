@@ -125,7 +125,31 @@ func (s *FileSystem) Test_Open(t *testing.T) {
 }
 
 func (s *FileSystem) Test_Parse(t *testing.T) {
-	panic("not implemented")
+	r := require.New(t)
+
+	cur, err := s.Current()
+	r.NoError(err)
+
+	ip := cur.ImportPath
+	table := []struct {
+		in  string
+		exp fs.Path
+	}{
+		{in: "/foo.go", exp: fs.Path{Pkg: ip, Name: "/foo.go"}},
+		{in: ":/foo.go", exp: fs.Path{Pkg: ip, Name: "/foo.go"}},
+		{in: ip + ":/foo.go", exp: fs.Path{Pkg: ip, Name: "/foo.go"}},
+		{in: ip, exp: fs.Path{Pkg: ip, Name: "/"}},
+	}
+
+	for _, tt := range table {
+		t.Run(tt.in, func(st *testing.T) {
+			r := require.New(st)
+
+			pt, err := s.Parse(tt.in)
+			r.NoError(err)
+			r.Equal(tt.exp, pt)
+		})
+	}
 }
 
 func (s *FileSystem) Test_ReadFile(t *testing.T) {
