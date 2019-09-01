@@ -13,10 +13,18 @@ import (
 
 var _ fs.FileSystem = &FS{}
 
+func WithInfo(fx *FS, infos ...here.Info) {
+	for _, info := range infos {
+		fx.infos.Store(info.ImportPath, info)
+	}
+}
+
 func New(info here.Info) (*FS, error) {
 	f := &FS{
-		infos:   &maps.Infos{},
-		paths:   &maps.Paths{},
+		infos: &maps.Infos{},
+		paths: &maps.Paths{
+			Current: info,
+		},
 		files:   &maps.Files{},
 		current: info,
 	}
@@ -36,15 +44,10 @@ func (f *FS) Current() (here.Info, error) {
 
 func (f *FS) Info(p string) (here.Info, error) {
 	info, ok := f.infos.Load(p)
-	if ok {
-		return info, nil
+	if !ok {
+		return info, fmt.Errorf("no such package %q", p)
 	}
 
-	info, err := here.Package(p)
-	if err != nil {
-		return info, err
-	}
-	f.infos.Store(p, info)
 	return info, nil
 }
 

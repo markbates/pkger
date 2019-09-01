@@ -9,4 +9,4 @@ type TestFile struct {
 	Path fs.Path
 }
 
-type TestFiles map[string]TestFile
+type TestFiles map[fs.Path]TestFile

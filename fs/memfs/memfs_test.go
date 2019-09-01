@@ -13,9 +13,12 @@ func Test_FS(t *testing.T) {
 
 	info, err := here.Current()
 	r.NoError(err)
+	r.NotZero(info)
 
 	myfs, err := New(info)
 	r.NoError(err)
+
+	WithInfo(myfs, info)
 
 	suite, err := fstest.NewFileSystem(myfs)
 	r.NoError(err)

@@ -12,12 +12,12 @@ import (
 )
 
 type FileSystem struct {
-	FS fs.FileSystem
+	fs.FileSystem
 }
 
 func NewFileSystem(yourfs fs.FileSystem) (*FileSystem, error) {
 	suite := &FileSystem{
-		FS: yourfs,
+		FileSystem: yourfs,
 	}
 	return suite, nil
 }
@@ -39,7 +39,7 @@ func (s *FileSystem) Test(t *testing.T) {
 
 func (s *FileSystem) sub(t *testing.T, m reflect.Method) {
 	name := strings.TrimPrefix(m.Name, "Test_")
-	name = fmt.Sprintf("%T_%s", s.FS, name)
+	name = fmt.Sprintf("%T_%s", s.FileSystem, name)
 	t.Run(name, func(st *testing.T) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -63,30 +63,35 @@ func (s *FileSystem) sub(t *testing.T, m reflect.Method) {
 }
 
 func (s *FileSystem) Clean() error {
-	name := Path(s.FS)
-	err := s.FS.RemoveAll(name)
+	pt, err := Path(s)
 	if err != nil {
 		return err
 	}
 
-	if _, err := s.FS.Stat(name); err == nil {
-		return fmt.Errorf("expected %q to be, you know, not there any more", name)
+	if err := s.RemoveAll(pt.Name); err != nil {
+		return err
+	}
+
+	if _, err := s.Stat(pt.Name); err == nil {
+		return fmt.Errorf("expected %q to be, you know, not there any more", pt)
 	}
 	return nil
 }
 
 func (s *FileSystem) Test_Create(t *testing.T) {
 	r := require.New(t)
-	name := Path(s.FS, "i", "want", "candy.song")
 
-	f, err := s.FS.Create(name)
+	pt, err := Path(s, "i", "want", "candy.song")
 	r.NoError(err)
-	r.Equal(name, f.Name())
+
+	f, err := s.Create(pt.Name)
+	r.NoError(err)
+	r.Equal(pt.Name, f.Name())
 
 	fi, err := f.Stat()
 	r.NoError(err)
 
-	r.Equal(name, fi.Name())
+	r.Equal(pt.Name, fi.Name())
 	r.Equal(os.FileMode(0644), fi.Mode())
 	r.NotZero(fi.ModTime())
 }
@@ -94,13 +99,21 @@ func (s *FileSystem) Test_Create(t *testing.T) {
 func (s *FileSystem) Test_Current(t *testing.T) {
 	r := require.New(t)
 
-	info, err := s.FS.Current()
+	info, err := s.Current()
 	r.NoError(err)
 	r.NotZero(info)
 }
 
 func (s *FileSystem) Test_Info(t *testing.T) {
-	panic("not implemented")
+	r := require.New(t)
+
+	cur, err := s.Current()
+	r.NoError(err)
+
+	info, err := s.Info(cur.ImportPath)
+	r.NoError(err)
+	r.NotZero(info)
+
 }
 
 func (s *FileSystem) Test_MkdirAll(t *testing.T) {

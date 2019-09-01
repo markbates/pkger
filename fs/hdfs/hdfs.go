@@ -21,14 +21,17 @@ type FS struct {
 }
 
 func New() (*FS, error) {
-	f := &FS{
-		infos: &maps.Infos{},
-		paths: &maps.Paths{},
+	info, err := here.Current()
+	if err != nil {
+		return nil, err
 	}
-
-	var err error
-	f.current, err = here.Current()
-	return f, err
+	return &FS{
+		infos: &maps.Infos{},
+		paths: &maps.Paths{
+			Current: info,
+		},
+		current: info,
+	}, nil
 }
 
 func (fx *FS) Create(name string) (fs.File, error) {
