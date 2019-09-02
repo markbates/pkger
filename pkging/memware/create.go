@@ -22,6 +22,7 @@ func (fx *Warehouse) Create(name string) (pkging.File, error) {
 	if _, err := fx.Stat(filepath.Dir(pt.Name)); err != nil {
 		return nil, err
 	}
+
 	f := &File{
 		path: pt,
 		her:  her,

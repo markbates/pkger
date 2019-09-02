@@ -181,7 +181,43 @@ func (s Suite) Test_Info(t *testing.T) {
 }
 
 func (s Suite) Test_MkdirAll(t *testing.T) {
-	panic("not implemented")
+	r := require.New(t)
+	cur, err := s.Current()
+	r.NoError(err)
+
+	ip := cur.ImportPath
+	table := []struct {
+		in string
+	}{
+		{in: mould},
+		{in: ":" + mould},
+		{in: ip + ":" + mould},
+		{in: filepath.Dir(mould)},
+		{in: ":" + filepath.Dir(mould)},
+		{in: ip + ":" + filepath.Dir(mould)},
+	}
+
+	for _, tt := range table {
+		t.Run(tt.in, func(st *testing.T) {
+			r := require.New(st)
+
+			pt, err := s.Parse(tt.in)
+			r.NoError(err)
+
+			r.NoError(s.RemoveAll(pt.String()))
+
+			dir := filepath.Dir(pt.Name)
+			r.NoError(s.MkdirAll(dir, 0755))
+
+			fi, err := s.Stat(dir)
+			r.NoError(err)
+
+			r.Equal(dir, fi.Name())
+			r.Equal(os.FileMode(0755), fi.Mode().Perm())
+			r.NotZero(fi.ModTime())
+			r.NoError(s.RemoveAll(pt.String()))
+		})
+	}
 }
 
 func (s Suite) Test_Open_File(t *testing.T) {
