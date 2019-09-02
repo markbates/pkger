@@ -3,6 +3,7 @@ package waretest
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -128,8 +129,52 @@ func (s Suite) Test_MkdirAll(t *testing.T) {
 	panic("not implemented")
 }
 
-func (s Suite) Test_Open(t *testing.T) {
-	panic("not implemented")
+func (s Suite) Test_Open_File(t *testing.T) {
+	r := require.New(t)
+
+	cur, err := s.Current()
+	r.NoError(err)
+
+	ip := cur.ImportPath
+	table := []struct {
+		in string
+	}{
+		{in: mould},
+		{in: ":" + mould},
+		{in: ip + ":" + mould},
+		{in: hart},
+	}
+
+	for _, tt := range table {
+		t.Run(tt.in, func(st *testing.T) {
+
+			r := require.New(st)
+
+			pt, err := s.Parse(tt.in)
+			r.NoError(err)
+
+			r.NoError(s.RemoveAll(pt.String()))
+
+			body := "!" + pt.String()
+
+			f1, err := s.Create(tt.in)
+			r.NoError(err)
+
+			_, err = io.Copy(f1, strings.NewReader(body))
+			r.NoError(err)
+			r.NoError(f1.Close())
+
+			f2, err := s.Open(tt.in)
+			r.NoError(err)
+
+			r.Equal(pt.Name, f2.Path().Name)
+			b, err := ioutil.ReadAll(f2)
+			r.NoError(err)
+			r.Equal(body, string(b))
+
+			r.NoError(f2.Close())
+		})
+	}
 }
 
 func (s Suite) Test_Parse(t *testing.T) {
