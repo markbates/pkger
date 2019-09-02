@@ -88,21 +88,44 @@ func (s Suite) Clean() error {
 
 func (s Suite) Test_Create(t *testing.T) {
 	r := require.New(t)
-
-	pt, err := s.Parse(mould)
+	cur, err := s.Current()
 	r.NoError(err)
 
-	f, err := s.Create(pt.Name)
-	r.NoError(err)
-	r.Equal(pt.Name, f.Name())
+	ip := cur.ImportPath
+	table := []struct {
+		in string
+	}{
+		{in: mould},
+		{in: ":" + mould},
+		{in: ip + ":" + mould},
+		{in: filepath.Dir(mould)},
+		{in: ":" + filepath.Dir(mould)},
+		{in: ip + ":" + filepath.Dir(mould)},
+	}
 
-	fi, err := f.Stat()
-	r.NoError(err)
+	for _, tt := range table {
+		t.Run(tt.in, func(st *testing.T) {
+			r := require.New(st)
 
-	r.Equal(pt.Name, fi.Name())
-	r.Equal(os.FileMode(0644), fi.Mode())
-	r.NotZero(fi.ModTime())
-	r.NoError(s.RemoveAll(pt.String()))
+			pt, err := s.Parse(tt.in)
+			r.NoError(err)
+
+			r.NoError(s.RemoveAll(pt.String()))
+			r.NoError(s.MkdirAll(filepath.Dir(pt.Name), 0755))
+
+			f, err := s.Create(pt.Name)
+			r.NoError(err)
+			r.Equal(pt.Name, f.Name())
+
+			fi, err := f.Stat()
+			r.NoError(err)
+
+			r.Equal(pt.Name, fi.Name())
+			r.Equal(os.FileMode(0644), fi.Mode())
+			r.NotZero(fi.ModTime())
+			r.NoError(s.RemoveAll(pt.String()))
+		})
+	}
 }
 
 func (s Suite) Test_Current(t *testing.T) {
@@ -154,6 +177,7 @@ func (s Suite) Test_Open_File(t *testing.T) {
 			r.NoError(err)
 
 			r.NoError(s.RemoveAll(pt.String()))
+			r.NoError(s.MkdirAll(filepath.Dir(pt.Name), 0755))
 
 			body := "!" + pt.String()
 
@@ -309,9 +333,11 @@ func (s Suite) Test_Stat_File(t *testing.T) {
 			r.NoError(err)
 
 			r.NoError(s.RemoveAll(pt.String()))
+			r.NoError(s.MkdirAll(filepath.Dir(pt.Name), 0755))
 
 			f, err := s.Create(tt.in)
 			r.NoError(err)
+
 			_, err = io.Copy(f, strings.NewReader("!"+pt.String()))
 			r.NoError(err)
 			r.NoError(f.Close())

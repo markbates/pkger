@@ -58,9 +58,6 @@ func (fx *Warehouse) Create(name string) (pkging.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := fx.MkdirAll(filepath.Dir(name), 0755); err != nil {
-		return nil, err
-	}
 	f, err := os.Create(name)
 	if err != nil {
 		return nil, err

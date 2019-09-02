@@ -1,7 +1,6 @@
 package memware
 
 import (
-	"path/filepath"
 	"time"
 
 	"github.com/markbates/pkger/pkging"
@@ -32,9 +31,5 @@ func (fx *Warehouse) Create(name string) (pkging.File, error) {
 
 	fx.files.Store(pt, f)
 
-	dir := filepath.Dir(pt.Name)
-	if err := fx.MkdirAll(dir, 0644); err != nil {
-		return nil, err
-	}
 	return f, nil
 }
