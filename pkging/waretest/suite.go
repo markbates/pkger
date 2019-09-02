@@ -128,6 +128,38 @@ func (s Suite) Test_Create(t *testing.T) {
 	}
 }
 
+func (s Suite) Test_Create_No_MkdirAll(t *testing.T) {
+	r := require.New(t)
+	cur, err := s.Current()
+	r.NoError(err)
+
+	ip := cur.ImportPath
+	table := []struct {
+		in string
+	}{
+		{in: mould},
+		{in: ":" + mould},
+		{in: ip + ":" + mould},
+		{in: filepath.Dir(mould)},
+		{in: ":" + filepath.Dir(mould)},
+		{in: ip + ":" + filepath.Dir(mould)},
+	}
+
+	for _, tt := range table {
+		t.Run(tt.in, func(st *testing.T) {
+			r := require.New(st)
+
+			pt, err := s.Parse(tt.in)
+			r.NoError(err)
+
+			r.NoError(s.RemoveAll(pt.String()))
+
+			_, err = s.Create(pt.Name)
+			r.Error(err)
+		})
+	}
+}
+
 func (s Suite) Test_Current(t *testing.T) {
 	r := require.New(t)
 

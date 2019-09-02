@@ -1,11 +1,13 @@
 package memware
 
 import (
+	"path/filepath"
 	"time"
 
 	"github.com/markbates/pkger/pkging"
 )
 
+// no such file or directory
 func (fx *Warehouse) Create(name string) (pkging.File, error) {
 	pt, err := fx.Parse(name)
 	if err != nil {
@@ -14,6 +16,10 @@ func (fx *Warehouse) Create(name string) (pkging.File, error) {
 
 	her, err := fx.Info(pt.Pkg)
 	if err != nil {
+		return nil, err
+	}
+
+	if _, err := fx.Stat(filepath.Dir(pt.Name)); err != nil {
 		return nil, err
 	}
 	f := &File{
