@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/markbates/pkger/pkging/pkgutil"
@@ -83,6 +84,49 @@ func (s Suite) Test_HTTP_Dir(t *testing.T) {
 		r.NoError(err)
 		r.Contains(string(b), tt.exp)
 		r.NotContains(string(b), "mark.png")
+	}
+}
+
+func (s Suite) Test_HTTP_Dir_IndexHTML(t *testing.T) {
+	r := require.New(t)
+
+	cur, err := s.Current()
+	r.NoError(err)
+	ip := cur.ImportPath
+
+	r.NoError(s.LoadFolder())
+
+	table := []struct {
+		in  string
+		req string
+	}{
+		{in: "/public", req: "/"},
+		{in: ":" + "/public", req: "/"},
+		{in: ip + ":" + "/public", req: "/"},
+	}
+
+	exp := "!/public/index.html"
+	for _, tt := range table {
+		t.Run(tt.in+exp, func(st *testing.T) {
+			r := require.New(st)
+
+			dir, err := s.Open(tt.in)
+			r.NoError(err)
+
+			ts := httptest.NewServer(http.FileServer(dir))
+			defer ts.Close()
+
+			res, err := http.Get(ts.URL + tt.req)
+			r.NoError(err)
+			r.Equal(200, res.StatusCode)
+
+			b, err := ioutil.ReadAll(res.Body)
+			r.NoError(err)
+
+			body := strings.TrimSpace(string(b))
+			r.Equal(exp, body)
+			r.NotContains(body, "mark.png")
+		})
 	}
 }
 

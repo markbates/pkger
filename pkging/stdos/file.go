@@ -18,24 +18,7 @@ type File struct {
 	pkging pkging.Pkger
 }
 
-type HTTPFile struct {
-	http.File
-}
-
-func (f *HTTPFile) Readdir(n int) ([]os.FileInfo, error) {
-	infos, err := f.File.Readdir(n)
-	if err != nil {
-		return nil, err
-	}
-
-	for i, info := range infos {
-		infos[i] = pkging.NewFileInfo(info)
-	}
-	return infos, nil
-}
-
 func NewFile(fx pkging.Pkger, osf *os.File) (*File, error) {
-
 	pt, err := fx.Parse(osf.Name())
 	if err != nil {
 		return nil, err
@@ -78,7 +61,7 @@ func (f *File) Name() string {
 }
 
 func (f *File) Open(name string) (http.File, error) {
-	return &HTTPFile{f.File}, nil
+	return f.File, nil
 }
 
 func (f *File) Path() pkging.Path {

@@ -40,22 +40,22 @@ func (s Suite) Test_File_Info(t *testing.T) {
 	}
 }
 
-func (s Suite) Test_File_Read(t *testing.T) {
-	panic("not implemented")
-}
-
-func (s Suite) Test_File_Readdir(t *testing.T) {
-	panic("not implemented")
-}
-
-func (s Suite) Test_File_Seek(t *testing.T) {
-	panic("not implemented")
-}
-
-func (s Suite) Test_File_Stat(t *testing.T) {
-	panic("not implemented")
-}
-
-func (s Suite) Test_File_Write(t *testing.T) {
-	panic("not implemented")
-}
+// func (s Suite) Test_File_Read(t *testing.T) {
+// 	panic("not implemented")
+// }
+//
+// func (s Suite) Test_File_Readdir(t *testing.T) {
+// 	panic("not implemented")
+// }
+//
+// func (s Suite) Test_File_Seek(t *testing.T) {
+// 	panic("not implemented")
+// }
+//
+// func (s Suite) Test_File_Stat(t *testing.T) {
+// 	panic("not implemented")
+// }
+//
+// func (s Suite) Test_File_Write(t *testing.T) {
+// 	panic("not implemented")
+// }
