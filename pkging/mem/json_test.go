@@ -1,4 +1,4 @@
-package memware
+package mem
 
 // func Test_File_JSON(t *testing.T) {
 // 	r := require.New(t)

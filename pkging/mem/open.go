@@ -1,4 +1,4 @@
-package memware
+package mem
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"github.com/markbates/pkger/pkging"
 )
 
-func (fx *Warehouse) Open(name string) (pkging.File, error) {
+func (fx *Pkger) Open(name string) (pkging.File, error) {
 	pt, err := fx.Parse(name)
 	if err != nil {
 		return nil, err

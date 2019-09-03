@@ -1,4 +1,4 @@
-package hdware
+package stdos
 
 import (
 	"net/http"
@@ -15,10 +15,10 @@ type File struct {
 	info   *pkging.FileInfo
 	her    here.Info
 	path   pkging.Path
-	pkging pkging.Warehouse
+	pkging pkging.Pkger
 }
 
-func NewFile(fx pkging.Warehouse, osf *os.File) (*File, error) {
+func NewFile(fx pkging.Pkger, osf *os.File) (*File, error) {
 
 	pt, err := fx.Parse(osf.Name())
 	if err != nil {

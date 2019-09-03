@@ -1,4 +1,4 @@
-package memware
+package mem
 
 import (
 	"bytes"
@@ -27,7 +27,7 @@ type File struct {
 	parent pkging.Path
 	writer *bytes.Buffer
 	reader io.Reader
-	pkging pkging.Warehouse
+	pkging pkging.Pkger
 }
 
 func (f *File) Seek(ofpkginget int64, whence int) (int64, error) {

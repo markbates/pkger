@@ -1,4 +1,4 @@
-package memware
+package mem
 
 import (
 	"path/filepath"
@@ -8,7 +8,7 @@ import (
 )
 
 // no such file or directory
-func (fx *Warehouse) Create(name string) (pkging.File, error) {
+func (fx *Pkger) Create(name string) (pkging.File, error) {
 	pt, err := fx.Parse(name)
 	if err != nil {
 		return nil, err

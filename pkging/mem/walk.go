@@ -1,4 +1,4 @@
-package memware
+package mem
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/markbates/pkger/pkging"
 )
 
-func (f *Warehouse) Walk(p string, wf filepath.WalkFunc) error {
+func (f *Pkger) Walk(p string, wf filepath.WalkFunc) error {
 	keys := f.files.Keys()
 
 	pt, err := f.Parse(p)

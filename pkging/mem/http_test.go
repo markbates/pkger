@@ -1,9 +1,9 @@
-package memware
+package mem
 
 // func Test_HTTP_Dir(t *testing.T) {
 // 	r := require.New(t)
 //
-// 	fs := NewWarehouse()
+// 	fs := NewPkger()
 //
 // 	r.NoError(Folder.Create(fs))
 //
@@ -24,7 +24,7 @@ package memware
 // func Test_HTTP_File_Memory(t *testing.T) {
 // 	r := require.New(t)
 //
-// 	fs := NewWarehouse()
+// 	fs := NewPkger()
 // 	r.NoError(Folder.Create(fs))
 //
 // 	dir, err := fs.Open("/")
@@ -44,7 +44,7 @@ package memware
 // func Test_HTTP_Dir_Memory_StripPrefix(t *testing.T) {
 // 	r := require.New(t)
 //
-// 	fs := NewWarehouse()
+// 	fs := NewPkger()
 // 	r.NoError(Folder.Create(fs))
 //
 // 	dir, err := fs.Open("/public")

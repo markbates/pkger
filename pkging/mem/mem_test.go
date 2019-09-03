@@ -1,14 +1,14 @@
-package memware
+package mem
 
 import (
 	"testing"
 
 	"github.com/markbates/pkger/here"
-	"github.com/markbates/pkger/pkging/waretest"
+	"github.com/markbates/pkger/pkging/pkgtest"
 	"github.com/stretchr/testify/require"
 )
 
-func Test_Warehouse(t *testing.T) {
+func Test_Pkger(t *testing.T) {
 	r := require.New(t)
 
 	info, err := here.Current()
@@ -20,7 +20,7 @@ func Test_Warehouse(t *testing.T) {
 
 	WithInfo(wh, info)
 
-	suite, err := waretest.NewSuite(wh)
+	suite, err := pkgtest.NewSuite(wh)
 	r.NoError(err)
 
 	suite.Test(t)

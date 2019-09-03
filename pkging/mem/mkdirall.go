@@ -1,4 +1,4 @@
-package memware
+package mem
 
 import (
 	"os"
@@ -8,7 +8,7 @@ import (
 	"github.com/markbates/pkger/pkging"
 )
 
-func (fx *Warehouse) MkdirAll(p string, perm os.FileMode) error {
+func (fx *Pkger) MkdirAll(p string, perm os.FileMode) error {
 	path, err := fx.Parse(p)
 	if err != nil {
 		return err

@@ -1,4 +1,4 @@
-package hdware
+package stdos
 
 import (
 	"fmt"
@@ -12,15 +12,15 @@ import (
 	"github.com/markbates/pkger/pkging"
 )
 
-var _ pkging.Warehouse = &Warehouse{}
+var _ pkging.Pkger = &Pkger{}
 
-type Warehouse struct {
+type Pkger struct {
 	infos   *maps.Infos
 	paths   *maps.Paths
 	current here.Info
 }
 
-func (f *Warehouse) Abs(p string) (string, error) {
+func (f *Pkger) Abs(p string) (string, error) {
 	pt, err := f.Parse(p)
 	if err != nil {
 		return "", err
@@ -28,7 +28,7 @@ func (f *Warehouse) Abs(p string) (string, error) {
 	return f.AbsPath(pt)
 }
 
-func (f *Warehouse) AbsPath(pt pkging.Path) (string, error) {
+func (f *Pkger) AbsPath(pt pkging.Path) (string, error) {
 	if pt.Pkg == f.current.ImportPath {
 		return filepath.Join(f.current.Dir, pt.Name), nil
 	}
@@ -39,12 +39,12 @@ func (f *Warehouse) AbsPath(pt pkging.Path) (string, error) {
 	return filepath.Join(info.Dir, pt.Name), nil
 }
 
-func New() (*Warehouse, error) {
+func New() (*Pkger, error) {
 	info, err := here.Current()
 	if err != nil {
 		return nil, err
 	}
-	return &Warehouse{
+	return &Pkger{
 		infos: &maps.Infos{},
 		paths: &maps.Paths{
 			Current: info,
@@ -53,7 +53,7 @@ func New() (*Warehouse, error) {
 	}, nil
 }
 
-func (fx *Warehouse) Create(name string) (pkging.File, error) {
+func (fx *Pkger) Create(name string) (pkging.File, error) {
 	name, err := fx.Abs(name)
 	if err != nil {
 		return nil, err
@@ -65,11 +65,11 @@ func (fx *Warehouse) Create(name string) (pkging.File, error) {
 	return NewFile(fx, f)
 }
 
-func (f *Warehouse) Current() (here.Info, error) {
+func (f *Pkger) Current() (here.Info, error) {
 	return f.current, nil
 }
 
-func (f *Warehouse) Info(p string) (here.Info, error) {
+func (f *Pkger) Info(p string) (here.Info, error) {
 	info, ok := f.infos.Load(p)
 	if ok {
 		return info, nil
@@ -83,7 +83,7 @@ func (f *Warehouse) Info(p string) (here.Info, error) {
 	return info, nil
 }
 
-func (f *Warehouse) MkdirAll(p string, perm os.FileMode) error {
+func (f *Pkger) MkdirAll(p string, perm os.FileMode) error {
 	p, err := f.Abs(p)
 	if err != nil {
 		return err
@@ -91,7 +91,7 @@ func (f *Warehouse) MkdirAll(p string, perm os.FileMode) error {
 	return os.MkdirAll(p, perm)
 }
 
-func (fx *Warehouse) Open(name string) (pkging.File, error) {
+func (fx *Pkger) Open(name string) (pkging.File, error) {
 	name, err := fx.Abs(name)
 	if err != nil {
 		return nil, err
@@ -103,11 +103,11 @@ func (fx *Warehouse) Open(name string) (pkging.File, error) {
 	return NewFile(fx, f)
 }
 
-func (f *Warehouse) Parse(p string) (pkging.Path, error) {
+func (f *Pkger) Parse(p string) (pkging.Path, error) {
 	return f.paths.Parse(p)
 }
 
-func (f *Warehouse) ReadFile(s string) ([]byte, error) {
+func (f *Pkger) ReadFile(s string) ([]byte, error) {
 	s, err := f.Abs(s)
 	if err != nil {
 		return nil, err
@@ -115,7 +115,7 @@ func (f *Warehouse) ReadFile(s string) ([]byte, error) {
 	return ioutil.ReadFile(s)
 }
 
-func (f *Warehouse) Stat(name string) (os.FileInfo, error) {
+func (f *Pkger) Stat(name string) (os.FileInfo, error) {
 	pt, err := f.Parse(name)
 	if err != nil {
 		return nil, err
@@ -136,7 +136,7 @@ func (f *Warehouse) Stat(name string) (os.FileInfo, error) {
 	return info, nil
 }
 
-func (f *Warehouse) Walk(p string, wf filepath.WalkFunc) error {
+func (f *Pkger) Walk(p string, wf filepath.WalkFunc) error {
 	fp, err := f.Abs(p)
 	if err != nil {
 		return err
@@ -162,7 +162,7 @@ func (f *Warehouse) Walk(p string, wf filepath.WalkFunc) error {
 	return err
 }
 
-func (fx *Warehouse) Remove(name string) error {
+func (fx *Pkger) Remove(name string) error {
 	name, err := fx.Abs(name)
 	if err != nil {
 		return err
@@ -170,7 +170,7 @@ func (fx *Warehouse) Remove(name string) error {
 	return os.Remove(name)
 }
 
-func (fx *Warehouse) RemoveAll(name string) error {
+func (fx *Pkger) RemoveAll(name string) error {
 	name, err := fx.Abs(name)
 	if err != nil {
 		return err

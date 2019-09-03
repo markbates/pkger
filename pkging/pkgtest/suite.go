@@ -1,4 +1,4 @@
-package waretest
+package pkgtest
 
 import (
 	"fmt"
@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/markbates/pkger/pkging"
+	"github.com/markbates/pkger/pkging/pkgutil"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,12 +20,12 @@ const hart = "/easy/listening/grant.hart"
 const husker = "github.com/husker/du"
 
 type Suite struct {
-	pkging.Warehouse
+	pkging.Pkger
 }
 
-func NewSuite(yourpkging pkging.Warehouse) (Suite, error) {
+func NewSuite(yourpkging pkging.Pkger) (Suite, error) {
 	suite := Suite{
-		Warehouse: yourpkging,
+		Pkger: yourpkging,
 	}
 	return suite, nil
 }
@@ -46,7 +47,7 @@ func (s Suite) Test(t *testing.T) {
 
 func (s Suite) sub(t *testing.T, m reflect.Method) {
 	name := strings.TrimPrefix(m.Name, "Test_")
-	name = fmt.Sprintf("%T_%s", s.Warehouse, name)
+	name = fmt.Sprintf("%T_%s", s.Pkger, name)
 	t.Run(name, func(st *testing.T) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -417,6 +418,18 @@ func (s Suite) Test_Walk(t *testing.T) {
 	panic("not implemented")
 }
 
+func (s Suite) Test_Remove(t *testing.T) {
+	panic("not implemented")
+}
+
+func (s Suite) Test_HTTP_Open(t *testing.T) {
+	panic("not implemented")
+}
+
+func (s Suite) Test_HTTP_Readdir(t *testing.T) {
+	panic("not implemented")
+}
+
 func (s Suite) Test_ReadFile(t *testing.T) {
 	r := require.New(t)
 
@@ -452,7 +465,7 @@ func (s Suite) Test_ReadFile(t *testing.T) {
 			r.NoError(err)
 			r.NoError(f.Close())
 
-			b, err := s.ReadFile(tt.in)
+			b, err := pkgutil.ReadFile(s, tt.in)
 			r.NoError(err)
 			r.Equal(body, string(b))
 		})

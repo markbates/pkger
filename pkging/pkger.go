@@ -7,16 +7,13 @@ import (
 	"github.com/markbates/pkger/here"
 )
 
-type Warehouse interface {
+type Pkger interface {
 	Parse(p string) (Path, error)
 	Abs(string) (string, error)
 	AbsPath(Path) (string, error)
 
 	Current() (here.Info, error)
 	Info(p string) (here.Info, error)
-
-	// ReadFile reads the file named by filename and returns the contents. A successful call returns err == nil, not err == EOF. Because ReadFile reads the whole file, it does not treat an EOF from Read as an error to be reported.
-	ReadFile(s string) ([]byte, error)
 
 	// Create creates the named file with mode 0666 (before umask) - It's actually 0644, truncating it if it already exists. If successful, methods on the returned File can be used for I/O; the associated file descriptor has mode O_RDWR.
 	Create(name string) (File, error)

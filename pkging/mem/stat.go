@@ -1,11 +1,11 @@
-package memware
+package mem
 
 import (
 	"fmt"
 	"os"
 )
 
-func (fx *Warehouse) Stat(name string) (os.FileInfo, error) {
+func (fx *Pkger) Stat(name string) (os.FileInfo, error) {
 	pt, err := fx.Parse(name)
 	if err != nil {
 		return nil, err

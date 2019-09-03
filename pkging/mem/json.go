@@ -1,4 +1,4 @@
-package memware
+package mem
 
 import (
 	"encoding/json"
