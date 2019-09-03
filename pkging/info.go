@@ -65,9 +65,22 @@ func NewFileInfo(info os.FileInfo) *FileInfo {
 }
 
 func WithName(name string, info os.FileInfo) *FileInfo {
-	if ft, ok := info.(*FileInfo); ok {
-		ft.Details.Name = cleanName(name)
-		return ft
+	s := cleanName(name)
+
+	if !strings.HasPrefix(s, "/") {
+		s = "/" + s
+	}
+
+	fo := NewFileInfo(info)
+	fo.Details.Name = cleanName(name)
+	return fo
+}
+
+func WithRelName(name string, info os.FileInfo) *FileInfo {
+	s := cleanName(name)
+
+	if !strings.HasPrefix(s, "/") {
+		s = "/" + s
 	}
 
 	fo := NewFileInfo(info)
@@ -78,9 +91,6 @@ func WithName(name string, info os.FileInfo) *FileInfo {
 func cleanName(s string) string {
 	if strings.Contains(s, "\\") {
 		s = strings.Replace(s, "\\", "/", -1)
-	}
-	if !strings.HasPrefix(s, "/") {
-		s = "/" + s
 	}
 	return s
 }

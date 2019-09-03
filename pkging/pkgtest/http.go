@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/markbates/pkger/pkging/pkgutil"
@@ -64,9 +63,9 @@ func (s Suite) Test_HTTP_Dir(t *testing.T) {
 		req string
 		exp string
 	}{
-		{in: "/", req: "/", exp: `>/public/</a`},
-		{in: ":" + "/", req: "/", exp: `>/public/</a`},
-		{in: ip + ":" + "/", req: "/", exp: `>/public/</a`},
+		{in: "/", req: "/", exp: `>public/</a`},
+		{in: ":" + "/", req: "/", exp: `>public/</a`},
+		{in: ip + ":" + "/", req: "/", exp: `>public/</a`},
 	}
 
 	for _, tt := range table {
@@ -105,7 +104,7 @@ func (s Suite) Test_HTTP_Dir_IndexHTML(t *testing.T) {
 		{in: ip + ":" + "/public", req: "/"},
 	}
 
-	exp := "!/public/index.html"
+	exp := "index.html"
 	for _, tt := range table {
 		t.Run(tt.in+exp, func(st *testing.T) {
 			r := require.New(st)
@@ -123,8 +122,8 @@ func (s Suite) Test_HTTP_Dir_IndexHTML(t *testing.T) {
 			b, err := ioutil.ReadAll(res.Body)
 			r.NoError(err)
 
-			body := strings.TrimSpace(string(b))
-			r.Equal(exp, body)
+			body := string(b)
+			r.Contains(body, exp)
 			r.NotContains(body, "mark.png")
 		})
 	}

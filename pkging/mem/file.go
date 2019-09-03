@@ -151,11 +151,7 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 			return nil
 		}
 
-		info = pkging.WithName(strings.TrimPrefix(info.Name(), f.parent.Name), info)
-		if minf, ok := info.(*pkging.FileInfo); ok {
-			minf.Details.Name = strings.TrimPrefix(info.Name(), "/")
-			info = minf
-		}
+		info = pkging.WithRelName(strings.TrimPrefix(info.Name(), f.parent.Name), info)
 		infos = append(infos, info)
 		if info.IsDir() && path != root {
 			return filepath.SkipDir
