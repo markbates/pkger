@@ -46,8 +46,7 @@ func (s Suite) Test(t *testing.T) {
 }
 
 func (s Suite) sub(t *testing.T, m reflect.Method) {
-	name := strings.TrimPrefix(m.Name, "Test_")
-	name = fmt.Sprintf("%T_%s", s.Pkger, name)
+	name := fmt.Sprintf("%T/%s", s.Pkger, m.Name)
 	t.Run(name, func(st *testing.T) {
 		defer func() {
 			if err := recover(); err != nil {
