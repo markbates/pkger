@@ -26,7 +26,7 @@ func (s Suite) Test_Util_ReadFile(t *testing.T) {
 	}
 
 	for _, tt := range table {
-		t.Run(tt.in, func(st *testing.T) {
+		s.Run(t, tt.in, func(st *testing.T) {
 
 			r := require.New(st)
 

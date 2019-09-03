@@ -297,7 +297,7 @@ func (s Suite) Test_Parse(t *testing.T) {
 	}
 
 	for _, tt := range table {
-		t.Run(tt.in, func(st *testing.T) {
+		s.Run(t, tt.in, func(st *testing.T) {
 			r := require.New(st)
 
 			pt, err := s.Parse(tt.in)
@@ -326,7 +326,7 @@ func (s Suite) Test_Stat_Error(t *testing.T) {
 	}
 
 	for _, tt := range table {
-		t.Run(tt.in, func(st *testing.T) {
+		s.Run(t, tt.in, func(st *testing.T) {
 
 			r := require.New(st)
 
@@ -360,7 +360,7 @@ func (s Suite) Test_Stat_Dir(t *testing.T) {
 	}
 
 	for _, tt := range table {
-		t.Run(tt.in, func(st *testing.T) {
+		s.Run(t, tt.in, func(st *testing.T) {
 
 			r := require.New(st)
 
@@ -394,7 +394,7 @@ func (s Suite) Test_Stat_File(t *testing.T) {
 	}
 
 	for _, tt := range table {
-		t.Run(tt.in, func(st *testing.T) {
+		s.Run(t, tt.in, func(st *testing.T) {
 
 			r := require.New(st)
 

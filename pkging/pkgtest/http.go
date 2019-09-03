@@ -93,8 +93,6 @@ func (s Suite) Test_HTTP_Dir_IndexHTML(t *testing.T) {
 	r.NoError(err)
 	ip := cur.ImportPath
 
-	r.NoError(s.LoadFolder())
-
 	table := []struct {
 		in  string
 		req string
@@ -106,8 +104,10 @@ func (s Suite) Test_HTTP_Dir_IndexHTML(t *testing.T) {
 
 	exp := "index.html"
 	for _, tt := range table {
-		t.Run(tt.in+exp, func(st *testing.T) {
+		s.Run(t, tt.in+exp, func(st *testing.T) {
 			r := require.New(st)
+
+			r.NoError(s.LoadFolder())
 
 			dir, err := s.Open(tt.in)
 			r.NoError(err)
