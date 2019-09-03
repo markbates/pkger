@@ -56,8 +56,6 @@ func (s Suite) Test_HTTP_Dir(t *testing.T) {
 	r.NoError(err)
 	ip := cur.ImportPath
 
-	r.NoError(s.LoadFolder())
-
 	table := []struct {
 		in  string
 		req string
@@ -69,20 +67,25 @@ func (s Suite) Test_HTTP_Dir(t *testing.T) {
 	}
 
 	for _, tt := range table {
+		s.Run(t, tt.in+tt.req, func(st *testing.T) {
 
-		dir, err := s.Open(tt.in)
-		r.NoError(err)
-		ts := httptest.NewServer(http.FileServer(dir))
-		defer ts.Close()
+			r := require.New(t)
+			r.NoError(s.LoadFolder())
 
-		res, err := http.Get(ts.URL + tt.req)
-		r.NoError(err)
-		r.Equal(200, res.StatusCode)
+			dir, err := s.Open(tt.in)
+			r.NoError(err)
+			ts := httptest.NewServer(http.FileServer(dir))
+			defer ts.Close()
 
-		b, err := ioutil.ReadAll(res.Body)
-		r.NoError(err)
-		r.Contains(string(b), tt.exp)
-		r.NotContains(string(b), "mark.png")
+			res, err := http.Get(ts.URL + tt.req)
+			r.NoError(err)
+			r.Equal(200, res.StatusCode)
+
+			b, err := ioutil.ReadAll(res.Body)
+			r.NoError(err)
+			r.Contains(string(b), tt.exp)
+			r.NotContains(string(b), "mark.png")
+		})
 	}
 }
 
