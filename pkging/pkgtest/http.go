@@ -74,6 +74,8 @@ func (s Suite) Test_HTTP_Dir(t *testing.T) {
 
 			dir, err := s.Open(tt.in)
 			r.NoError(err)
+			defer dir.Close()
+
 			ts := httptest.NewServer(http.FileServer(dir))
 			defer ts.Close()
 
@@ -114,6 +116,7 @@ func (s Suite) Test_HTTP_Dir_IndexHTML(t *testing.T) {
 
 			dir, err := s.Open(tt.in)
 			r.NoError(err)
+			defer dir.Close()
 
 			ts := httptest.NewServer(http.FileServer(dir))
 			defer ts.Close()
@@ -132,25 +135,49 @@ func (s Suite) Test_HTTP_Dir_IndexHTML(t *testing.T) {
 	}
 }
 
-// func (s Suite) Test_HTTP_File_Memory(t *testing.T) {
+// func (s Suite) Test_HTTP_File(t *testing.T) {
 // 	r := require.New(t)
 //
-// 	fs := NewPkger()
-// 	r.NoError(Folder.Create(fs))
-//
-// 	dir, err := fs.Open("/")
+// 	cur, err := s.Current()
 // 	r.NoError(err)
-// 	ts := httptest.NewServer(http.FileServer(dir))
-// 	defer ts.Close()
+// 	ip := cur.ImportPath
 //
-// 	res, err := http.Get(ts.URL + "/public/images/mark.png")
-// 	r.NoError(err)
-// 	r.Equal(200, res.StatusCode)
+// 	table := []struct {
+// 		in string
+// 	}{
+// 		{in: "/public"},
+// 		{in: ":" + "/public"},
+// 		{in: ip + ":" + "/public"},
+// 	}
 //
-// 	b, err := ioutil.ReadAll(res.Body)
-// 	r.NoError(err)
-// 	r.Contains(string(b), `!/public/images/mark.png`)
+// 	for _, tt := range table {
+// 		s.Run(t, tt.in, func(st *testing.T) {
+//
+// 			r := require.New(st)
+//
+// 			r.NoError(s.LoadFolder())
+//
+// 			dir, err := s.Open(tt.in)
+// 			r.NoError(err)
+// 			defer dir.Close()
+//
+// 			ts := httptest.NewServer(http.FileServer(dir))
+// 			defer ts.Close()
+//
+// 			res, err := http.Get(ts.URL + "/images/mark.png")
+// 			r.NoError(err)
+// 			r.Equal(200, res.StatusCode)
+//
+// 			b, err := ioutil.ReadAll(res.Body)
+// 			r.NoError(err)
+//
+// 			body := string(b)
+// 			r.Contains(body, `!/public/images/mark.png`)
+// 		})
+// 	}
+//
 // }
+
 //
 // func (s Suite) Test_HTTP_Dir_Memory_StripPrefix(t *testing.T) {
 // 	r := require.New(t)
