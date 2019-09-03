@@ -33,21 +33,11 @@ func (s Suite) Test_File_Info(t *testing.T) {
 
 			f, err := s.Open(tt.in)
 			r.NoError(err)
+			r.Equal(mould, f.Name())
 			r.Equal(cur.ImportPath, f.Info().ImportPath)
+			r.NoError(f.Close())
 		})
 	}
-}
-
-func (s Suite) Test_File_Name(t *testing.T) {
-	panic("not implemented")
-}
-
-func (s Suite) Test_File_Open(t *testing.T) {
-	panic("not implemented")
-}
-
-func (s Suite) Test_File_Path(t *testing.T) {
-	panic("not implemented")
 }
 
 func (s Suite) Test_File_Read(t *testing.T) {

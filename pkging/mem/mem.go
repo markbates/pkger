@@ -86,26 +86,12 @@ func (fx *Pkger) RemoveAll(name string) error {
 		return err
 	}
 
-	return fx.Walk("/", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
+	fx.files.Range(func(key pkging.Path, file pkging.File) bool {
+		if strings.HasPrefix(key.Name, pt.Name) {
+			fx.files.Delete(key)
 		}
-
-		if !strings.HasPrefix(path, pt.String()) {
-			return nil
-		}
-
-		ph, err := fx.Parse(path)
-		if err != nil {
-			return err
-		}
-		fx.files.Delete(ph)
-		return nil
+		return true
 	})
-	if _, ok := fx.files.Load(pt); !ok {
-		return &os.PathError{"remove", pt.String(), fmt.Errorf("no such file or directory")}
-	}
 
-	fx.files.Delete(pt)
 	return nil
 }

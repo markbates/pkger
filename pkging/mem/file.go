@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -149,10 +150,13 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 		if pt.Name == f.parent.Name {
 			return nil
 		}
-		// if f.parent.Name != "/" {
+
 		info = pkging.WithName(strings.TrimPrefix(info.Name(), f.parent.Name), info)
-		// }
 		infos = append(infos, info)
+		if info.IsDir() && path != root {
+			return filepath.SkipDir
+		}
+
 		return nil
 	})
 
