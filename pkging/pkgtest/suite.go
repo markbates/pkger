@@ -45,8 +45,7 @@ func (s Suite) Test(t *testing.T) {
 	}
 }
 
-func (s Suite) sub(t *testing.T, m reflect.Method) {
-	name := fmt.Sprintf("%T/%s", s.Pkger, m.Name)
+func (s Suite) Run(t *testing.T, name string, fn func(t *testing.T)) {
 	t.Run(name, func(st *testing.T) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -62,6 +61,13 @@ func (s Suite) sub(t *testing.T, m reflect.Method) {
 		cleaner()
 
 		defer cleaner()
+		fn(st)
+	})
+}
+
+func (s Suite) sub(t *testing.T, m reflect.Method) {
+	name := fmt.Sprintf("%T/%s", s.Pkger, m.Name)
+	s.Run(t, name, func(st *testing.T) {
 		m.Func.Call([]reflect.Value{
 			reflect.ValueOf(s),
 			reflect.ValueOf(st),
@@ -104,7 +110,7 @@ func (s Suite) Test_Create(t *testing.T) {
 	}
 
 	for _, tt := range table {
-		t.Run(tt.in, func(st *testing.T) {
+		s.Run(t, tt.in, func(st *testing.T) {
 			r := require.New(st)
 
 			pt, err := s.Parse(tt.in)
@@ -146,7 +152,7 @@ func (s Suite) Test_Create_No_MkdirAll(t *testing.T) {
 	}
 
 	for _, tt := range table {
-		t.Run(tt.in, func(st *testing.T) {
+		s.Run(t, tt.in, func(st *testing.T) {
 			r := require.New(st)
 
 			pt, err := s.Parse(tt.in)
@@ -198,7 +204,7 @@ func (s Suite) Test_MkdirAll(t *testing.T) {
 	}
 
 	for _, tt := range table {
-		t.Run(tt.in, func(st *testing.T) {
+		s.Run(t, tt.in, func(st *testing.T) {
 			r := require.New(st)
 
 			pt, err := s.Parse(tt.in)
@@ -237,7 +243,7 @@ func (s Suite) Test_Open_File(t *testing.T) {
 	}
 
 	for _, tt := range table {
-		t.Run(tt.in, func(st *testing.T) {
+		s.Run(t, tt.in, func(st *testing.T) {
 
 			r := require.New(st)
 
