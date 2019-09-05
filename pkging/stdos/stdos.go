@@ -20,18 +20,6 @@ type Pkger struct {
 	current here.Info
 }
 
-func (p *Pkger) OpenFile(name string, flag int, perm os.FileMode) (pkging.File, error) {
-	name, err := p.Abs(name)
-	if err != nil {
-		return nil, err
-	}
-	f, err := os.OpenFile(name, flag, perm)
-	if err != nil {
-		return nil, err
-	}
-	return NewFile(p, f)
-}
-
 func (f *Pkger) Abs(p string) (string, error) {
 	pt, err := f.Parse(p)
 	if err != nil {

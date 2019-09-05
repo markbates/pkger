@@ -418,18 +418,10 @@ func (s Suite) Test_Stat_File(t *testing.T) {
 	}
 }
 
-func (s Suite) Test_Walk(t *testing.T) {
-	panic("not implemented")
-}
-
-func (s Suite) Test_Remove(t *testing.T) {
-	panic("not implemented")
-}
-
-func (s Suite) Test_HTTP_Open(t *testing.T) {
-	panic("not implemented")
-}
-
-func (s Suite) Test_HTTP_Readdir(t *testing.T) {
-	panic("not implemented")
-}
+// func (s Suite) Test_Walk(t *testing.T) {
+// 	panic("not implemented")
+// }
+//
+// func (s Suite) Test_Remove(t *testing.T) {
+// 	panic("not implemented")
+// }
