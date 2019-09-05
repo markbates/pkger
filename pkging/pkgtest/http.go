@@ -135,48 +135,48 @@ func (s Suite) Test_HTTP_Dir_IndexHTML(t *testing.T) {
 	}
 }
 
-// func (s Suite) Test_HTTP_File(t *testing.T) {
-// 	r := require.New(t)
-//
-// 	cur, err := s.Current()
-// 	r.NoError(err)
-// 	ip := cur.ImportPath
-//
-// 	table := []struct {
-// 		in string
-// 	}{
-// 		{in: "/public"},
-// 		{in: ":" + "/public"},
-// 		{in: ip + ":" + "/public"},
-// 	}
-//
-// 	for _, tt := range table {
-// 		s.Run(t, tt.in, func(st *testing.T) {
-//
-// 			r := require.New(st)
-//
-// 			r.NoError(s.LoadFolder())
-//
-// 			dir, err := s.Open(tt.in)
-// 			r.NoError(err)
-// 			defer dir.Close()
-//
-// 			ts := httptest.NewServer(http.FileServer(dir))
-// 			defer ts.Close()
-//
-// 			res, err := http.Get(ts.URL + "/images/mark.png")
-// 			r.NoError(err)
-// 			r.Equal(200, res.StatusCode)
-//
-// 			b, err := ioutil.ReadAll(res.Body)
-// 			r.NoError(err)
-//
-// 			body := string(b)
-// 			r.Contains(body, `!/public/images/mark.png`)
-// 		})
-// 	}
-//
-// }
+func (s Suite) Test_HTTP_File(t *testing.T) {
+	r := require.New(t)
+
+	cur, err := s.Current()
+	r.NoError(err)
+	ip := cur.ImportPath
+
+	table := []struct {
+		in string
+	}{
+		{in: "/public"},
+		{in: ":" + "/public"},
+		{in: ip + ":" + "/public"},
+	}
+
+	for _, tt := range table {
+		s.Run(t, tt.in, func(st *testing.T) {
+
+			r := require.New(st)
+
+			r.NoError(s.LoadFolder())
+
+			dir, err := s.Open(tt.in)
+			r.NoError(err)
+			defer dir.Close()
+
+			ts := httptest.NewServer(http.FileServer(dir))
+			defer ts.Close()
+
+			res, err := http.Get(ts.URL + "/images/mark.png")
+			r.NoError(err)
+			r.Equal(200, res.StatusCode)
+
+			b, err := ioutil.ReadAll(res.Body)
+			r.NoError(err)
+
+			body := string(b)
+			r.Contains(body, `!/public/images/mark.png`)
+		})
+	}
+
+}
 
 //
 // func (s Suite) Test_HTTP_Dir_Memory_StripPrefix(t *testing.T) {

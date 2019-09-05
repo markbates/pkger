@@ -18,11 +18,7 @@ func main() {
 	}
 	defer pub.Close()
 
-	fi, err := pub.Stat()
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(fi)
+	fmt.Println(pub.Path())
 
 	mux.Handle("/t", http.StripPrefix("/t", tmplHandler()))
 	mux.Handle("/", http.FileServer(pub))

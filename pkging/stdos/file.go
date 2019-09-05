@@ -3,6 +3,7 @@ package stdos
 import (
 	"net/http"
 	"os"
+	"path"
 
 	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/pkging"
@@ -60,8 +61,31 @@ func (f *File) Name() string {
 	return f.info.Name()
 }
 
+type HTTP struct {
+	pkging.File
+	osf *os.File
+}
+
+func (f *HTTP) Readdir(count int) ([]os.FileInfo, error) {
+	osinfos, err := f.osf.Readdir(count)
+	if err != nil {
+		return nil, err
+	}
+
+	infos := make([]os.FileInfo, len(osinfos))
+	for i, info := range osinfos {
+		infos[i] = pkging.WithName(info.Name(), info)
+	}
+	return infos, err
+}
+
 func (f *File) Open(name string) (http.File, error) {
-	return f.File, nil
+	fp := path.Join(f.Path().Name, name)
+	f2, err := f.pkging.Open(fp)
+	if err != nil {
+		return nil, err
+	}
+	return &HTTP{File: f2, osf: f.File}, nil
 }
 
 func (f *File) Path() pkging.Path {

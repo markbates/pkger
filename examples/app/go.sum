@@ -10,6 +10,7 @@ github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
 github.com/markbates/errx v1.1.0/go.mod h1:PLa46Oex9KNbVDZhKel8v1OT7hD5JZ2eI7AHhA0wswc=
 github.com/markbates/pkger v0.0.0-20190830024022-c5e3a7de4d41 h1:bFEHpLBby7Qdvq92qw0TudeOfUKIZLcrweE/MMlNueI=
 github.com/markbates/pkger v0.0.0-20190830024022-c5e3a7de4d41/go.mod h1:M9VeozwduQUCr6z54kJrK9JegpbOv4wiePSbgSbFOew=
+github.com/markbates/pkger/examples/app v0.0.0-20190830175641-68f3a2a4571d/go.mod h1:cWIt8Tz1UjmFa2KRaVgTfWPfHP+gprnzxDxNpo4YDxo=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
