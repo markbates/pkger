@@ -23,7 +23,14 @@ func main() {
 	mux.Handle("/t", http.StripPrefix("/t", tmplHandler()))
 	mux.Handle("/", http.FileServer(pub))
 
-	log.Fatal(http.ListenAndServe(":3000", mux))
+	log.Fatal(http.ListenAndServe(":3000", logger(mux)))
+}
+
+func logger(h http.Handler) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		log.Println(req.Method, req.URL.String())
+		h.ServeHTTP(res, req)
+	}
 }
 
 func tmplHandler() http.HandlerFunc {
