@@ -2,7 +2,6 @@ package stdos
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -105,14 +104,6 @@ func (fx *Pkger) Open(name string) (pkging.File, error) {
 
 func (f *Pkger) Parse(p string) (pkging.Path, error) {
 	return f.paths.Parse(p)
-}
-
-func (f *Pkger) ReadFile(s string) ([]byte, error) {
-	s, err := f.Abs(s)
-	if err != nil {
-		return nil, err
-	}
-	return ioutil.ReadFile(s)
 }
 
 func (f *Pkger) Stat(name string) (os.FileInfo, error) {

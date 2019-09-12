@@ -10,7 +10,11 @@ import (
 
 func (s Suite) Test_File_Info(t *testing.T) {
 	r := require.New(t)
-	cur, err := s.Current()
+
+	pkg, err := s.Make()
+	r.NoError(err)
+
+	cur, err := pkg.Current()
 	r.NoError(err)
 
 	ip := cur.ImportPath
@@ -26,12 +30,12 @@ func (s Suite) Test_File_Info(t *testing.T) {
 		s.Run(t, tt.in, func(st *testing.T) {
 			r := require.New(st)
 
-			r.NoError(s.RemoveAll(mould))
-			r.NoError(s.MkdirAll(filepath.Dir(tt.in), 0755))
-			err := pkgutil.WriteFile(s, tt.in, []byte(mould), 0644)
+			r.NoError(pkg.RemoveAll(mould))
+			r.NoError(pkg.MkdirAll(filepath.Dir(tt.in), 0755))
+			err := pkgutil.WriteFile(pkg, tt.in, []byte(mould), 0644)
 			r.NoError(err)
 
-			f, err := s.Open(tt.in)
+			f, err := pkg.Open(tt.in)
 			r.NoError(err)
 			r.Equal(mould, f.Name())
 			r.Equal(cur.ImportPath, f.Info().ImportPath)

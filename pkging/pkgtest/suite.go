@@ -20,12 +20,21 @@ const hart = "/easy/listening/grant.hart"
 const husker = "github.com/husker/du"
 
 type Suite struct {
-	pkging.Pkger
+	Name string
+	gen  func() (pkging.Pkger, error)
 }
 
-func NewSuite(yourpkging pkging.Pkger) (Suite, error) {
+func (s Suite) Make() (pkging.Pkger, error) {
+	if s.gen == nil {
+		return nil, fmt.Errorf("missing generator function")
+	}
+	return s.gen()
+}
+
+func NewSuite(name string, fn func() (pkging.Pkger, error)) (Suite, error) {
 	suite := Suite{
-		Pkger: yourpkging,
+		Name: name,
+		gen:  fn,
 	}
 	return suite, nil
 }
@@ -34,39 +43,60 @@ func (s Suite) Test(t *testing.T) {
 	rv := reflect.ValueOf(s)
 	rt := rv.Type()
 	if rt.NumMethod() == 0 {
-		t.Fatalf("something went wrong wrong with %s %T", s, s)
+		t.Fatalf("something went wrong wrong with %s", s.Name)
 	}
 	for i := 0; i < rt.NumMethod(); i++ {
 		m := rt.Method(i)
 		if !strings.HasPrefix(m.Name, "Test_") {
 			continue
 		}
+
 		s.sub(t, m)
 	}
 }
 
+// func (s Suite) clone() (Suite, error) {
+// 	if ns, ok := s.Pkger.(Newable); ok {
+// 		pkg, err := ns.New()
+// 		if err != nil {
+// 			return s, err
+// 		}
+// 		s, err = NewSuite(pkg)
+// 		if err != nil {
+// 			return s, err
+// 		}
+// 	}
+// 	if ns, ok := s.Pkger.(WithRootable); ok {
+// 		dir, err := ioutil.TempDir("", "")
+// 		if err != nil {
+// 			return s, err
+// 		}
+// 		// defer opkg.RemoveAll(dir)
+//
+// 		pkg, err := ns.WithRoot(dir)
+// 		if err != nil {
+// 			return s, err
+// 		}
+// 		s, err = NewSuite(pkg)
+// 		if err != nil {
+// 			return s, err
+// 		}
+// 	}
+// 	return s, nil
+// }
+
 func (s Suite) Run(t *testing.T, name string, fn func(t *testing.T)) {
 	t.Run(name, func(st *testing.T) {
-		defer func() {
-			if err := recover(); err != nil {
-				st.Fatal(err)
-			}
-		}()
-
-		cleaner := func() {
-			if err := s.Clean(); err != nil {
-				st.Fatal(err)
-			}
-		}
-		cleaner()
-
-		defer cleaner()
 		fn(st)
 	})
 }
 
 func (s Suite) sub(t *testing.T, m reflect.Method) {
-	name := fmt.Sprintf("%T/%s", s.Pkger, m.Name)
+	name := fmt.Sprintf("%s/%s", s.Name, m.Name)
+	// s, err := s.clone()
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 	s.Run(t, name, func(st *testing.T) {
 		m.Func.Call([]reflect.Value{
 			reflect.ValueOf(s),
@@ -75,26 +105,13 @@ func (s Suite) sub(t *testing.T, m reflect.Method) {
 	})
 }
 
-func (s Suite) Clean() error {
-	pt, err := s.Parse("/")
-	if err != nil {
-		return err
-	}
-
-	_ = pt
-	if err := s.RemoveAll(pt.Name); err != nil {
-		return err
-	}
-
-	if _, err := s.Stat(pt.Name); err == nil {
-		return fmt.Errorf("expected %q to be, you know, not there any more", pt)
-	}
-	return nil
-}
-
 func (s Suite) Test_Create(t *testing.T) {
 	r := require.New(t)
-	cur, err := s.Current()
+
+	pkg, err := s.Make()
+	r.NoError(err)
+
+	cur, err := pkg.Current()
 	r.NoError(err)
 
 	ip := cur.ImportPath
@@ -104,22 +121,18 @@ func (s Suite) Test_Create(t *testing.T) {
 		{in: mould},
 		{in: ":" + mould},
 		{in: ip + ":" + mould},
-		{in: filepath.Dir(mould)},
-		{in: ":" + filepath.Dir(mould)},
-		{in: ip + ":" + filepath.Dir(mould)},
 	}
 
 	for _, tt := range table {
 		s.Run(t, tt.in, func(st *testing.T) {
 			r := require.New(st)
 
-			pt, err := s.Parse(tt.in)
+			pt, err := pkg.Parse(tt.in)
 			r.NoError(err)
 
-			r.NoError(s.RemoveAll(pt.String()))
-			r.NoError(s.MkdirAll(filepath.Dir(pt.Name), 0755))
+			r.NoError(pkg.MkdirAll(filepath.Dir(pt.Name), 0755))
 
-			f, err := s.Create(pt.Name)
+			f, err := pkg.Create(pt.Name)
 			r.NoError(err)
 			r.Equal(pt.Name, f.Name())
 
@@ -129,14 +142,18 @@ func (s Suite) Test_Create(t *testing.T) {
 			r.Equal(pt.Name, fi.Name())
 			r.Equal(os.FileMode(0644), fi.Mode())
 			r.NotZero(fi.ModTime())
-			r.NoError(s.RemoveAll(pt.String()))
+			r.NoError(pkg.RemoveAll(pt.String()))
 		})
 	}
 }
 
 func (s Suite) Test_Create_No_MkdirAll(t *testing.T) {
 	r := require.New(t)
-	cur, err := s.Current()
+
+	pkg, err := s.Make()
+	r.NoError(err)
+
+	cur, err := pkg.Current()
 	r.NoError(err)
 
 	ip := cur.ImportPath
@@ -155,12 +172,13 @@ func (s Suite) Test_Create_No_MkdirAll(t *testing.T) {
 		s.Run(t, tt.in, func(st *testing.T) {
 			r := require.New(st)
 
-			pt, err := s.Parse(tt.in)
+			pkg, err := s.Make()
 			r.NoError(err)
 
-			r.NoError(s.RemoveAll(pt.String()))
+			pt, err := pkg.Parse(tt.in)
+			r.NoError(err)
 
-			_, err = s.Create(pt.Name)
+			_, err = pkg.Create(pt.Name)
 			r.Error(err)
 		})
 	}
@@ -169,7 +187,10 @@ func (s Suite) Test_Create_No_MkdirAll(t *testing.T) {
 func (s Suite) Test_Current(t *testing.T) {
 	r := require.New(t)
 
-	info, err := s.Current()
+	pkg, err := s.Make()
+	r.NoError(err)
+
+	info, err := pkg.Current()
 	r.NoError(err)
 	r.NotZero(info)
 }
@@ -177,10 +198,13 @@ func (s Suite) Test_Current(t *testing.T) {
 func (s Suite) Test_Info(t *testing.T) {
 	r := require.New(t)
 
-	cur, err := s.Current()
+	pkg, err := s.Make()
 	r.NoError(err)
 
-	info, err := s.Info(cur.ImportPath)
+	cur, err := pkg.Current()
+	r.NoError(err)
+
+	info, err := pkg.Info(cur.ImportPath)
 	r.NoError(err)
 	r.NotZero(info)
 
@@ -188,7 +212,11 @@ func (s Suite) Test_Info(t *testing.T) {
 
 func (s Suite) Test_MkdirAll(t *testing.T) {
 	r := require.New(t)
-	cur, err := s.Current()
+
+	pkg, err := s.Make()
+	r.NoError(err)
+
+	cur, err := pkg.Current()
 	r.NoError(err)
 
 	ip := cur.ImportPath
@@ -207,21 +235,22 @@ func (s Suite) Test_MkdirAll(t *testing.T) {
 		s.Run(t, tt.in, func(st *testing.T) {
 			r := require.New(st)
 
-			pt, err := s.Parse(tt.in)
+			pkg, err := s.Make()
 			r.NoError(err)
 
-			r.NoError(s.RemoveAll(pt.String()))
+			pt, err := pkg.Parse(tt.in)
+			r.NoError(err)
 
 			dir := filepath.Dir(pt.Name)
-			r.NoError(s.MkdirAll(dir, 0755))
+			r.NoError(pkg.MkdirAll(dir, 0755))
 
-			fi, err := s.Stat(dir)
+			fi, err := pkg.Stat(dir)
 			r.NoError(err)
 
 			r.Equal(dir, fi.Name())
 			r.Equal(os.FileMode(0755), fi.Mode().Perm())
 			r.NotZero(fi.ModTime())
-			r.NoError(s.RemoveAll(pt.String()))
+			r.NoError(pkg.RemoveAll(pt.String()))
 		})
 	}
 }
@@ -229,7 +258,10 @@ func (s Suite) Test_MkdirAll(t *testing.T) {
 func (s Suite) Test_Open_File(t *testing.T) {
 	r := require.New(t)
 
-	cur, err := s.Current()
+	pkg, err := s.Make()
+	r.NoError(err)
+
+	cur, err := pkg.Current()
 	r.NoError(err)
 
 	ip := cur.ImportPath
@@ -244,20 +276,22 @@ func (s Suite) Test_Open_File(t *testing.T) {
 
 	for _, tt := range table {
 		s.Run(t, tt.in, func(st *testing.T) {
-
 			r := require.New(st)
 
-			pt, err := s.Parse(tt.in)
+			pkg, err := s.Make()
 			r.NoError(err)
 
-			r.NoError(s.RemoveAll(pt.String()))
-			r.NoError(s.MkdirAll(filepath.Dir(pt.Name), 0755))
+			pt, err := pkg.Parse(tt.in)
+			r.NoError(err)
+
+			r.NoError(pkg.RemoveAll(pt.String()))
+			r.NoError(pkg.MkdirAll(filepath.Dir(pt.Name), 0755))
 
 			body := "!" + pt.String()
 
-			pkgutil.WriteFile(s, tt.in, []byte(body), 0644)
+			pkgutil.WriteFile(pkg, tt.in, []byte(body), 0644)
 
-			f, err := s.Open(tt.in)
+			f, err := pkg.Open(tt.in)
 			r.NoError(err)
 
 			r.Equal(pt.Name, f.Path().Name)
@@ -265,7 +299,7 @@ func (s Suite) Test_Open_File(t *testing.T) {
 			r.NoError(err)
 			r.Equal(body, string(b))
 
-			b, err = pkgutil.ReadFile(s, tt.in)
+			b, err = pkgutil.ReadFile(pkg, tt.in)
 			r.NoError(err)
 			r.Equal(body, string(b))
 
@@ -277,7 +311,10 @@ func (s Suite) Test_Open_File(t *testing.T) {
 func (s Suite) Test_Parse(t *testing.T) {
 	r := require.New(t)
 
-	cur, err := s.Current()
+	pkg, err := s.Make()
+	r.NoError(err)
+
+	cur, err := pkg.Current()
 	r.NoError(err)
 
 	ip := cur.ImportPath
@@ -300,7 +337,7 @@ func (s Suite) Test_Parse(t *testing.T) {
 		s.Run(t, tt.in, func(st *testing.T) {
 			r := require.New(st)
 
-			pt, err := s.Parse(tt.in)
+			pt, err := pkg.Parse(tt.in)
 			r.NoError(err)
 			r.Equal(tt.exp, pt)
 		})
@@ -310,7 +347,10 @@ func (s Suite) Test_Parse(t *testing.T) {
 func (s Suite) Test_Stat_Error(t *testing.T) {
 	r := require.New(t)
 
-	cur, err := s.Current()
+	pkg, err := s.Make()
+	r.NoError(err)
+
+	cur, err := pkg.Current()
 	r.NoError(err)
 
 	ip := cur.ImportPath
@@ -330,12 +370,12 @@ func (s Suite) Test_Stat_Error(t *testing.T) {
 
 			r := require.New(st)
 
-			pt, err := s.Parse(tt.in)
+			pt, err := pkg.Parse(tt.in)
 			r.NoError(err)
 
-			r.NoError(s.RemoveAll(pt.String()))
+			r.NoError(pkg.RemoveAll(pt.String()))
 
-			_, err = s.Stat(tt.in)
+			_, err = pkg.Stat(tt.in)
 			r.Error(err)
 		})
 	}
@@ -344,7 +384,10 @@ func (s Suite) Test_Stat_Error(t *testing.T) {
 func (s Suite) Test_Stat_Dir(t *testing.T) {
 	r := require.New(t)
 
-	cur, err := s.Current()
+	pkg, err := s.Make()
+	r.NoError(err)
+
+	cur, err := pkg.Current()
 	r.NoError(err)
 
 	dir := filepath.Dir(mould)
@@ -364,13 +407,13 @@ func (s Suite) Test_Stat_Dir(t *testing.T) {
 
 			r := require.New(st)
 
-			pt, err := s.Parse(tt.in)
+			pt, err := pkg.Parse(tt.in)
 			r.NoError(err)
 
-			r.NoError(s.RemoveAll(pt.String()))
+			r.NoError(pkg.RemoveAll(pt.String()))
 
-			r.NoError(s.MkdirAll(pt.Name, 0755))
-			info, err := s.Stat(tt.in)
+			r.NoError(pkg.MkdirAll(pt.Name, 0755))
+			info, err := pkg.Stat(tt.in)
 			r.NoError(err)
 			r.Equal(pt.Name, info.Name())
 		})
@@ -380,7 +423,10 @@ func (s Suite) Test_Stat_Dir(t *testing.T) {
 func (s Suite) Test_Stat_File(t *testing.T) {
 	r := require.New(t)
 
-	cur, err := s.Current()
+	pkg, err := s.Make()
+	r.NoError(err)
+
+	cur, err := pkg.Current()
 	r.NoError(err)
 
 	ip := cur.ImportPath
@@ -398,20 +444,23 @@ func (s Suite) Test_Stat_File(t *testing.T) {
 
 			r := require.New(st)
 
-			pt, err := s.Parse(tt.in)
+			pkg, err := s.Make()
 			r.NoError(err)
 
-			r.NoError(s.RemoveAll(pt.String()))
-			r.NoError(s.MkdirAll(filepath.Dir(pt.Name), 0755))
+			pt, err := pkg.Parse(tt.in)
+			r.NoError(err)
 
-			f, err := s.Create(tt.in)
+			r.NoError(pkg.RemoveAll(pt.String()))
+			r.NoError(pkg.MkdirAll(filepath.Dir(pt.Name), 0755))
+
+			f, err := pkg.Create(tt.in)
 			r.NoError(err)
 
 			_, err = io.Copy(f, strings.NewReader("!"+pt.String()))
 			r.NoError(err)
 			r.NoError(f.Close())
 
-			info, err := s.Stat(tt.in)
+			info, err := pkg.Stat(tt.in)
 			r.NoError(err)
 			r.Equal(pt.Name, info.Name())
 		})
@@ -421,7 +470,12 @@ func (s Suite) Test_Stat_File(t *testing.T) {
 // func (s Suite) Test_Walk(t *testing.T) {
 // 	panic("not implemented")
 // }
+
 //
 // func (s Suite) Test_Remove(t *testing.T) {
+// 	panic("not implemented")
+// }
+//
+// func (s Suite) Test_RemoveAll(t *testing.T) {
 // 	panic("not implemented")
 // }

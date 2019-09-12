@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/markbates/pkger/pkging"
 	"github.com/markbates/pkger/pkging/pkgutil"
 	"github.com/stretchr/testify/require"
 )
@@ -29,7 +30,7 @@ import (
 //     └── b
 //         └── b.txt
 
-func (s Suite) LoadFolder() error {
+func (s Suite) LoadFolder(pkg pkging.Pkger) error {
 	files := []string{
 		"/main.go",
 		"/public/images/mark.png",
@@ -39,10 +40,10 @@ func (s Suite) LoadFolder() error {
 	}
 
 	for _, f := range files {
-		if err := s.MkdirAll(filepath.Dir(f), 0755); err != nil {
+		if err := pkg.MkdirAll(filepath.Dir(f), 0755); err != nil {
 			return err
 		}
-		if err := pkgutil.WriteFile(s, f, []byte("!"+f), 0644); err != nil {
+		if err := pkgutil.WriteFile(pkg, f, []byte("!"+f), 0644); err != nil {
 			return err
 		}
 	}
@@ -52,7 +53,10 @@ func (s Suite) LoadFolder() error {
 func (s Suite) Test_HTTP_Dir(t *testing.T) {
 	r := require.New(t)
 
-	cur, err := s.Current()
+	pkg, err := s.Make()
+	r.NoError(err)
+
+	cur, err := pkg.Current()
 	r.NoError(err)
 	ip := cur.ImportPath
 
@@ -68,11 +72,13 @@ func (s Suite) Test_HTTP_Dir(t *testing.T) {
 
 	for _, tt := range table {
 		s.Run(t, tt.in+tt.req, func(st *testing.T) {
+			r := require.New(st)
 
-			r := require.New(t)
-			r.NoError(s.LoadFolder())
+			pkg, err := s.Make()
+			r.NoError(err)
+			r.NoError(s.LoadFolder(pkg))
 
-			dir, err := s.Open(tt.in)
+			dir, err := pkg.Open(tt.in)
 			r.NoError(err)
 			defer dir.Close()
 
@@ -94,7 +100,10 @@ func (s Suite) Test_HTTP_Dir(t *testing.T) {
 func (s Suite) Test_HTTP_Dir_IndexHTML(t *testing.T) {
 	r := require.New(t)
 
-	cur, err := s.Current()
+	pkg, err := s.Make()
+	r.NoError(err)
+
+	cur, err := pkg.Current()
 	r.NoError(err)
 	ip := cur.ImportPath
 
@@ -112,9 +121,12 @@ func (s Suite) Test_HTTP_Dir_IndexHTML(t *testing.T) {
 		s.Run(t, tt.in+exp, func(st *testing.T) {
 			r := require.New(st)
 
-			r.NoError(s.LoadFolder())
+			pkg, err := s.Make()
+			r.NoError(err)
 
-			dir, err := s.Open(tt.in)
+			r.NoError(s.LoadFolder(pkg))
+
+			dir, err := pkg.Open(tt.in)
 			r.NoError(err)
 			defer dir.Close()
 
@@ -138,7 +150,10 @@ func (s Suite) Test_HTTP_Dir_IndexHTML(t *testing.T) {
 func (s Suite) Test_HTTP_File(t *testing.T) {
 	r := require.New(t)
 
-	cur, err := s.Current()
+	pkg, err := s.Make()
+	r.NoError(err)
+
+	cur, err := pkg.Current()
 	r.NoError(err)
 	ip := cur.ImportPath
 
@@ -152,12 +167,14 @@ func (s Suite) Test_HTTP_File(t *testing.T) {
 
 	for _, tt := range table {
 		s.Run(t, tt.in, func(st *testing.T) {
-
 			r := require.New(st)
 
-			r.NoError(s.LoadFolder())
+			pkg, err := s.Make()
+			r.NoError(err)
 
-			dir, err := s.Open(tt.in)
+			r.NoError(s.LoadFolder(pkg))
+
+			dir, err := pkg.Open(tt.in)
 			r.NoError(err)
 			defer dir.Close()
 

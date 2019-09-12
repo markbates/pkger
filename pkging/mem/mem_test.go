@@ -4,24 +4,28 @@ import (
 	"testing"
 
 	"github.com/markbates/pkger/here"
+	"github.com/markbates/pkger/pkging"
 	"github.com/markbates/pkger/pkging/pkgtest"
-	"github.com/stretchr/testify/require"
 )
 
 func Test_Pkger(t *testing.T) {
-	r := require.New(t)
+	suite, err := pkgtest.NewSuite("memos", func() (pkging.Pkger, error) {
+		info, err := here.Current()
+		if err != nil {
+			return nil, err
+		}
 
-	info, err := here.Current()
-	r.NoError(err)
-	r.NotZero(info)
+		wh, err := New(info)
+		if err != nil {
+			return nil, err
+		}
 
-	wh, err := New(info)
-	r.NoError(err)
-
-	WithInfo(wh, info)
-
-	suite, err := pkgtest.NewSuite(wh)
-	r.NoError(err)
+		WithInfo(wh, info)
+		return wh, nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	suite.Test(t)
 }

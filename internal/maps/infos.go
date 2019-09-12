@@ -71,29 +71,6 @@ func (m *Infos) Load(key string) (here.Info, bool) {
 	return s, ok
 }
 
-// LoadOrStore will return an existing key or
-// store the value if not already in the map
-func (m *Infos) LoadOrStore(key string, value here.Info) (here.Info, bool) {
-	i, _ := m.Data().LoadOrStore(key, value)
-	s, ok := i.(here.Info)
-	return s, ok
-}
-
-// LoadOr will return an existing key or
-// run the function and store the results
-func (m *Infos) LoadOr(key string, fn func(*Infos) (here.Info, bool)) (here.Info, bool) {
-	i, ok := m.Load(key)
-	if ok {
-		return i, ok
-	}
-	i, ok = fn(m)
-	if ok {
-		m.Store(key, i)
-		return i, ok
-	}
-	return i, false
-}
-
 // Range over the here.Info values in the map
 func (m *Infos) Range(f func(key string, value here.Info) bool) {
 	m.Data().Range(func(k, v interface{}) bool {

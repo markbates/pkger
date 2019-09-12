@@ -13,7 +13,7 @@ build: tidy
 	make tidy
 
 test: tidy
-	$(GO_BIN) test -cover -tags ${TAGS} -timeout 5s ./...
+	$(GO_BIN) test -cover -tags ${TAGS} -timeout 5s -race ./...
 	make tidy
 
 cov:

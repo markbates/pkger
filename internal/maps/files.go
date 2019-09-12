@@ -85,29 +85,6 @@ func (m *Files) Load(key pkging.Path) (pkging.File, bool) {
 	return s, ok
 }
 
-// LoadOrStore will return an existing key or
-// store the value if not already in the map
-func (m *Files) LoadOrStore(key pkging.Path, value pkging.File) (pkging.File, bool) {
-	i, _ := m.Data().LoadOrStore(key, value)
-	s, ok := i.(pkging.File)
-	return s, ok
-}
-
-// LoadOr will return an existing key or
-// run the function and store the results
-func (m *Files) LoadOr(key pkging.Path, fn func(*Files) (pkging.File, bool)) (pkging.File, bool) {
-	i, ok := m.Load(key)
-	if ok {
-		return i, ok
-	}
-	i, ok = fn(m)
-	if ok {
-		m.Store(key, i)
-		return i, ok
-	}
-	return i, false
-}
-
 // Range over the pkging.File values in the map
 func (m *Files) Range(f func(key pkging.Path, value pkging.File) bool) {
 	m.Data().Range(func(k, v interface{}) bool {

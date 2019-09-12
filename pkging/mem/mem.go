@@ -95,6 +95,12 @@ func (fx *Pkger) RemoveAll(name string) error {
 		return true
 	})
 
+	fx.paths.Range(func(key string, value pkging.Path) bool {
+		if strings.HasPrefix(key, pt.Name) {
+			fx.paths.Delete(key)
+		}
+		return true
+	})
 	return nil
 }
 

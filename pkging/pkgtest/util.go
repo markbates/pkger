@@ -12,7 +12,11 @@ import (
 
 func (s Suite) Test_Util_ReadFile(t *testing.T) {
 	r := require.New(t)
-	cur, err := s.Current()
+
+	pkg, err := s.Make()
+	r.NoError(err)
+
+	cur, err := pkg.Current()
 	r.NoError(err)
 
 	ip := cur.ImportPath
@@ -27,16 +31,18 @@ func (s Suite) Test_Util_ReadFile(t *testing.T) {
 
 	for _, tt := range table {
 		s.Run(t, tt.in, func(st *testing.T) {
-
 			r := require.New(st)
 
-			pt, err := s.Parse(tt.in)
+			pkg, err := s.Make()
 			r.NoError(err)
 
-			r.NoError(s.RemoveAll(pt.String()))
-			r.NoError(s.MkdirAll(filepath.Dir(pt.Name), 0755))
+			pt, err := pkg.Parse(tt.in)
+			r.NoError(err)
 
-			f, err := s.Create(tt.in)
+			r.NoError(pkg.RemoveAll(pt.String()))
+			r.NoError(pkg.MkdirAll(filepath.Dir(pt.Name), 0755))
+
+			f, err := pkg.Create(tt.in)
 			r.NoError(err)
 
 			body := "!" + pt.String()
@@ -44,7 +50,7 @@ func (s Suite) Test_Util_ReadFile(t *testing.T) {
 			r.NoError(err)
 			r.NoError(f.Close())
 
-			b, err := pkgutil.ReadFile(s, tt.in)
+			b, err := pkgutil.ReadFile(pkg, tt.in)
 			r.NoError(err)
 			r.Equal(body, string(b))
 		})

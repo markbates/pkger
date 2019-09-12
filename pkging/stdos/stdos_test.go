@@ -1,24 +1,33 @@
 package stdos
 
 import (
-	"path/filepath"
+	"io/ioutil"
 	"testing"
 
+	"github.com/markbates/pkger/pkging"
 	"github.com/markbates/pkger/pkging/pkgtest"
-	"github.com/stretchr/testify/require"
 )
 
 func Test_Pkger(t *testing.T) {
-	r := require.New(t)
+	suite, err := pkgtest.NewSuite("stdos", func() (pkging.Pkger, error) {
+		mypkging, err := New()
+		if err != nil {
+			return nil, err
+		}
 
-	mypkging, err := New()
-	r.NoError(err)
+		dir, err := ioutil.TempDir("", "stdos")
+		if err != nil {
+			return nil, err
+		}
 
-	mypkging.current.Dir = filepath.Join(mypkging.current.Dir, ".pkgtest")
-	mypkging.paths.Current = mypkging.current
+		mypkging.current.Dir = dir
+		mypkging.paths.Current = mypkging.current
 
-	suite, err := pkgtest.NewSuite(mypkging)
-	r.NoError(err)
+		return mypkging, nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	suite.Test(t)
 }
