@@ -2,7 +2,6 @@ package mem
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -111,25 +110,25 @@ func (f File) String() string {
 	return f.Path().String()
 }
 
-func (f File) Format(st fmt.State, verb rune) {
-	switch verb {
-	case 'v':
-		if st.Flag('+') {
-			b, err := json.MarshalIndent(f, "", "  ")
-			if err != nil {
-				fmt.Fprint(os.Stderr, err)
-				return
-			}
-			fmt.Fprint(st, string(b))
-			return
-		}
-		fmt.Fprint(st, f.String())
-	case 'q':
-		fmt.Fprintf(st, "%q", f.String())
-	default:
-		fmt.Fprint(st, f.String())
-	}
-}
+// func (f File) Format(st fmt.State, verb rune) {
+// 	switch verb {
+// 	case 'v':
+// 		if st.Flag('+') {
+// 			b, err := json.MarshalIndent(f, "", "  ")
+// 			if err != nil {
+// 				fmt.Fprint(os.Stderr, err)
+// 				return
+// 			}
+// 			fmt.Fprint(st, string(b))
+// 			return
+// 		}
+// 		fmt.Fprint(st, f.String())
+// 	case 'q':
+// 		fmt.Fprintf(st, "%q", f.String())
+// 	default:
+// 		fmt.Fprint(st, f.String())
+// 	}
+// }
 
 func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 	var infos []os.FileInfo
@@ -206,60 +205,60 @@ func (f *File) Open(name string) (http.File, error) {
 	return di, nil
 }
 
-func (f File) MarshalJSON() ([]byte, error) {
-	m := map[string]interface{}{
-		"info":   f.info,
-		"her":    f.her,
-		"path":   f.path,
-		"data":   f.data,
-		"parent": f.parent,
-	}
-	return json.Marshal(m)
-}
+// func (f File) MarshalJSON() ([]byte, error) {
+// 	m := map[string]interface{}{
+// 		"info":   f.info,
+// 		"her":    f.her,
+// 		"path":   f.path,
+// 		"data":   f.data,
+// 		"parent": f.parent,
+// 	}
+// 	return json.Marshal(m)
+// }
 
-func (f *File) UnmarshalJSON(b []byte) error {
-	m := map[string]json.RawMessage{}
-	if err := json.Unmarshal(b, &m); err != nil {
-		return err
-	}
-
-	info, ok := m["info"]
-	if !ok {
-		return fmt.Errorf("missing info")
-	}
-
-	f.info = &pkging.FileInfo{}
-	if err := json.Unmarshal(info, f.info); err != nil {
-		return err
-	}
-
-	her, ok := m["her"]
-	if !ok {
-		return fmt.Errorf("missing her")
-	}
-	if err := json.Unmarshal(her, &f.her); err != nil {
-		return err
-	}
-
-	path, ok := m["path"]
-	if !ok {
-		return fmt.Errorf("missing path")
-	}
-	if err := json.Unmarshal(path, &f.path); err != nil {
-		return err
-	}
-
-	parent, ok := m["parent"]
-	if !ok {
-		return fmt.Errorf("missing parent")
-	}
-	if err := json.Unmarshal(parent, &f.parent); err != nil {
-		return err
-	}
-
-	if err := json.Unmarshal(m["data"], &f.data); err != nil {
-		return err
-	}
-
-	return nil
-}
+// func (f *File) UnmarshalJSON(b []byte) error {
+// 	m := map[string]json.RawMessage{}
+// 	if err := json.Unmarshal(b, &m); err != nil {
+// 		return err
+// 	}
+//
+// 	info, ok := m["info"]
+// 	if !ok {
+// 		return fmt.Errorf("missing info")
+// 	}
+//
+// 	f.info = &pkging.FileInfo{}
+// 	if err := json.Unmarshal(info, f.info); err != nil {
+// 		return err
+// 	}
+//
+// 	her, ok := m["her"]
+// 	if !ok {
+// 		return fmt.Errorf("missing her")
+// 	}
+// 	if err := json.Unmarshal(her, &f.her); err != nil {
+// 		return err
+// 	}
+//
+// 	path, ok := m["path"]
+// 	if !ok {
+// 		return fmt.Errorf("missing path")
+// 	}
+// 	if err := json.Unmarshal(path, &f.path); err != nil {
+// 		return err
+// 	}
+//
+// 	parent, ok := m["parent"]
+// 	if !ok {
+// 		return fmt.Errorf("missing parent")
+// 	}
+// 	if err := json.Unmarshal(parent, &f.parent); err != nil {
+// 		return err
+// 	}
+//
+// 	if err := json.Unmarshal(m["data"], &f.data); err != nil {
+// 		return err
+// 	}
+//
+// 	return nil
+// }

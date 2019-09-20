@@ -20,11 +20,11 @@ type File struct {
 }
 
 func NewFile(fx pkging.Pkger, osf *os.File) (*File, error) {
-	pt, err := fx.Parse(osf.Name())
+	name := osf.Name()
+	pt, err := fx.Parse(name)
 	if err != nil {
 		return nil, err
 	}
-
 	info, err := osf.Stat()
 	if err != nil {
 		return nil, err
@@ -97,15 +97,10 @@ func (f *File) Stat() (os.FileInfo, error) {
 		return f.info, nil
 	}
 
-	abs, err := f.Abs()
+	nf, err := NewFile(f.pkging, f.File)
 	if err != nil {
 		return nil, err
 	}
-
-	info, err := os.Stat(abs)
-	if err != nil {
-		return nil, err
-	}
-	f.info = pkging.NewFileInfo(info)
-	return info, nil
+	(*f) = *nf
+	return f.info, nil
 }

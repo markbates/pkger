@@ -12,24 +12,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// examples/app
-// ├── Dockerfile
-// ├── Makefile
-// ├── go.mod
-// ├── go.sum
 // ├── main.go
 // ├── public
 // │   ├── images
-// │   │   ├── mark-small.png
 // │   │   ├── mark.png
-// │   │   ├── mark_250px.png
-// │   │   └── mark_400px.png
 // │   └── index.html
 // └── templates
 //     ├── a.txt
 //     └── b
 //         └── b.txt
-
 func (s Suite) LoadFolder(pkg pkging.Pkger) error {
 	files := []string{
 		"/main.go",

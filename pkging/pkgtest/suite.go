@@ -67,7 +67,7 @@ func (s Suite) Test(t *testing.T) {
 // 		}
 // 	}
 // 	if ns, ok := s.Pkger.(WithRootable); ok {
-// 		dir, err := ioutil.TempDir("", "")
+// 		dir, err := ioutil.TempDir("")
 // 		if err != nil {
 // 			return s, err
 // 		}
@@ -467,15 +467,134 @@ func (s Suite) Test_Stat_File(t *testing.T) {
 	}
 }
 
-// func (s Suite) Test_Walk(t *testing.T) {
-// 	panic("not implemented")
-// }
+func (s Suite) Test_Walk(t *testing.T) {
+	r := require.New(t)
 
-//
-// func (s Suite) Test_Remove(t *testing.T) {
-// 	panic("not implemented")
-// }
-//
-// func (s Suite) Test_RemoveAll(t *testing.T) {
-// 	panic("not implemented")
-// }
+	pkg, err := s.Make()
+	r.NoError(err)
+	r.NoError(s.LoadFolder(pkg))
+
+	cur, err := pkg.Current()
+	r.NoError(err)
+
+	ip := cur.ImportPath
+
+	table := []struct {
+		in string
+	}{
+		{in: ip},
+		{in: "/"},
+		{in: ":/"},
+		{in: ip + ":/"},
+	}
+
+	for _, tt := range table {
+		s.Run(t, tt.in, func(st *testing.T) {
+			r := require.New(st)
+			var act []string
+			err := pkg.Walk(tt.in, func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				act = append(act, path)
+				return nil
+			})
+			r.NoError(err)
+
+			exp := []string{
+				"github.com/markbates/pkger:/",
+				"github.com/markbates/pkger:/main.go",
+				"github.com/markbates/pkger:/public",
+				"github.com/markbates/pkger:/public/images",
+				"github.com/markbates/pkger:/public/images/mark.png",
+				"github.com/markbates/pkger:/public/index.html",
+				"github.com/markbates/pkger:/templates",
+				"github.com/markbates/pkger:/templates/a.txt",
+				"github.com/markbates/pkger:/templates/b",
+				"github.com/markbates/pkger:/templates/b/b.txt",
+			}
+			r.Equal(exp, act)
+		})
+	}
+
+}
+
+func (s Suite) Test_Remove(t *testing.T) {
+	r := require.New(t)
+
+	pkg, err := s.Make()
+	r.NoError(err)
+
+	cur, err := pkg.Current()
+	r.NoError(err)
+
+	ip := cur.ImportPath
+
+	table := []struct {
+		in string
+	}{
+		{in: "/public/images/mark.png"},
+		{in: ":/public/images/mark.png"},
+		{in: ip + ":/public/images/mark.png"},
+	}
+
+	for _, tt := range table {
+		s.Run(t, tt.in, func(st *testing.T) {
+			r := require.New(st)
+
+			pkg, err := s.Make()
+			r.NoError(err)
+			r.NoError(s.LoadFolder(pkg))
+
+			_, err = pkg.Stat(tt.in)
+			r.NoError(err)
+
+			r.NoError(pkg.Remove(tt.in))
+
+			_, err = pkg.Stat(tt.in)
+			r.Error(err)
+
+			r.Error(pkg.Remove("unknown"))
+		})
+	}
+
+}
+
+func (s Suite) Test_RemoveAll(t *testing.T) {
+	r := require.New(t)
+
+	pkg, err := s.Make()
+	r.NoError(err)
+
+	cur, err := pkg.Current()
+	r.NoError(err)
+
+	ip := cur.ImportPath
+
+	table := []struct {
+		in string
+	}{
+		{in: "/public"},
+		{in: ":/public"},
+		{in: ip + ":/public"},
+	}
+
+	for _, tt := range table {
+		s.Run(t, tt.in, func(st *testing.T) {
+			r := require.New(st)
+
+			pkg, err := s.Make()
+			r.NoError(err)
+			r.NoError(s.LoadFolder(pkg))
+
+			_, err = pkg.Stat(tt.in)
+			r.NoError(err)
+
+			r.NoError(pkg.RemoveAll(tt.in))
+
+			_, err = pkg.Stat(tt.in)
+			r.Error(err)
+		})
+	}
+
+}

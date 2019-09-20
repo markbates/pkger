@@ -15,13 +15,12 @@ func Test_Pkger(t *testing.T) {
 			return nil, err
 		}
 
-		wh, err := New(info)
+		pkg, err := New(info)
 		if err != nil {
 			return nil, err
 		}
 
-		WithInfo(wh, info)
-		return wh, nil
+		return pkg, nil
 	})
 	if err != nil {
 		t.Fatal(err)

@@ -29,6 +29,8 @@ func New(info here.Info) (*Pkger, error) {
 		files:   &maps.Files{},
 		current: info,
 	}
+	f.infos.Store(info.ImportPath, info)
+	f.MkdirAll("/", 0755)
 	return f, nil
 }
 
@@ -105,6 +107,7 @@ func (fx *Pkger) RemoveAll(name string) error {
 }
 
 func (fx *Pkger) Create(name string) (pkging.File, error) {
+	fx.MkdirAll("/", 0755)
 	pt, err := fx.Parse(name)
 	if err != nil {
 		return nil, err
@@ -115,7 +118,8 @@ func (fx *Pkger) Create(name string) (pkging.File, error) {
 		return nil, err
 	}
 
-	if _, err := fx.Stat(filepath.Dir(pt.Name)); err != nil {
+	dir := filepath.Dir(pt.Name)
+	if _, err := fx.Stat(dir); err != nil {
 		return nil, err
 	}
 

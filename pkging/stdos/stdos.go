@@ -43,13 +43,15 @@ func New() (*Pkger, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Pkger{
+	p := &Pkger{
 		infos: &maps.Infos{},
 		paths: &maps.Paths{
 			Current: info,
 		},
 		current: info,
-	}, nil
+	}
+	p.infos.Store(info.ImportPath, info)
+	return p, nil
 }
 
 func (fx *Pkger) Create(name string) (pkging.File, error) {
