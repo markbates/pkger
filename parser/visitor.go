@@ -8,11 +8,12 @@ import (
 
 	"github.com/markbates/pkger"
 	"github.com/markbates/pkger/here"
+	"github.com/markbates/pkger/pkging"
 )
 
 type visitor struct {
 	File   string
-	Found  map[pkger.Path]bool
+	Found  map[pkging.Path]bool
 	info   here.Info
 	errors []error
 }
@@ -20,12 +21,12 @@ type visitor struct {
 func newVisitor(p string, info here.Info) (*visitor, error) {
 	return &visitor{
 		File:  p,
-		Found: map[pkger.Path]bool{},
+		Found: map[pkging.Path]bool{},
 		info:  info,
 	}, nil
 }
 
-func (v *visitor) Run() ([]pkger.Path, error) {
+func (v *visitor) Run() ([]pkging.Path, error) {
 	pf, err := parseFile(v.File)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %v", v.File, err)
@@ -33,7 +34,7 @@ func (v *visitor) Run() ([]pkger.Path, error) {
 
 	ast.Walk(v, pf.Ast)
 
-	var found []pkger.Path
+	var found []pkging.Path
 
 	for k := range v.Found {
 		found = append(found, k)

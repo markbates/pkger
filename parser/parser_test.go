@@ -1,22 +1,23 @@
 package parser
 
 import (
-	"os"
 	"path/filepath"
 	"sort"
 	"testing"
 
+	"github.com/markbates/pkger/here"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_Parser(t *testing.T) {
 	r := require.New(t)
-	pwd, err := os.Getwd()
-	r.NoError(err)
-	r.NoError(os.Chdir(filepath.Join("..", "examples", "app")))
-	defer os.Chdir(pwd)
 
-	res, err := Parse("")
+	ch := filepath.Join("..", "examples", "app")
+	info := here.Info{
+		Dir:        ch,
+		ImportPath: "github.com/markbates/pkger/examples/app",
+	}
+	res, err := Parse(info)
 
 	r.NoError(err)
 
