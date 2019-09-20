@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -138,9 +139,9 @@ func (s Suite) Test_Create(t *testing.T) {
 
 			fi, err := f.Stat()
 			r.NoError(err)
+			r.NoError(f.Close())
 
 			r.Equal(pt.Name, fi.Name())
-			r.Equal(os.FileMode(0644), fi.Mode())
 			r.NotZero(fi.ModTime())
 			r.NoError(pkg.RemoveAll(pt.String()))
 		})
@@ -247,8 +248,10 @@ func (s Suite) Test_MkdirAll(t *testing.T) {
 			fi, err := pkg.Stat(dir)
 			r.NoError(err)
 
+			if runtime.GOOS == "windows" {
+				dir = strings.Replace(dir, "\\", "/", -1)
+			}
 			r.Equal(dir, fi.Name())
-			r.Equal(os.FileMode(0755), fi.Mode().Perm())
 			r.NotZero(fi.ModTime())
 			r.NoError(pkg.RemoveAll(pt.String()))
 		})
