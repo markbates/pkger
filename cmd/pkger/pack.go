@@ -8,6 +8,7 @@ import (
 
 	"github.com/markbates/pkger"
 	"github.com/markbates/pkger/parser"
+	"github.com/markbates/pkger/pkging"
 )
 
 const outName = "pkged.go"
@@ -24,12 +25,12 @@ func (e *packCmd) Name() string {
 }
 
 func (e *packCmd) Exec(args []string) error {
-	info, err := pkger.Stat()
+	info, err := pkger.Current()
 	if err != nil {
 		return err
 	}
 
-	res, err := parser.Parse(info.Dir)
+	res, err := parser.Parse(info)
 	if err != nil {
 		return err
 	}
@@ -116,7 +117,7 @@ func (e *packCmd) Flags() *flag.FlagSet {
 	return e.FlagSet
 }
 
-func Package(out string, paths []pkger.Path) error {
+func Package(out string, paths []pkging.Path) error {
 	os.RemoveAll(out)
 
 	f, err := os.Create(out)
@@ -124,7 +125,7 @@ func Package(out string, paths []pkger.Path) error {
 		return err
 	}
 
-	c, err := pkger.Stat()
+	c, err := pkger.Current()
 	if err != nil {
 		return err
 	}
@@ -132,9 +133,10 @@ func Package(out string, paths []pkger.Path) error {
 	fmt.Fprintf(f, "import \"github.com/markbates/pkger\"\n\n")
 	fmt.Fprintf(f, "var _ = pkger.Unpack(`")
 
-	if err := pkger.Pack(f, paths); err != nil {
-		return err
-	}
+	// TODO
+	// if err := pkger.Pack(f, paths); err != nil {
+	// 	return err
+	// }
 
 	fmt.Fprintf(f, "`)\n")
 

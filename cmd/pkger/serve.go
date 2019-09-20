@@ -48,10 +48,11 @@ func (s *serveCmd) Exec(args []string) error {
 		return err
 	}
 
-	ex := append(defaultExcludes, s.excludes...)
-	if err := pkger.Exclude(f, ex...); err != nil {
-		return err
-	}
+	// TODO
+	// ex := append(defaultExcludes, s.excludes...)
+	// if err := pkger.Exclude(f, ex...); err != nil {
+	// 	return err
+	// }
 	defer f.Close()
 	fmt.Println(f.Path())
 

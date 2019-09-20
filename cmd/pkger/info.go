@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/markbates/pkger"
+	"github.com/markbates/pkger/pkging"
 )
 
 type infoCmd struct {
@@ -44,12 +45,12 @@ func (f *infoCmd) Exec(args []string) error {
 				return err
 			}
 			for _, ff := range files {
-				fmt.Println(pkger.NewFileInfo(ff))
+				fmt.Println(pkging.NewFileInfo(ff))
 			}
 			continue
 		}
 
-		fmt.Println(pkger.NewFileInfo(fi))
+		fmt.Println(pkging.NewFileInfo(fi))
 	}
 
 	return nil

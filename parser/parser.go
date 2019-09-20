@@ -9,20 +9,15 @@ import (
 
 	"github.com/markbates/pkger"
 	"github.com/markbates/pkger/here"
+	"github.com/markbates/pkger/pkging"
 )
 
 var DefaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "_fixtures", "testdata"}
 
-func Parse(name string) (Results, error) {
+func Parse(cur here.Info) (Results, error) {
 	var r Results
-	c, err := pkger.Stat()
-	if err != nil {
-		return r, err
-	}
 
-	if name == "" {
-		name = c.ImportPath
-	}
+	name := cur.ImportPath
 
 	pt, err := pkger.Parse(name)
 	if err != nil {
@@ -36,7 +31,7 @@ func Parse(name string) (Results, error) {
 		return r, err
 	}
 
-	m := map[pkger.Path]bool{}
+	m := map[pkging.Path]bool{}
 
 	root := r.Path.Name
 	if !strings.HasPrefix(root, string(filepath.Separator)) {
@@ -117,7 +112,7 @@ func Parse(name string) (Results, error) {
 		return nil
 	})
 
-	var found []pkger.Path
+	var found []pkging.Path
 
 	for k := range m {
 		if len(k.String()) == 0 {
@@ -133,8 +128,8 @@ func Parse(name string) (Results, error) {
 	return r, err
 }
 
-func sourceFiles(pt pkger.Path) ([]pkger.Path, error) {
-	var res []pkger.Path
+func sourceFiles(pt pkging.Path) ([]pkging.Path, error) {
+	var res []pkging.Path
 
 	her, err := pkger.Info(pt.Pkg)
 
@@ -177,7 +172,7 @@ func sourceFiles(pt pkger.Path) ([]pkger.Path, error) {
 
 		n := strings.TrimPrefix(p, her.Dir)
 		n = strings.Replace(n, "\\", "/", -1)
-		pt := pkger.Path{
+		pt := pkging.Path{
 			Name: n,
 		}
 		res = append(res, pt)
@@ -188,6 +183,6 @@ func sourceFiles(pt pkger.Path) ([]pkger.Path, error) {
 }
 
 type Results struct {
-	Paths []pkger.Path
-	Path  pkger.Path
+	Paths []pkging.Path
+	Path  pkging.Path
 }

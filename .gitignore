@@ -1,3 +1,4 @@
+.fstest
 *.log
 .DS_Store
 doc
@@ -28,3 +29,5 @@ bin/*
 gin-bin
 .idea/
 pkged.go
+cover.out
+.pkgtest
