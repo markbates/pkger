@@ -8,7 +8,6 @@ import (
 )
 
 func Test_NewFileInfo(t *testing.T) {
-	const exp = "/public/images/mark.png"
 
 	in := []string{
 		"/public/images/mark.png",
@@ -22,6 +21,7 @@ func Test_NewFileInfo(t *testing.T) {
 		"\\public\\images\\mark.png",
 	}
 
+	const exp = "/public/images/mark.png"
 	for _, n := range in {
 		t.Run(n, func(st *testing.T) {
 			r := require.New(st)
@@ -44,4 +44,39 @@ func Test_NewFileInfo(t *testing.T) {
 		})
 	}
 
+}
+
+func Test_WithName(t *testing.T) {
+
+	f1 := &FileInfo{
+		Details: Details{
+			Name:  "/walls/crumbling",
+			Size:  42,
+			Mode:  os.FileMode(0644),
+			IsDir: true,
+		},
+	}
+
+	const exp = "/public/images/mark.png"
+	in := []string{
+		"/public/images/mark.png",
+		"public/images/mark.png",
+		"/public\\images/mark.png",
+		"public/images\\mark.png",
+		"\\public\\images\\mark.png",
+		"public\\images\\mark.png",
+		"\\public/images\\mark.png",
+		"public\\images/mark.png",
+		"\\public\\images\\mark.png",
+	}
+
+	for _, n := range in {
+		t.Run(n, func(st *testing.T) {
+			r := require.New(st)
+
+			f2 := WithName(n, f1)
+
+			r.Equal(exp, f2.Name())
+		})
+	}
 }
