@@ -2,6 +2,7 @@ package pkgutil
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 
@@ -11,9 +12,11 @@ import (
 
 func Dump(w io.Writer, pkg pkging.Pkger) error {
 	d := struct {
+		Type  string
 		Info  here.Info
 		Paths map[string]os.FileInfo
 	}{
+		Type:  fmt.Sprintf("%T", pkg),
 		Paths: map[string]os.FileInfo{},
 	}
 
