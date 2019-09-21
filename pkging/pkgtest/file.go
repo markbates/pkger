@@ -86,6 +86,20 @@ func (s Suite) Test_File_Readdir(t *testing.T) {
 
 			r.Equal("images", infos[0].Name())
 			r.Equal("index.html", infos[1].Name())
+
+			dir, err = pkg.Open(tt.in + "/images")
+			r.NoError(err)
+
+			infos, err = dir.Readdir(-1)
+			r.NoError(err)
+			r.Len(infos, 1)
+
+			sort.Slice(infos, func(i, j int) bool {
+				return infos[i].Name() < infos[j].Name()
+			})
+
+			r.Equal("mark.png", infos[0].Name())
+
 		})
 	}
 }
