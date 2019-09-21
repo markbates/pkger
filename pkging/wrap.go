@@ -1,6 +1,7 @@
 package pkging
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -17,6 +18,13 @@ func Wrap(parent, with Pkger) Pkger {
 type withPkger struct {
 	base   Pkger
 	parent Pkger
+}
+
+func (w withPkger) String() string {
+	if w.parent == nil {
+		return fmt.Sprintf("%T", w.base)
+	}
+	return fmt.Sprintf("%T > %T", w.base, w.parent)
 }
 
 func (w withPkger) Parse(p string) (Path, error) {
