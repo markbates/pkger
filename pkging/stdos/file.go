@@ -74,7 +74,7 @@ func (f *HTTP) Readdir(count int) ([]os.FileInfo, error) {
 
 	infos := make([]os.FileInfo, len(osinfos))
 	for i, info := range osinfos {
-		infos[i] = pkging.WithName(info.Name(), info)
+		infos[i] = pkging.WithRelName(info.Name(), info)
 	}
 	return infos, err
 }
