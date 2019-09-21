@@ -174,6 +174,10 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 			return io.EOF
 		}
 
+		if root == path {
+			return nil
+		}
+
 		pt, err := f.pkging.Parse(path)
 		if err != nil {
 			return err
