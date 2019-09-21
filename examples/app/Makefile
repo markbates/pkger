@@ -1,5 +1,5 @@
 default:
-	cd ../../../cmd/pkger && go install -v  .
+	cd ../../cmd/pkger && go install -v  .
 	pkger
 	GOOS=linux go build -v  -o example
 	docker build -t pkger:example .

@@ -1,9 +1,13 @@
 TAGS ?= ""
 GO_BIN ?= "go"
 
+
 install: tidy
 	cd ./cmd/pkger && $(GO_BIN) install -tags ${TAGS} -v .
 	make tidy
+
+run: install
+	cd ./examples/app; pkger
 
 tidy:
 	$(GO_BIN) mod tidy -v

@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"path/filepath"
 	"sort"
 	"testing"
@@ -12,7 +13,9 @@ import (
 func Test_Parser(t *testing.T) {
 	r := require.New(t)
 
-	ch := filepath.Join("..", "examples", "app")
+	ch := filepath.Join("..",
+		"examples",
+		"app")
 	info := here.Info{
 		Dir:        ch,
 		ImportPath: "github.com/markbates/pkger/examples/app",
@@ -24,15 +27,12 @@ func Test_Parser(t *testing.T) {
 	exp := []string{
 		"github.com/markbates/pkger/examples/app:/",
 		"github.com/markbates/pkger/examples/app:/public",
-		"github.com/markbates/pkger/examples/app:/templates",
-		"github.com/markbates/pkger/examples/app:/templates/a.txt",
-		"github.com/markbates/pkger/examples/app:/templates/b",
 		"github.com/markbates/pkger/examples/app:/public/images/mark-small.png",
-		"github.com/markbates/pkger/examples/app:/public/images",
 		"github.com/markbates/pkger/examples/app:/public/images/mark.png",
 		"github.com/markbates/pkger/examples/app:/public/images/mark_250px.png",
 		"github.com/markbates/pkger/examples/app:/public/images/mark_400px.png",
 		"github.com/markbates/pkger/examples/app:/public/index.html",
+		"github.com/markbates/pkger/examples/app:/templates/a.txt",
 	}
 	sort.Strings(exp)
 
@@ -42,5 +42,6 @@ func Test_Parser(t *testing.T) {
 	}
 
 	sort.Strings(act)
+	fmt.Printf("%#v\n", act)
 	r.Equal(exp, act)
 }

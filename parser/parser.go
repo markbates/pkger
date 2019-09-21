@@ -14,22 +14,16 @@ import (
 
 var DefaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "_fixtures", "testdata"}
 
-func Parse(cur here.Info) (Results, error) {
+func Parse(her here.Info) (Results, error) {
 	var r Results
 
-	name := cur.ImportPath
+	name := her.ImportPath
 
 	pt, err := pkger.Parse(name)
 	if err != nil {
 		return r, err
 	}
 	r.Path = pt
-
-	her, err := pkger.Info(r.Path.Pkg)
-
-	if err != nil {
-		return r, err
-	}
 
 	m := map[pkging.Path]bool{}
 

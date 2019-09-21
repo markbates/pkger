@@ -14,7 +14,7 @@ import (
 // returned `Info` value and pass it to the `Dir(string) (Info, error)`
 // function to return the complete data.
 func Package(p string) (Info, error) {
-	return Cache(p, func(p string) (Info, error) {
+	i, err := Cache(p, func(p string) (Info, error) {
 		var i Info
 		b, err := run("go", "list", "-json", "-find", p)
 		if err != nil {
@@ -26,4 +26,15 @@ func Package(p string) (Info, error) {
 
 		return i, nil
 	})
+
+	if err != nil {
+		return i, err
+	}
+
+	Cache(i.Dir, func(p string) (Info, error) {
+		return i, nil
+	})
+
+	return i, nil
+
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/markbates/pkger"
 	"github.com/markbates/pkger/parser"
 	"github.com/markbates/pkger/pkging"
+	"github.com/markbates/pkger/stuffing"
 )
 
 const outName = "pkged.go"
@@ -124,6 +125,7 @@ func Package(out string, paths []pkging.Path) error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
 	c, err := pkger.Current()
 	if err != nil {
@@ -131,14 +133,15 @@ func Package(out string, paths []pkging.Path) error {
 	}
 	fmt.Fprintf(f, "package %s\n\n", c.Name)
 	fmt.Fprintf(f, "import \"github.com/markbates/pkger\"\n\n")
-	fmt.Fprintf(f, "var _ = pkger.Unpack(`")
+	fmt.Fprintf(f, "import \"github.com/markbates/pkger/pkging/mem\"\n\n")
 
-	// TODO
-	// if err := pkger.Pack(f, paths); err != nil {
-	// 	return err
-	// }
+	fmt.Fprintf(f, "var _ = pkger.Apply(mem.UnmarshalEmbed([]byte(`")
 
-	fmt.Fprintf(f, "`)\n")
+	if err := stuffing.Stuff(f, c, paths); err != nil {
+		return err
+	}
+
+	fmt.Fprintf(f, "`)))\n")
 
 	return nil
 }
