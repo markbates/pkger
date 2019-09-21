@@ -78,13 +78,10 @@ func WithName(name string, info os.FileInfo) *FileInfo {
 
 func WithRelName(name string, info os.FileInfo) *FileInfo {
 	s := cleanName(name)
-
-	if !strings.HasPrefix(s, "/") {
-		s = "/" + s
-	}
+	s = strings.TrimPrefix(s, "/")
 
 	fo := NewFileInfo(info)
-	fo.Details.Name = cleanName(name)
+	fo.Details.Name = cleanName(s)
 	return fo
 }
 
