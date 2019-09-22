@@ -51,7 +51,6 @@ func Parse(her here.Info) (Results, error) {
 				return nil
 			}
 		}
-
 		if info.IsDir() {
 			if _, err := os.Stat(filepath.Join(path, "go.mod")); err == nil {
 				her, err = here.Dir(path)

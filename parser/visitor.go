@@ -186,7 +186,7 @@ func (v *visitor) evalSelector(expr *ast.CallExpr, sel *ast.SelectorExpr) error 
 		switch sel.Sel.Name {
 		case "Walk":
 			if len(expr.Args) != 2 {
-				return fmt.Errorf("`New` requires two arguments")
+				return fmt.Errorf("`Walk` requires two arguments")
 			}
 
 			zz := func(e ast.Expr) (string, error) {

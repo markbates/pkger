@@ -32,7 +32,6 @@ func Test_Parser(t *testing.T) {
 		"github.com/markbates/pkger/examples/app:/public/images/mark_250px.png",
 		"github.com/markbates/pkger/examples/app:/public/images/mark_400px.png",
 		"github.com/markbates/pkger/examples/app:/public/index.html",
-		"github.com/markbates/pkger/examples/app:/templates/a.txt",
 	}
 	sort.Strings(exp)
 
