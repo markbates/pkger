@@ -8,7 +8,7 @@ import (
 
 // Dir attempts to gather info for the requested directory.
 func Dir(p string) (Info, error) {
-	return Cache(p, func(p string) (Info, error) {
+	i, err := Cache(p, func(p string) (Info, error) {
 		var i Info
 
 		fi, err := os.Stat(p)
@@ -40,4 +40,14 @@ func Dir(p string) (Info, error) {
 
 		return i, nil
 	})
+
+	if err != nil {
+		return i, err
+	}
+
+	Cache(i.ImportPath, func(p string) (Info, error) {
+		return i, nil
+	})
+
+	return i, nil
 }

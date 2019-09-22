@@ -1,7 +1,10 @@
 package mem
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -39,6 +42,58 @@ type Pkger struct {
 	paths   *maps.Paths
 	files   *maps.Files
 	current here.Info
+}
+
+type jay struct {
+	Infos   *maps.Infos      `json:"infos"`
+	Paths   *maps.Paths      `json:"paths"`
+	Files   map[string]*File `json:"files"`
+	Current here.Info        `json:"current"`
+}
+
+func (p *Pkger) MarshalJSON() ([]byte, error) {
+	files := map[string]*File{}
+
+	p.files.Range(func(key pkging.Path, file pkging.File) bool {
+		f, ok := file.(*File)
+		if !ok {
+			return true
+		}
+		files[key.String()] = f
+		return true
+	})
+
+	return json.Marshal(jay{
+		Infos:   p.infos,
+		Paths:   p.paths,
+		Files:   files,
+		Current: p.current,
+	})
+}
+
+func (p *Pkger) UnmarshalJSON(b []byte) error {
+	y := jay{}
+
+	if err := json.Unmarshal(b, &y); err != nil {
+		return err
+	}
+
+	p.current = y.Current
+
+	p.infos = y.Infos
+
+	p.paths = y.Paths
+	p.paths.Current = p.current
+
+	p.files = &maps.Files{}
+	for k, v := range y.Files {
+		pt, err := p.Parse(k)
+		if err != nil {
+			return err
+		}
+		p.files.Store(pt, v)
+	}
+	return nil
 }
 
 func (f *Pkger) Abs(p string) (string, error) {
@@ -103,6 +158,33 @@ func (fx *Pkger) RemoveAll(name string) error {
 		}
 		return true
 	})
+	return nil
+}
+
+func (fx *Pkger) Add(info os.FileInfo, r io.Reader) error {
+	dir := filepath.Dir(info.Name())
+	fx.MkdirAll(dir, 0755)
+
+	f, err := fx.Create(info.Name())
+	if err != nil {
+		return err
+	}
+
+	mf, ok := f.(*File)
+	if !ok {
+		return fmt.Errorf("could not add %T", f)
+	}
+
+	mf.info = pkging.NewFileInfo(info)
+
+	if !mf.info.IsDir() {
+		b, err := ioutil.ReadAll(r)
+		if err != nil {
+			return err
+		}
+		mf.data = b
+	}
+	fx.files.Store(f.Path(), f)
 	return nil
 }
 

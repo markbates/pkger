@@ -9,7 +9,7 @@ import (
 
 type Pkger interface {
 	Parse(p string) (Path, error)
-	Abs(string) (string, error)
+	Abs(p string) (string, error)
 	AbsPath(Path) (string, error)
 
 	Current() (here.Info, error)

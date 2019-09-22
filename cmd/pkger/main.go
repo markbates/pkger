@@ -31,4 +31,4 @@ func run() error {
 	return root.Route(os.Args[1:])
 }
 
-// does not computee
+// does not compute

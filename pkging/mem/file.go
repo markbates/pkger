@@ -2,6 +2,7 @@ package mem
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,6 +29,37 @@ type File struct {
 	writer *bytes.Buffer
 	reader io.Reader
 	pkging pkging.Pkger
+}
+
+type fJay struct {
+	Info   *pkging.FileInfo `json:"info"`
+	Her    here.Info        `json:"her"`
+	Path   pkging.Path      `json:"path"`
+	Data   []byte           `json:"data"`
+	Parent pkging.Path      `json:"parent"`
+}
+
+func (f File) MarshalJSON() ([]byte, error) {
+	return json.Marshal(fJay{
+		Info:   f.info,
+		Her:    f.her,
+		Path:   f.path,
+		Data:   f.data,
+		Parent: f.parent,
+	})
+}
+
+func (f *File) UnmarshalJSON(b []byte) error {
+	var y fJay
+	if err := json.Unmarshal(b, &y); err != nil {
+		return err
+	}
+	f.info = y.Info
+	f.her = y.Her
+	f.path = y.Path
+	f.data = y.Data
+	f.parent = y.Parent
+	return nil
 }
 
 func (f *File) Seek(ofpkginget int64, whence int) (int64, error) {
@@ -142,6 +174,10 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 			return io.EOF
 		}
 
+		if root == path {
+			return nil
+		}
+
 		pt, err := f.pkging.Parse(path)
 		if err != nil {
 			return err
@@ -204,17 +240,6 @@ func (f *File) Open(name string) (http.File, error) {
 	}
 	return di, nil
 }
-
-// func (f File) MarshalJSON() ([]byte, error) {
-// 	m := map[string]interface{}{
-// 		"info":   f.info,
-// 		"her":    f.her,
-// 		"path":   f.path,
-// 		"data":   f.data,
-// 		"parent": f.parent,
-// 	}
-// 	return json.Marshal(m)
-// }
 
 // func (f *File) UnmarshalJSON(b []byte) error {
 // 	m := map[string]json.RawMessage{}
