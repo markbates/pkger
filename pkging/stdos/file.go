@@ -61,13 +61,8 @@ func (f *File) Name() string {
 	return f.info.Name()
 }
 
-type HTTP struct {
-	pkging.File
-	osf *os.File
-}
-
-func (f *HTTP) Readdir(count int) ([]os.FileInfo, error) {
-	osinfos, err := f.osf.Readdir(count)
+func (f *File) Readdir(count int) ([]os.FileInfo, error) {
+	osinfos, err := f.File.Readdir(count)
 	if err != nil {
 		return nil, err
 	}
@@ -78,14 +73,13 @@ func (f *HTTP) Readdir(count int) ([]os.FileInfo, error) {
 	}
 	return infos, err
 }
-
 func (f *File) Open(name string) (http.File, error) {
 	fp := path.Join(f.Path().Name, name)
 	f2, err := f.pkging.Open(fp)
 	if err != nil {
 		return nil, err
 	}
-	return &HTTP{File: f2, osf: f.File}, nil
+	return f2, nil
 }
 
 func (f *File) Path() pkging.Path {
