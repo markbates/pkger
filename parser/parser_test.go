@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"fmt"
+	"os"
 	"path/filepath"
 	"sort"
 	"testing"
@@ -13,13 +13,17 @@ import (
 func Test_Parser(t *testing.T) {
 	r := require.New(t)
 
-	ch := filepath.Join("..",
+	pwd, err := os.Getwd()
+	r.NoError(err)
+
+	ch := filepath.Join(pwd, "..",
 		"examples",
 		"app")
 	info := here.Info{
 		Dir:        ch,
 		ImportPath: "github.com/markbates/pkger/examples/app",
 	}
+
 	res, err := Parse(info)
 
 	r.NoError(err)
@@ -41,6 +45,6 @@ func Test_Parser(t *testing.T) {
 	}
 
 	sort.Strings(act)
-	fmt.Printf("%#v\n", act)
+	// fmt.Printf("%#v\n", act)
 	r.Equal(exp, act)
 }

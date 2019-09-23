@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	_ "github.com/gobuffalo/buffalo"
 	"github.com/markbates/pkger"
 )
 
@@ -24,7 +25,7 @@ func main() {
 
 	fmt.Printf("Walking files for %s\n", current.ImportPath)
 	// walk the files in this module. "/" is where the `go.mod` for this module is
-	err = pkger.Walk("github.com/markbates/pkger/examples/app:/", func(path string, info os.FileInfo, err error) error {
+	err = pkger.Walk("/", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
