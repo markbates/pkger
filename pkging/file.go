@@ -13,7 +13,7 @@ type File interface {
 	Info() here.Info
 	Name() string
 	Open(name string) (http.File, error)
-	Path() Path
+	Path() here.Path
 	Read(p []byte) (int, error)
 	Readdir(count int) ([]os.FileInfo, error)
 	Seek(offset int64, whence int) (int64, error)

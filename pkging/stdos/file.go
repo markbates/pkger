@@ -1,6 +1,7 @@
 package stdos
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path"
@@ -15,7 +16,7 @@ type File struct {
 	*os.File
 	info   *pkging.FileInfo
 	her    here.Info
-	path   pkging.Path
+	path   here.Path
 	pkging pkging.Pkger
 }
 
@@ -25,6 +26,7 @@ func NewFile(fx pkging.Pkger, osf *os.File) (*File, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(">>>TODO pkging/stdos/file.go:29: pt ", pt)
 	info, err := osf.Stat()
 	if err != nil {
 		return nil, err
@@ -82,7 +84,7 @@ func (f *File) Open(name string) (http.File, error) {
 	return f2, nil
 }
 
-func (f *File) Path() pkging.Path {
+func (f *File) Path() here.Path {
 	return f.path
 }
 

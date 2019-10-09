@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"sort"
 	"strconv"
 
-	"github.com/markbates/pkger"
 	"github.com/markbates/pkger/here"
-	"github.com/markbates/pkger/pkging"
 )
 
 type visitor func(node ast.Node) (w ast.Visitor)
@@ -19,18 +18,20 @@ func (v visitor) Visit(node ast.Node) ast.Visitor {
 
 // inspired by https://gist.github.com/cryptix/d1b129361cea51a59af2
 type file struct {
+	info     here.Info
 	fset     *token.FileSet
 	astFile  *ast.File
 	filename string
 	decls    map[string]string
-	paths    []pkging.Path
+	paths    map[string]here.Path
 }
 
 func (f *file) walk(fn func(ast.Node) bool) {
 	ast.Walk(walker(fn), f.astFile)
 }
 
-func (f *file) find() ([]pkging.Path, error) {
+func (f *file) find() ([]here.Path, error) {
+	f.paths = map[string]here.Path{}
 	if err := f.findDecals(); err != nil {
 		return nil, err
 	}
@@ -46,7 +47,14 @@ func (f *file) find() ([]pkging.Path, error) {
 		return nil, err
 	}
 
-	return f.paths, nil
+	var paths []here.Path
+	for _, p := range f.paths {
+		paths = append(paths, p)
+	}
+	sort.Slice(paths, func(a, b int) bool {
+		return paths[a].String() < paths[b].String()
+	})
+	return paths, nil
 }
 
 func (f *file) findDecals() error {
@@ -113,12 +121,13 @@ func (f *file) findOpenCalls() error {
 				err = nil
 				return false
 			}
-			pt, err := pkger.Parse(s)
+			pt, err := f.info.Parse(s)
+			fmt.Println(">>>TODO parser/visitor.go:124: pt ", pt)
 			if err != nil {
 				err = err
 				return false
 			}
-			f.paths = append(f.paths, pt)
+			f.paths[pt.String()] = pt
 		case *ast.Ident:
 			val, ok := f.decls[x.Name]
 			if !ok {
@@ -131,12 +140,13 @@ func (f *file) findOpenCalls() error {
 				err = nil
 				return false
 			}
-			pt, err := pkger.Parse(s)
+			pt, err := f.info.Parse(s)
+			fmt.Println(">>>TODO parser/visitor.go:144: pt ", pt)
 			if err != nil {
 				err = err
 				return false
 			}
-			f.paths = append(f.paths, pt)
+			f.paths[pt.String()] = pt
 
 		default:
 		}
@@ -167,12 +177,13 @@ func (f *file) findWalkCalls() error {
 				err = nil
 				return false
 			}
-			pt, err := pkger.Parse(s)
+			pt, err := f.info.Parse(s)
 			if err != nil {
 				err = err
 				return false
 			}
-			f.paths = append(f.paths, pt)
+			fmt.Println(">>>TODO parser/visitor.go:185: pt ", pt)
+			f.paths[pt.String()] = pt
 		case *ast.Ident:
 			val, ok := f.decls[x.Name]
 			if !ok {
@@ -185,12 +196,13 @@ func (f *file) findWalkCalls() error {
 				err = nil
 				return false
 			}
-			pt, err := pkger.Parse(s)
+			pt, err := f.info.Parse(s)
 			if err != nil {
 				err = err
 				return false
 			}
-			f.paths = append(f.paths, pt)
+			fmt.Println(">>>TODO parser/visitor.go:204: pt ", pt)
+			f.paths[pt.String()] = pt
 
 		default:
 		}
@@ -203,25 +215,26 @@ func (f *file) findWalkCalls() error {
 func (f *file) findImportCalls() error {
 	var err error
 	f.walk(func(node ast.Node) bool {
-		ce, ok := node.(*ast.ImportSpec)
-		if !ok {
-			return true
-		}
+		// ce, ok := node.(*ast.ImportSpec)
+		// if !ok {
+		// 	return true
+		// }
 
-		s, err := strconv.Unquote(ce.Path.Value)
-		if err != nil {
-			return false
-		}
-		info, err := here.Package(s)
-		if err != nil {
-			return false
-		}
-		fmt.Println(">>>TODO parser/visitor.go:216: info ", info)
-		res, err := Parse(info)
-		if err != nil {
-			return false
-		}
-		fmt.Println(">>>TODO parser/visitor.go:224: res ", res)
+		// s, err := strconv.Unquote(ce.Path.Value)
+		// if err != nil {
+		// 	return false
+		// }
+		// fmt.Println(">>>TODO parser/visitor.go:215: s ", s)
+		// info, err := here.Package(s)
+		// if err != nil {
+		// 	return false
+		// }
+		// fmt.Println(">>>TODO parser/visitor.go:216: info ", info)
+		// res, err := Parse(info)
+		// if err != nil {
+		// 	return false
+		// }
+		// fmt.Println(">>>TODO parser/visitor.go:224: res ", res)
 		return true
 	})
 	return err

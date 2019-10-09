@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/markbates/pkger/pkging"
+	"github.com/markbates/pkger/here"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,7 +32,7 @@ func Test_Abs(t *testing.T) {
 func Test_AbsPath(t *testing.T) {
 	r := require.New(t)
 
-	s, err := AbsPath(pkging.Path{
+	s, err := AbsPath(here.Path{
 		Pkg:  "github.com/markbates/pkger",
 		Name: "/rocket.ship",
 	})

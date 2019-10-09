@@ -7,8 +7,8 @@ import (
 	"sort"
 
 	"github.com/markbates/pkger"
+	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/parser"
-	"github.com/markbates/pkger/pkging"
 	"github.com/markbates/pkger/stuffing"
 )
 
@@ -30,16 +30,16 @@ func (e *packCmd) Exec(args []string) error {
 	if err != nil {
 		return err
 	}
-
+	fmt.Println(info)
 	res, err := parser.Parse(info)
 	if err != nil {
 		return err
 	}
 
 	if e.list {
-		fmt.Println(res.Path)
+		fmt.Println(info.ImportPath)
 
-		for _, p := range res.Paths {
+		for _, p := range res {
 			fmt.Printf("  > %s\n", p)
 		}
 		return nil
@@ -48,7 +48,7 @@ func (e *packCmd) Exec(args []string) error {
 	fp := info.FilePath(outName)
 	os.RemoveAll(fp)
 
-	if err := Package(fp, res.Paths); err != nil {
+	if err := Package(fp, res); err != nil {
 		return err
 	}
 
@@ -118,7 +118,7 @@ func (e *packCmd) Flags() *flag.FlagSet {
 	return e.FlagSet
 }
 
-func Package(out string, paths []pkging.Path) error {
+func Package(out string, paths []here.Path) error {
 	os.RemoveAll(out)
 
 	f, err := os.Create(out)

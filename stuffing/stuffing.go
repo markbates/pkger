@@ -1,7 +1,9 @@
 package stuffing
 
 import (
+	"fmt"
 	"io"
+	"strings"
 
 	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/pkging"
@@ -9,8 +11,8 @@ import (
 	"github.com/markbates/pkger/pkging/stdos"
 )
 
-func Stuff(w io.Writer, cur here.Info, paths []pkging.Path) error {
-	disk, err := stdos.New()
+func Stuff(w io.Writer, cur here.Info, paths []here.Path) error {
+	disk, err := stdos.New(cur)
 	if err != nil {
 		return err
 	}
@@ -32,6 +34,10 @@ func Stuff(w io.Writer, cur here.Info, paths []pkging.Path) error {
 			if err != nil {
 				return err
 			}
+			info := f.Info()
+			fmt.Println(">>>TODO stuffing/stuffing.go:41: info.Dir ", info.Dir)
+			fi = pkging.WithName(strings.TrimPrefix(fi.Name(), info.Dir), fi)
+			fmt.Println(">>>TODO stuffing/stuffing.go:37: fi.Name() ", fi.Name())
 
 			if err := pkg.Add(fi, f); err != nil {
 				return err

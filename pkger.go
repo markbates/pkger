@@ -15,7 +15,11 @@ var current pkging.Pkger
 var gil = &sync.RWMutex{}
 
 var disk = func() pkging.Pkger {
-	n, err := stdos.New()
+	her, err := here.Current()
+	if err != nil {
+		log.Println(err)
+	}
+	n, err := stdos.New(her)
 	if err != nil {
 		log.Println(err)
 	}
@@ -31,7 +35,7 @@ func impl() pkging.Pkger {
 	return current
 }
 
-func Parse(p string) (pkging.Path, error) {
+func Parse(p string) (here.Path, error) {
 	return impl().Parse(p)
 }
 
@@ -39,7 +43,7 @@ func Abs(p string) (string, error) {
 	return impl().Abs(p)
 }
 
-func AbsPath(p pkging.Path) (string, error) {
+func AbsPath(p here.Path) (string, error) {
 	return impl().AbsPath(p)
 }
 

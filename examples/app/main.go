@@ -22,10 +22,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(current)
 
 	fmt.Printf("Walking files for %s\n", current.ImportPath)
 	// walk the files in this module. "/" is where the `go.mod` for this module is
-	err = pkger.Walk("/", func(path string, info os.FileInfo, err error) error {
+	err = pkger.Walk("github.com/gobuffalo/buffalo:/", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}

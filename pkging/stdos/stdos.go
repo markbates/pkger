@@ -14,9 +14,8 @@ import (
 var _ pkging.Pkger = &Pkger{}
 
 type Pkger struct {
-	infos   *maps.Infos
-	paths   *maps.Paths
-	current here.Info
+	Here  here.Info
+	infos *maps.Infos
 }
 
 func (f *Pkger) Abs(p string) (string, error) {
@@ -27,9 +26,9 @@ func (f *Pkger) Abs(p string) (string, error) {
 	return f.AbsPath(pt)
 }
 
-func (f *Pkger) AbsPath(pt pkging.Path) (string, error) {
-	if pt.Pkg == f.current.ImportPath {
-		return filepath.Join(f.current.Dir, pt.Name), nil
+func (f *Pkger) AbsPath(pt here.Path) (string, error) {
+	if pt.Pkg == f.Here.ImportPath {
+		return filepath.Join(f.Here.Dir, pt.Name), nil
 	}
 	info, err := f.Info(pt.Pkg)
 	if err != nil {
@@ -38,19 +37,12 @@ func (f *Pkger) AbsPath(pt pkging.Path) (string, error) {
 	return filepath.Join(info.Dir, pt.Name), nil
 }
 
-func New() (*Pkger, error) {
-	info, err := here.Current()
-	if err != nil {
-		return nil, err
-	}
+func New(her here.Info) (*Pkger, error) {
 	p := &Pkger{
 		infos: &maps.Infos{},
-		paths: &maps.Paths{
-			Current: info,
-		},
-		current: info,
+		Here:  her,
 	}
-	p.infos.Store(info.ImportPath, info)
+	p.infos.Store(her.ImportPath, her)
 	return p, nil
 }
 
@@ -67,7 +59,7 @@ func (fx *Pkger) Create(name string) (pkging.File, error) {
 }
 
 func (f *Pkger) Current() (here.Info, error) {
-	return f.current, nil
+	return f.Here, nil
 }
 
 func (f *Pkger) Info(p string) (here.Info, error) {
@@ -104,8 +96,8 @@ func (fx *Pkger) Open(name string) (pkging.File, error) {
 	return NewFile(fx, f)
 }
 
-func (f *Pkger) Parse(p string) (pkging.Path, error) {
-	return f.paths.Parse(p)
+func (f *Pkger) Parse(p string) (here.Path, error) {
+	return f.Here.Parse(p)
 }
 
 func (f *Pkger) Stat(name string) (os.FileInfo, error) {

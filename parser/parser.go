@@ -5,46 +5,25 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
+	"sort"
 
-	"github.com/markbates/oncer"
+	"github.com/markbates/pkger"
 	"github.com/markbates/pkger/here"
-	"github.com/markbates/pkger/pkging"
 )
 
 var DefaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "_fixtures", "testdata"}
 
-func Parse(her here.Info) (Results, error) {
-	var r Results
-	var err error
+func Parse(her here.Info) ([]here.Path, error) {
 
-	oncer.Do(her.ImportPath, func() {
-		pwd, err := os.Getwd()
-		if err != nil {
-			return
-		}
-		defer os.Chdir(pwd)
+	src, err := fromSource(her)
+	if err != nil {
+		return nil, err
+	}
 
-		fmt.Println("cd: ", her.Dir, her.ImportPath)
-		os.Chdir(her.Dir)
-
-		// 1. search for .go files in/imported by `her.ImportPath`
-		src, err := fromSource(her)
-		if err != nil {
-			return
-		}
-		fmt.Println(">>>TODO parser/parser.go:30: src ", src)
-
-		// 2. parse .go ast's for `pkger.*` calls
-		// 3. find path's in those files
-		// 4. walk folders in those paths and add to results
-	})
-
-	return r, err
+	return src, nil
 }
 
-func fromSource(her here.Info) ([]pkging.Path, error) {
-	fmt.Println(">>>TODO parser/parser.go:201: her.ImportPath ", her.ImportPath)
-	fmt.Println(her)
+func fromSource(her here.Info) ([]here.Path, error) {
 	root := her.Dir
 	fi, err := os.Stat(root)
 	if err != nil {
@@ -60,11 +39,16 @@ func fromSource(her here.Info) ([]pkging.Path, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	var paths []pkging.Path
+	pm := map[string]here.Path{}
 	for _, pkg := range pkgs {
 		for _, pf := range pkg.Files {
-			f := &file{fset: fset, astFile: pf, filename: pf.Name.Name}
+			f := &file{
+				info:     her,
+				fset:     fset,
+				astFile:  pf,
+				filename: pf.Name.Name,
+				paths:    map[string]here.Path{},
+			}
 			f.decls = make(map[string]string)
 
 			x, err := f.find()
@@ -76,14 +60,45 @@ func fromSource(her here.Info) ([]pkging.Path, error) {
 					pt.Pkg = her.ImportPath
 					x[i] = pt
 				}
-				paths = append(paths, x[i])
+				pt = x[i]
+				pm[pt.String()] = pt
+				err = pkger.Walk(pt.String(), func(path string, info os.FileInfo, err error) error {
+					if err != nil {
+						return err
+					}
+					if info.IsDir() {
+						return nil
+					}
+					p, err := her.Parse(path)
+					if err != nil {
+						return err
+					}
+
+					if pt.Name != "/" {
+						p.Name = pt.Name + p.Name
+					}
+					pm[p.String()] = p
+					return nil
+				})
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 	}
+	var paths []here.Path
 
-	for _, i := range her.Imports {
-		fmt.Println(">>>TODO parser/parser.go:237: i ", i)
+	for _, v := range pm {
+		paths = append(paths, v)
 	}
+
+	sort.Slice(paths, func(i, j int) bool {
+		return paths[i].String() < paths[j].String()
+	})
+
+	// for _, i := range her.Imports {
+	// 	fmt.Println(">>>TODO parser/parser.go:237: i ", i)
+	// }
 
 	return paths, nil
 }
@@ -127,6 +142,6 @@ func fromSource(her here.Info) ([]pkging.Path, error) {
 // }
 
 type Results struct {
-	Paths []pkging.Path
-	Path  pkging.Path
+	Paths []here.Path
+	Path  here.Path
 }

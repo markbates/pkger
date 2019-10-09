@@ -8,11 +8,12 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/pkging"
 )
 
 // Files wraps sync.Map and uses the following types:
-// key:   pkging.Path
+// key:   here.Path
 // value: pkging.File
 type Files struct {
 	data *sync.Map
@@ -58,7 +59,7 @@ func (m *Files) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	for k, v := range mm {
-		var pt pkging.Path
+		var pt here.Path
 		if err := json.Unmarshal([]byte(k), &pt); err != nil {
 			return err
 		}
@@ -68,7 +69,7 @@ func (m *Files) UnmarshalJSON(b []byte) error {
 }
 
 // Delete the key from the map
-func (m *Files) Delete(key pkging.Path) {
+func (m *Files) Delete(key here.Path) {
 	m.Data().Delete(key)
 }
 
@@ -76,7 +77,7 @@ func (m *Files) Delete(key pkging.Path) {
 // Returns pkging.File or bool.
 // A false return indicates either the key was not found
 // or the value is not of type pkging.File
-func (m *Files) Load(key pkging.Path) (pkging.File, bool) {
+func (m *Files) Load(key here.Path) (pkging.File, bool) {
 	i, ok := m.Data().Load(key)
 	if !ok {
 		return nil, false
@@ -86,9 +87,9 @@ func (m *Files) Load(key pkging.Path) (pkging.File, bool) {
 }
 
 // Range over the pkging.File values in the map
-func (m *Files) Range(f func(key pkging.Path, value pkging.File) bool) {
+func (m *Files) Range(f func(key here.Path, value pkging.File) bool) {
 	m.Data().Range(func(k, v interface{}) bool {
-		key, ok := k.(pkging.Path)
+		key, ok := k.(here.Path)
 		if !ok {
 			return false
 		}
@@ -101,14 +102,14 @@ func (m *Files) Range(f func(key pkging.Path, value pkging.File) bool) {
 }
 
 // Store a pkging.File in the map
-func (m *Files) Store(key pkging.Path, value pkging.File) {
+func (m *Files) Store(key here.Path, value pkging.File) {
 	m.Data().Store(key, value)
 }
 
 // Keys returns a list of keys in the map
-func (m *Files) Keys() []pkging.Path {
-	var keys []pkging.Path
-	m.Range(func(key pkging.Path, value pkging.File) bool {
+func (m *Files) Keys() []here.Path {
+	var keys []here.Path
+	m.Range(func(key here.Path, value pkging.File) bool {
 		keys = append(keys, key)
 		return true
 	})

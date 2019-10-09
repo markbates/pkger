@@ -25,10 +25,7 @@ func WithInfo(fx *Pkger, infos ...here.Info) {
 
 func New(info here.Info) (*Pkger, error) {
 	f := &Pkger{
-		infos: &maps.Infos{},
-		paths: &maps.Paths{
-			Current: info,
-		},
+		infos:   &maps.Infos{},
 		files:   &maps.Files{},
 		current: info,
 	}
@@ -39,14 +36,12 @@ func New(info here.Info) (*Pkger, error) {
 
 type Pkger struct {
 	infos   *maps.Infos
-	paths   *maps.Paths
 	files   *maps.Files
 	current here.Info
 }
 
 type jay struct {
 	Infos   *maps.Infos      `json:"infos"`
-	Paths   *maps.Paths      `json:"paths"`
 	Files   map[string]*File `json:"files"`
 	Current here.Info        `json:"current"`
 }
@@ -54,7 +49,7 @@ type jay struct {
 func (p *Pkger) MarshalJSON() ([]byte, error) {
 	files := map[string]*File{}
 
-	p.files.Range(func(key pkging.Path, file pkging.File) bool {
+	p.files.Range(func(key here.Path, file pkging.File) bool {
 		f, ok := file.(*File)
 		if !ok {
 			return true
@@ -65,7 +60,6 @@ func (p *Pkger) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(jay{
 		Infos:   p.infos,
-		Paths:   p.paths,
 		Files:   files,
 		Current: p.current,
 	})
@@ -81,9 +75,6 @@ func (p *Pkger) UnmarshalJSON(b []byte) error {
 	p.current = y.Current
 
 	p.infos = y.Infos
-
-	p.paths = y.Paths
-	p.paths.Current = p.current
 
 	p.files = &maps.Files{}
 	for k, v := range y.Files {
@@ -104,7 +95,7 @@ func (f *Pkger) Abs(p string) (string, error) {
 	return f.AbsPath(pt)
 }
 
-func (f *Pkger) AbsPath(pt pkging.Path) (string, error) {
+func (f *Pkger) AbsPath(pt here.Path) (string, error) {
 	return pt.String(), nil
 }
 
@@ -121,8 +112,8 @@ func (f *Pkger) Info(p string) (here.Info, error) {
 	return info, nil
 }
 
-func (f *Pkger) Parse(p string) (pkging.Path, error) {
-	return f.paths.Parse(p)
+func (f *Pkger) Parse(p string) (here.Path, error) {
+	return f.current.Parse(p)
 }
 
 func (fx *Pkger) Remove(name string) error {
@@ -145,19 +136,13 @@ func (fx *Pkger) RemoveAll(name string) error {
 		return err
 	}
 
-	fx.files.Range(func(key pkging.Path, file pkging.File) bool {
+	fx.files.Range(func(key here.Path, file pkging.File) bool {
 		if strings.HasPrefix(key.Name, pt.Name) {
 			fx.files.Delete(key)
 		}
 		return true
 	})
 
-	fx.paths.Range(func(key string, value pkging.Path) bool {
-		if strings.HasPrefix(key, pt.Name) {
-			fx.paths.Delete(key)
-		}
-		return true
-	})
 	return nil
 }
 
@@ -235,7 +220,7 @@ func (fx *Pkger) MkdirAll(p string, perm os.FileMode) error {
 		return err
 	}
 	for root != "" {
-		pt := pkging.Path{
+		pt := here.Path{
 			Pkg:  path.Pkg,
 			Name: root,
 		}

@@ -35,7 +35,14 @@ func Test_Pkger_MarshalEmbed(t *testing.T) {
 
 	pinfo, err := p2.Current()
 	r.NoError(err)
-	r.Equal(info, pinfo)
+	r.Equal(info.ImportPath, pinfo.ImportPath)
+	r.Equal(info.Name, pinfo.Name)
+	r.Equal(info.Imports, pinfo.Imports)
+
+	m1 := info.Module
+	m2 := pinfo.Module
+	r.Equal(m1.Main, m2.Main)
+	r.Equal(m1.GoVersion, m2.GoVersion)
 
 	var act []os.FileInfo
 	err = p2.Walk("/", func(path string, info os.FileInfo, err error) error {

@@ -23,9 +23,9 @@ var _ pkging.File = &File{}
 type File struct {
 	info   *pkging.FileInfo
 	her    here.Info
-	path   pkging.Path
+	path   here.Path
 	data   []byte
-	parent pkging.Path
+	parent here.Path
 	writer *bytes.Buffer
 	reader io.Reader
 	pkging pkging.Pkger
@@ -34,9 +34,9 @@ type File struct {
 type fJay struct {
 	Info   *pkging.FileInfo `json:"info"`
 	Her    here.Info        `json:"her"`
-	Path   pkging.Path      `json:"path"`
+	Path   here.Path        `json:"path"`
 	Data   []byte           `json:"data"`
-	Parent pkging.Path      `json:"parent"`
+	Parent here.Path        `json:"parent"`
 }
 
 func (f File) MarshalJSON() ([]byte, error) {
@@ -134,7 +134,7 @@ func (f File) Abs() (string, error) {
 	return f.pkging.AbsPath(f.Path())
 }
 
-func (f File) Path() pkging.Path {
+func (f File) Path() here.Path {
 	return f.path
 }
 
