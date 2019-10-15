@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -146,32 +145,73 @@ func (fx *Pkger) RemoveAll(name string) error {
 	return nil
 }
 
-func (fx *Pkger) Add(info os.FileInfo, r io.Reader) error {
-	dir := filepath.Dir(info.Name())
-	fx.MkdirAll(dir, 0755)
-
-	f, err := fx.Create(info.Name())
+func (fx *Pkger) Add(f pkging.File) error {
+	fx.MkdirAll("/", 0755)
+	info, err := f.Stat()
 	if err != nil {
 		return err
 	}
 
-	mf, ok := f.(*File)
-	if !ok {
-		return fmt.Errorf("could not add %T", f)
+	if f.Path().Pkg == fx.current.ImportPath {
+		if err := fx.MkdirAll(filepath.Dir(f.Name()), 0755); err != nil {
+			return err
+		}
 	}
 
-	mf.info = pkging.NewFileInfo(info)
+	mf := &File{
+		her:    f.Info(),
+		info:   pkging.NewFileInfo(info),
+		path:   f.Path(),
+		pkging: fx,
+	}
 
-	if !mf.info.IsDir() {
-		b, err := ioutil.ReadAll(r)
+	if !info.IsDir() {
+		_, err = io.Copy(mf, f)
 		if err != nil {
 			return err
 		}
-		mf.data = b
 	}
-	fx.files.Store(f.Path(), f)
+
+	fx.files.Store(mf.Path(), mf)
+
 	return nil
 }
+
+// func (fx *Pkger) Add(info os.FileInfo, r io.Reader) error {
+// 	dir := filepath.Dir(info.Name())
+// 	fx.MkdirAll(dir, 0755)
+//
+// 	f, err := fx.Create(info.Name())
+// 	if err != nil {
+// 		return err
+// 	}
+//
+// 	mf, ok := f.(*File)
+// 	if !ok {
+// 		return fmt.Errorf("could not add %T", f)
+// 	}
+// 	fmt.Println(">>>TODO pkging/mem/mem.go:162: mf.Path() ", mf.Path())
+//
+// 	mf.info = pkging.NewFileInfo(info)
+//
+// 	if !mf.info.IsDir() {
+// 		b, err := ioutil.ReadAll(r)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		mf.data = b
+// 	}
+//
+// 	pf, ok := r.(pkging.File)
+// 	if ok {
+// 		fmt.Println(">>>TODO pkging/mem/mem.go:176: pf.Pkg, pf.Name ", pf.Path().Pkg, pf.Path().Name)
+// 		mf.path = pf.Path()
+// 		mf.her = pf.Info()
+// 	}
+//
+// 	fx.files.Store(f.Path(), f)
+// 	return nil
+// }
 
 func (fx *Pkger) Create(name string) (pkging.File, error) {
 	fx.MkdirAll("/", 0755)
@@ -306,7 +346,6 @@ func (f *Pkger) Walk(p string, wf filepath.WalkFunc) error {
 	}
 
 	skip := "!"
-
 	for _, k := range keys {
 		if !strings.HasPrefix(k.Name, pt.Name) {
 			continue

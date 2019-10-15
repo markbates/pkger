@@ -128,6 +128,8 @@ func (i Info) build(p, pkg, name string) (Path, error) {
 		Pkg:  pkg,
 		Name: name,
 	}
+	// fmt.Println(">>>TODO here/info.go:132: pkg, name ", pkg, name)
+	// fmt.Println(">>>TODO here/info.go:132: i.Dir ", i.Dir)
 
 	if strings.HasPrefix(pt.Pkg, "/") || len(pt.Pkg) == 0 {
 		pt.Name = pt.Pkg

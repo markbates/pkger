@@ -55,7 +55,29 @@ func (fx *Pkger) Create(name string) (pkging.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewFile(fx, f)
+
+	pt, err := fx.Parse(name)
+	if err != nil {
+		return nil, err
+	}
+
+	her, err := fx.Info(pt.Pkg)
+	if err != nil {
+		return nil, err
+	}
+	nf := &File{
+		File:   f,
+		her:    her,
+		path:   pt,
+		pkging: fx,
+	}
+
+	info, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+	nf.info = pkging.WithName(pt.Name, info)
+	return nf, nil
 }
 
 func (f *Pkger) Current() (here.Info, error) {
@@ -85,7 +107,12 @@ func (f *Pkger) MkdirAll(p string, perm os.FileMode) error {
 }
 
 func (fx *Pkger) Open(name string) (pkging.File, error) {
-	name, err := fx.Abs(name)
+	pt, err := fx.Parse(name)
+	if err != nil {
+		return nil, err
+	}
+
+	name, err = fx.Abs(name)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +120,26 @@ func (fx *Pkger) Open(name string) (pkging.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewFile(fx, f)
+
+	her, err := fx.Info(pt.Pkg)
+	if err != nil {
+		return nil, err
+	}
+
+	nf := &File{
+		File:   f,
+		her:    her,
+		path:   pt,
+		pkging: fx,
+	}
+
+	info, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+	nf.info = pkging.WithName(pt.Name, info)
+
+	return nf, nil
 }
 
 func (f *Pkger) Parse(p string) (here.Path, error) {
@@ -135,8 +181,7 @@ func (f *Pkger) Walk(p string, wf filepath.WalkFunc) error {
 		if err != nil {
 			return err
 		}
-
-		path = strings.TrimPrefix(path, fp)
+		path = strings.TrimPrefix(path, filepath.Dir(f.Here.ImportPath))
 		pt, err := f.Parse(fmt.Sprintf("%s:%s", pt.Pkg, path))
 		if err != nil {
 			return err

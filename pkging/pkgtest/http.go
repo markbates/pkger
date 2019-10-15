@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -21,16 +22,29 @@ import (
 //     ├── a.txt
 //     └── b
 //         └── b.txt
-func (s Suite) LoadFolder(pkg pkging.Pkger) error {
-	files := []string{
-		"/main.go",
-		"/public/images/mark.png",
-		"/public/index.html",
-		"/templates/a.txt",
-		"/templates/b/b.txt",
-	}
+var folderFiles = []string{
+	"/main.go",
+	"/public/images/mark.png",
+	"/public/index.html",
+	"/templates/a.txt",
+	"/templates/b/b.txt",
+}
 
-	for _, f := range files {
+func (s Suite) WriteFolder(path string) error {
+	for _, f := range folderFiles {
+		f = filepath.Join(path, f)
+		if err := os.MkdirAll(filepath.Dir(f), 0755); err != nil {
+			return err
+		}
+		if err := ioutil.WriteFile(f, []byte("!"+f), 0644); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s Suite) LoadFolder(pkg pkging.Pkger) error {
+	for _, f := range folderFiles {
 		if err := pkg.MkdirAll(filepath.Dir(f), 0755); err != nil {
 			return err
 		}
@@ -165,22 +179,46 @@ func (s Suite) Test_HTTP_File(t *testing.T) {
 
 			r.NoError(s.LoadFolder(pkg))
 
+			tdir, err := ioutil.TempDir("", "")
+			r.NoError(err)
+			defer os.RemoveAll(tdir)
+			r.NoError(s.WriteFolder(tdir))
+
+			gots := httptest.NewServer(http.FileServer(http.Dir(tdir)))
+			defer gots.Close()
+
 			dir, err := pkg.Open(tt.in)
 			r.NoError(err)
 			defer dir.Close()
 
-			ts := httptest.NewServer(http.FileServer(dir))
-			defer ts.Close()
+			pkgts := httptest.NewServer(http.FileServer(dir))
+			defer pkgts.Close()
 
-			res, err := http.Get(ts.URL + "/images/mark.png")
-			r.NoError(err)
-			r.Equal(200, res.StatusCode)
+			paths := []string{
+				"/",
+				"/index.html",
+				"/images",
+				"/images/images/mark.png",
+			}
 
-			b, err := ioutil.ReadAll(res.Body)
-			r.NoError(err)
+			for _, path := range paths {
+				t.Run(path, func(st *testing.T) {
+					r := require.New(st)
 
-			body := string(b)
-			r.Contains(body, `!/public/images/mark.png`)
+					gores, err := http.Get(gots.URL + path)
+					r.NoError(err)
+
+					pkgres, err := http.Get(pkgts.URL + path)
+					r.NoError(err)
+
+					gobody, err := ioutil.ReadAll(gores.Body)
+					r.NoError(err)
+
+					pkgbody, err := ioutil.ReadAll(pkgres.Body)
+					r.NoError(err)
+					r.Equal(string(gobody), string(pkgbody))
+				})
+			}
 		})
 	}
 

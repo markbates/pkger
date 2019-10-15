@@ -1,7 +1,6 @@
 package stdos
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"path"
@@ -20,32 +19,28 @@ type File struct {
 	pkging pkging.Pkger
 }
 
-func NewFile(fx pkging.Pkger, osf *os.File) (*File, error) {
-	name := osf.Name()
-	pt, err := fx.Parse(name)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println(">>>TODO pkging/stdos/file.go:29: pt ", pt)
-	info, err := osf.Stat()
-	if err != nil {
-		return nil, err
-	}
-
-	f := &File{
-		File:   osf,
-		path:   pt,
-		pkging: fx,
-	}
-	f.info = pkging.WithName(pt.Name, info)
-
-	her, err := here.Package(pt.Pkg)
-	if err != nil {
-		return nil, err
-	}
-	f.her = her
-	return f, nil
-}
+// func NewFile(her here.Info, fx pkging.Pkger, osf *os.File) (*File, error) {
+// 	// fmt.Println(">>>TODO pkging/stdos/file.go:23: her.ImportPath ", her.ImportPath)
+// 	name := osf.Name()
+// 	pt, err := her.Parse(name)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	info, err := osf.Stat()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+//
+// 	f := &File{
+// 		File:   osf,
+// 		path:   pt,
+// 		pkging: fx,
+// 		her:    her,
+// 	}
+// 	f.info = pkging.WithName(pt.Name, info)
+//
+// 	return f, nil
+// }
 
 func (f *File) Close() error {
 	return f.File.Close()
@@ -93,10 +88,10 @@ func (f *File) Stat() (os.FileInfo, error) {
 		return f.info, nil
 	}
 
-	nf, err := NewFile(f.pkging, f.File)
+	info, err := f.File.Stat()
 	if err != nil {
 		return nil, err
 	}
-	(*f) = *nf
+	f.info = pkging.WithName(f.path.Name, info)
 	return f.info, nil
 }
