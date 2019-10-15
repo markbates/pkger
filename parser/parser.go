@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/pkging/stdos"
@@ -97,7 +98,7 @@ func fromPath(pt here.Path) ([]here.Path, error) {
 
 	root := here.Path{
 		Pkg:  pt.Pkg,
-		Name: filepath.Dir(pt.Name),
+		Name: strings.Replace(filepath.Dir(pt.Name), "\\", "/", -1),
 	}
 	paths = append(paths, root)
 	err = pkg.Walk(pt.Name, func(path string, info os.FileInfo, err error) error {
