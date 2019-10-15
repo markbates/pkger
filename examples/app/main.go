@@ -43,7 +43,7 @@ func main() {
 	// 	: - seperator between the module/package name, pkg, and the "file path"
 	// 	path - this is the ABSOLUTE path to the file/directory you want, as relative
 	// 	to the root of the module/package's go.mod file.
-	dir, err := pkger.Open("github.com/markbates/pkger/examples/app:/public")
+	dir, err := pkger.Open("github.com/gobuffalo/buffalo:/plugins")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,11 +1,13 @@
 package pkgtest
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/markbates/pkger/pkging"
@@ -184,7 +186,9 @@ func (s Suite) Test_HTTP_File(t *testing.T) {
 			defer os.RemoveAll(tdir)
 			r.NoError(s.WriteFolder(tdir))
 
-			gots := httptest.NewServer(http.FileServer(http.Dir(tdir)))
+			tpub := filepath.Join(tdir, "public")
+			fmt.Println(">>>TODO pkging/pkgtest/http.go:190: tpub ", tpub)
+			gots := httptest.NewServer(http.FileServer(http.Dir(tpub)))
 			defer gots.Close()
 
 			dir, err := pkg.Open(tt.in)
@@ -198,7 +202,7 @@ func (s Suite) Test_HTTP_File(t *testing.T) {
 				"/",
 				"/index.html",
 				"/images",
-				"/images/images/mark.png",
+				"/images/mark.png",
 			}
 
 			for _, path := range paths {
@@ -216,7 +220,9 @@ func (s Suite) Test_HTTP_File(t *testing.T) {
 
 					pkgbody, err := ioutil.ReadAll(pkgres.Body)
 					r.NoError(err)
-					r.Equal(string(gobody), string(pkgbody))
+
+					exp := strings.ReplaceAll(string(gobody), tdir, "")
+					r.Equal(exp, string(pkgbody))
 				})
 			}
 		})

@@ -1,6 +1,7 @@
 package mem
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -166,10 +167,12 @@ func (fx *Pkger) Add(f pkging.File) error {
 	}
 
 	if !info.IsDir() {
-		_, err = io.Copy(mf, f)
+		bb := &bytes.Buffer{}
+		_, err = io.Copy(bb, f)
 		if err != nil {
 			return err
 		}
+		mf.data = bb.Bytes()
 	}
 
 	fx.files.Store(mf.Path(), mf)
@@ -306,6 +309,7 @@ func (fx *Pkger) Open(name string) (pkging.File, error) {
 		return nil, err
 	}
 
+	fmt.Println(">>>TODO pkging/mem/mem.go:309: pt ", pt)
 	fl, ok := fx.files.Load(pt)
 	if !ok {
 		return nil, fmt.Errorf("could not open %s", name)
@@ -321,6 +325,8 @@ func (fx *Pkger) Open(name string) (pkging.File, error) {
 		data:   f.data,
 		her:    f.her,
 	}
+
+	fmt.Println(">>>TODO pkging/mem/mem.go:326: nf.info ", nf.info)
 
 	return nf, nil
 }

@@ -268,6 +268,7 @@ github.com/gobuffalo/httptest v1.0.6/go.mod h1:7T1IbSrg60ankme0aDLVnEY0h056g9M1/
 github.com/gobuffalo/httptest v1.1.0/go.mod h1:BIfCgiqCOotRc5xYwCcZN7IFYag4277Ynqjar/Ra3iI=
 github.com/gobuffalo/httptest v1.2.0/go.mod h1:0KfourZCsapuvkljDMSr7YM+66kCt/rXv54YcWRWwhc=
 github.com/gobuffalo/httptest v1.3.0/go.mod h1:Y4qebOsMH91XdB0cZuS8OUdAKHGV7hVDcjgzGupoYlk=
+github.com/gobuffalo/httptest v1.4.0 h1:DaoTl/2iFRTk9Uau6b0Lh644tcbRtBNMHcWg6WhieS8=
 github.com/gobuffalo/httptest v1.4.0/go.mod h1:VDkgCFmIxAunkLNts49TC949NRLTtvyLKuN67o6hrXM=
 github.com/gobuffalo/licenser v0.0.0-20180924033006-eae28e638a42/go.mod h1:Ubo90Np8gpsSZqNScZZkVXXAo5DGhTb+WYFIjlnog8w=
 github.com/gobuffalo/licenser v0.0.0-20181025145548-437d89de4f75/go.mod h1:x3lEpYxkRG/XtGCUNkio+6RZ/dlOvLzTI9M1auIwFcw=
@@ -367,6 +368,7 @@ github.com/gobuffalo/packr v1.21.9/go.mod h1:GC76q6nMzRtR+AEN/VV4w0z2/4q7SOaEmXh
 github.com/gobuffalo/packr v1.22.0/go.mod h1:Qr3Wtxr3+HuQEwWqlLnNW4t1oTvK+7Gc/Rnoi/lDFvA=
 github.com/gobuffalo/packr v1.24.0/go.mod h1:p9Sgang00I1hlr1ub+tgI9AQdFd4f+WH1h62jYpzetM=
 github.com/gobuffalo/packr v1.24.1/go.mod h1:absPnW/XUUa4DmIh5ga7AipGXXg0DOcd5YWKk5RZs8Y=
+github.com/gobuffalo/packr v1.25.0 h1:NtPK45yOKFdTKHTvRGKL+UIKAKmJVWIVJOZBDI/qEdY=
 github.com/gobuffalo/packr v1.25.0/go.mod h1:NqsGg8CSB2ZD+6RBIRs18G7aZqdYDlYNNvsSqP6T4/U=
 github.com/gobuffalo/packr/v2 v2.0.0-rc.5/go.mod h1:e6gmOfhf3KmT4zl2X/NDRSfBXk2oV4TXZ+NNOM0xwt8=
 github.com/gobuffalo/packr/v2 v2.0.0-rc.7/go.mod h1:BzhceHWfF3DMAkbPUONHYWs63uacCZxygFY1b4H9N2A=
@@ -392,6 +394,7 @@ github.com/gobuffalo/packr/v2 v2.4.0/go.mod h1:ra341gygw9/61nSjAbfwcwh8IrYL4WmR4
 github.com/gobuffalo/packr/v2 v2.5.1/go.mod h1:8f9c96ITobJlPzI44jj+4tHnEKNt0xXWSVlXRN9X1Iw=
 github.com/gobuffalo/packr/v2 v2.5.2/go.mod h1:sgEE1xNZ6G0FNN5xn9pevVu4nywaxHvgup67xisti08=
 github.com/gobuffalo/packr/v2 v2.5.3/go.mod h1:sgEE1xNZ6G0FNN5xn9pevVu4nywaxHvgup67xisti08=
+github.com/gobuffalo/packr/v2 v2.6.0 h1:EMUzJIb5rof6r087PtGmgdzdLKpRBESJ/8jyL9MexfY=
 github.com/gobuffalo/packr/v2 v2.6.0/go.mod h1:sgEE1xNZ6G0FNN5xn9pevVu4nywaxHvgup67xisti08=
 github.com/gobuffalo/plush v3.7.16+incompatible/go.mod h1:rQ4zdtUUyZNqULlc6bqd5scsPfLKfT0+TGMChgduDvI=
 github.com/gobuffalo/plush v3.7.20+incompatible/go.mod h1:rQ4zdtUUyZNqULlc6bqd5scsPfLKfT0+TGMChgduDvI=
