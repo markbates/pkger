@@ -180,42 +180,6 @@ func (fx *Pkger) Add(f pkging.File) error {
 	return nil
 }
 
-// func (fx *Pkger) Add(info os.FileInfo, r io.Reader) error {
-// 	dir := filepath.Dir(info.Name())
-// 	fx.MkdirAll(dir, 0755)
-//
-// 	f, err := fx.Create(info.Name())
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	mf, ok := f.(*File)
-// 	if !ok {
-// 		return fmt.Errorf("could not add %T", f)
-// 	}
-// 	fmt.Println(">>>TODO pkging/mem/mem.go:162: mf.Path() ", mf.Path())
-//
-// 	mf.info = pkging.NewFileInfo(info)
-//
-// 	if !mf.info.IsDir() {
-// 		b, err := ioutil.ReadAll(r)
-// 		if err != nil {
-// 			return err
-// 		}
-// 		mf.data = b
-// 	}
-//
-// 	pf, ok := r.(pkging.File)
-// 	if ok {
-// 		fmt.Println(">>>TODO pkging/mem/mem.go:176: pf.Pkg, pf.Name ", pf.Path().Pkg, pf.Path().Name)
-// 		mf.path = pf.Path()
-// 		mf.her = pf.Info()
-// 	}
-//
-// 	fx.files.Store(f.Path(), f)
-// 	return nil
-// }
-
 func (fx *Pkger) Create(name string) (pkging.File, error) {
 	fx.MkdirAll("/", 0755)
 	pt, err := fx.Parse(name)
@@ -306,17 +270,20 @@ func (fx *Pkger) MkdirAll(p string, perm os.FileMode) error {
 func (fx *Pkger) Open(name string) (pkging.File, error) {
 	pt, err := fx.Parse(name)
 	if err != nil {
-		return nil, err
+		return nil, &os.PathError{
+			Op:   "open",
+			Path: name,
+			Err:  err,
+		}
 	}
 
-	fmt.Println(">>>TODO pkging/mem/mem.go:309: pt ", pt)
 	fl, ok := fx.files.Load(pt)
 	if !ok {
-		return nil, fmt.Errorf("could not open %s", name)
+		return nil, os.ErrNotExist
 	}
 	f, ok := fl.(*File)
 	if !ok {
-		return nil, fmt.Errorf("could not open %s", name)
+		return nil, os.ErrNotExist
 	}
 	nf := &File{
 		pkging: fx,
@@ -325,8 +292,6 @@ func (fx *Pkger) Open(name string) (pkging.File, error) {
 		data:   f.data,
 		her:    f.her,
 	}
-
-	fmt.Println(">>>TODO pkging/mem/mem.go:326: nf.info ", nf.info)
 
 	return nf, nil
 }

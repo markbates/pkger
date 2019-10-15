@@ -1,7 +1,6 @@
 package pkgtest
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -115,12 +114,14 @@ func (s Suite) Test_HTTP_Dir_IndexHTML(t *testing.T) {
 	ip := cur.ImportPath
 
 	table := []struct {
-		in  string
-		req string
+		in   string
+		req  string
+		code int
 	}{
-		{in: "/public", req: "/"},
-		{in: ":" + "/public", req: "/"},
-		{in: ip + ":" + "/public", req: "/"},
+		{in: "/public", req: "/", code: 200},
+		{in: ":" + "/public", req: "/", code: 200},
+		{in: ip + ":" + "/public", req: "/", code: 200},
+		{in: ip + ":" + "/public", req: "/unknown", code: 404},
 	}
 
 	exp := "index.html"
@@ -142,7 +143,11 @@ func (s Suite) Test_HTTP_Dir_IndexHTML(t *testing.T) {
 
 			res, err := http.Get(ts.URL + tt.req)
 			r.NoError(err)
-			r.Equal(200, res.StatusCode)
+			r.Equal(tt.code, res.StatusCode)
+
+			if tt.code != 200 {
+				return
+			}
 
 			b, err := ioutil.ReadAll(res.Body)
 			r.NoError(err)
@@ -187,7 +192,6 @@ func (s Suite) Test_HTTP_File(t *testing.T) {
 			r.NoError(s.WriteFolder(tdir))
 
 			tpub := filepath.Join(tdir, "public")
-			fmt.Println(">>>TODO pkging/pkgtest/http.go:190: tpub ", tpub)
 			gots := httptest.NewServer(http.FileServer(http.Dir(tpub)))
 			defer gots.Close()
 

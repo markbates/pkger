@@ -142,26 +142,6 @@ func (f File) String() string {
 	return f.Path().String()
 }
 
-// func (f File) Format(st fmt.State, verb rune) {
-// 	switch verb {
-// 	case 'v':
-// 		if st.Flag('+') {
-// 			b, err := json.MarshalIndent(f, "", "  ")
-// 			if err != nil {
-// 				fmt.Fprint(os.Stderr, err)
-// 				return
-// 			}
-// 			fmt.Fprint(st, string(b))
-// 			return
-// 		}
-// 		fmt.Fprint(st, f.String())
-// 	case 'q':
-// 		fmt.Fprintf(st, "%q", f.String())
-// 	default:
-// 		fmt.Fprint(st, f.String())
-// 	}
-// }
-
 func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 	var infos []os.FileInfo
 	root := f.Path().String()
@@ -208,7 +188,7 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 }
 
 func (f *File) Open(name string) (http.File, error) {
-	pt, err := f.pkging.Parse(name)
+	pt, err := f.her.Parse(name)
 	if err != nil {
 		return nil, err
 	}
@@ -228,6 +208,7 @@ func (f *File) Open(name string) (http.File, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if fi.IsDir() {
 		d2 := &File{
 			info:   pkging.NewFileInfo(fi),

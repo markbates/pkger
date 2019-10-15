@@ -67,45 +67,6 @@ func fromSource(her here.Info) ([]here.Path, error) {
 					pm[p.String()] = p
 				}
 			}
-			// for i, pt := range x {
-			// 	if pt.Pkg == "/" || pt.Pkg == "" {
-			// 		pt.Pkg = her.ImportPath
-			// 		x[i] = pt
-			// 	}
-			// 	pt = x[i]
-			// 	pm[pt.String()] = pt
-			// 	err = pkger.Walk(pt.String(), func(path string, info os.FileInfo, err error) error {
-			// 		fmt.Println(">>>TODO parser/parser.go:66: path ", path)
-			// 		if err != nil {
-			// 			return err
-			// 		}
-			// 		p, err := her.Parse(path)
-			// 		if err != nil {
-			// 			return err
-			// 		}
-			// 		if info.IsDir() {
-			// 			dir, err := pkger.Abs(path)
-			// 			if err != nil {
-			// 				return err
-			// 			}
-			// 			her = here.Info{
-			// 				Dir:        dir,
-			// 				ImportPath: p.Pkg,
-			// 			}
-			// 			fmt.Println(">>>TODO parser/parser.go:83: her ", her)
-			// 			return nil
-			// 		}
-			//
-			// 		if pt.Name != "/" && p.Name != "/" {
-			// 			p.Name = pt.Name + p.Name
-			// 		}
-			// 		pm[p.String()] = p
-			// 		return nil
-			// 	})
-			// 	if err != nil {
-			// 		return nil, err
-			// 	}
-			// }
 		}
 	}
 	var paths []here.Path
@@ -139,7 +100,6 @@ func fromPath(pt here.Path) ([]here.Path, error) {
 		Name: filepath.Dir(pt.Name),
 	}
 	paths = append(paths, root)
-	// paths = append(paths, )
 	err = pkg.Walk(pt.Name, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -148,9 +108,6 @@ func fromPath(pt here.Path) ([]here.Path, error) {
 		if err != nil {
 			return err
 		}
-		// if pt.Name != "/" && p.Name != "/" {
-		// 	p.Name = pt.Name + p.Name
-		// }
 		paths = append(paths, p)
 
 		return nil

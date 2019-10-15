@@ -30,7 +30,6 @@ func (e *packCmd) Exec(args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(info)
 
 	fp := info.FilePath(outName)
 	os.RemoveAll(fp)

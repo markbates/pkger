@@ -51,7 +51,6 @@ func Test_Parser_Complex(t *testing.T) {
 	}
 
 	sort.Strings(act)
-	// fmt.Printf("%#v\n", act)
 	r.Equal(exp, act)
 }
 
@@ -87,7 +86,6 @@ func Test_Parser_App(t *testing.T) {
 	}
 
 	sort.Strings(act)
-	// fmt.Printf("%#v\n", act)
 	r.Equal(inbed, act)
 }
 

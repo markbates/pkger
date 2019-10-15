@@ -19,29 +19,6 @@ type File struct {
 	pkging pkging.Pkger
 }
 
-// func NewFile(her here.Info, fx pkging.Pkger, osf *os.File) (*File, error) {
-// 	// fmt.Println(">>>TODO pkging/stdos/file.go:23: her.ImportPath ", her.ImportPath)
-// 	name := osf.Name()
-// 	pt, err := her.Parse(name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	info, err := osf.Stat()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	f := &File{
-// 		File:   osf,
-// 		path:   pt,
-// 		pkging: fx,
-// 		her:    her,
-// 	}
-// 	f.info = pkging.WithName(pt.Name, info)
-//
-// 	return f, nil
-// }
-
 func (f *File) Close() error {
 	return f.File.Close()
 }
