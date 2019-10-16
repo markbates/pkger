@@ -20,9 +20,9 @@ var _ pkging.Pkger = &Pkger{}
 // New returns *Pkger for the provided here.Info
 func New(info here.Info) (*Pkger, error) {
 	f := &Pkger{
-		infos:   &maps.Infos{},
-		files:   &maps.Files{},
-		current: info,
+		infos: &maps.Infos{},
+		files: &maps.Files{},
+		Here:  info,
 	}
 	f.infos.Store(info.ImportPath, info)
 	f.MkdirAll("/", 0755)
@@ -30,9 +30,9 @@ func New(info here.Info) (*Pkger, error) {
 }
 
 type Pkger struct {
-	infos   *maps.Infos
-	files   *maps.Files
-	current here.Info
+	Here  here.Info
+	infos *maps.Infos
+	files *maps.Files
 }
 
 type jay struct {
@@ -57,7 +57,7 @@ func (p *Pkger) MarshalJSON() ([]byte, error) {
 	return json.Marshal(jay{
 		Infos:   p.infos,
 		Files:   files,
-		Current: p.current,
+		Current: p.Here,
 	})
 }
 
@@ -69,7 +69,7 @@ func (p *Pkger) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	p.current = y.Current
+	p.Here = y.Current
 
 	p.infos = y.Infos
 
@@ -100,7 +100,7 @@ func (f *Pkger) AbsPath(pt here.Path) (string, error) {
 
 // Current returns the here.Info representing the current Pkger implementation.
 func (f *Pkger) Current() (here.Info, error) {
-	return f.current, nil
+	return f.Here, nil
 }
 
 // Info returns the here.Info of the here.Path
@@ -115,7 +115,7 @@ func (f *Pkger) Info(p string) (here.Info, error) {
 
 // Parse the string in here.Path format.
 func (f *Pkger) Parse(p string) (here.Path, error) {
-	return f.current.Parse(p)
+	return f.Here.Parse(p)
 }
 
 // Remove removes the named file or (empty) directory.
@@ -158,7 +158,7 @@ func (fx *Pkger) Add(f pkging.File) error {
 		return err
 	}
 
-	if f.Path().Pkg == fx.current.ImportPath {
+	if f.Path().Pkg == fx.Here.ImportPath {
 		if err := fx.MkdirAll(filepath.Dir(f.Name()), 0755); err != nil {
 			return err
 		}
