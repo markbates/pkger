@@ -1,21 +1,19 @@
-package stuffing
+package mem
 
 import (
 	"io"
 
 	"github.com/markbates/pkger/here"
-	"github.com/markbates/pkger/pkging"
-	"github.com/markbates/pkger/pkging/mem"
 	"github.com/markbates/pkger/pkging/stdos"
 )
 
-func Stuff(w io.Writer, cur here.Info, paths []pkging.Path) error {
-	disk, err := stdos.New()
+func Stuff(w io.Writer, cur here.Info, paths []here.Path) error {
+	disk, err := stdos.New(cur)
 	if err != nil {
 		return err
 	}
 
-	pkg, err := mem.New(cur)
+	pkg, err := New(cur)
 	if err != nil {
 		return err
 	}
@@ -27,13 +25,7 @@ func Stuff(w io.Writer, cur here.Info, paths []pkging.Path) error {
 				return err
 			}
 			defer f.Close()
-
-			fi, err := f.Stat()
-			if err != nil {
-				return err
-			}
-
-			if err := pkg.Add(fi, f); err != nil {
+			if err := pkg.Add(f); err != nil {
 				return err
 			}
 

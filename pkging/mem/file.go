@@ -23,9 +23,9 @@ var _ pkging.File = &File{}
 type File struct {
 	info   *pkging.FileInfo
 	her    here.Info
-	path   pkging.Path
+	path   here.Path
 	data   []byte
-	parent pkging.Path
+	parent here.Path
 	writer *bytes.Buffer
 	reader io.Reader
 	pkging pkging.Pkger
@@ -34,9 +34,9 @@ type File struct {
 type fJay struct {
 	Info   *pkging.FileInfo `json:"info"`
 	Her    here.Info        `json:"her"`
-	Path   pkging.Path      `json:"path"`
+	Path   here.Path        `json:"path"`
 	Data   []byte           `json:"data"`
-	Parent pkging.Path      `json:"parent"`
+	Parent here.Path        `json:"parent"`
 }
 
 func (f File) MarshalJSON() ([]byte, error) {
@@ -134,33 +134,13 @@ func (f File) Abs() (string, error) {
 	return f.pkging.AbsPath(f.Path())
 }
 
-func (f File) Path() pkging.Path {
+func (f File) Path() here.Path {
 	return f.path
 }
 
 func (f File) String() string {
 	return f.Path().String()
 }
-
-// func (f File) Format(st fmt.State, verb rune) {
-// 	switch verb {
-// 	case 'v':
-// 		if st.Flag('+') {
-// 			b, err := json.MarshalIndent(f, "", "  ")
-// 			if err != nil {
-// 				fmt.Fprint(os.Stderr, err)
-// 				return
-// 			}
-// 			fmt.Fprint(st, string(b))
-// 			return
-// 		}
-// 		fmt.Fprint(st, f.String())
-// 	case 'q':
-// 		fmt.Fprintf(st, "%q", f.String())
-// 	default:
-// 		fmt.Fprint(st, f.String())
-// 	}
-// }
 
 func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 	var infos []os.FileInfo
@@ -208,7 +188,7 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 }
 
 func (f *File) Open(name string) (http.File, error) {
-	pt, err := f.pkging.Parse(name)
+	pt, err := f.her.Parse(name)
 	if err != nil {
 		return nil, err
 	}
@@ -228,6 +208,7 @@ func (f *File) Open(name string) (http.File, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if fi.IsDir() {
 		d2 := &File{
 			info:   pkging.NewFileInfo(fi),
@@ -240,50 +221,3 @@ func (f *File) Open(name string) (http.File, error) {
 	}
 	return di, nil
 }
-
-// func (f *File) UnmarshalJSON(b []byte) error {
-// 	m := map[string]json.RawMessage{}
-// 	if err := json.Unmarshal(b, &m); err != nil {
-// 		return err
-// 	}
-//
-// 	info, ok := m["info"]
-// 	if !ok {
-// 		return fmt.Errorf("missing info")
-// 	}
-//
-// 	f.info = &pkging.FileInfo{}
-// 	if err := json.Unmarshal(info, f.info); err != nil {
-// 		return err
-// 	}
-//
-// 	her, ok := m["her"]
-// 	if !ok {
-// 		return fmt.Errorf("missing her")
-// 	}
-// 	if err := json.Unmarshal(her, &f.her); err != nil {
-// 		return err
-// 	}
-//
-// 	path, ok := m["path"]
-// 	if !ok {
-// 		return fmt.Errorf("missing path")
-// 	}
-// 	if err := json.Unmarshal(path, &f.path); err != nil {
-// 		return err
-// 	}
-//
-// 	parent, ok := m["parent"]
-// 	if !ok {
-// 		return fmt.Errorf("missing parent")
-// 	}
-// 	if err := json.Unmarshal(parent, &f.parent); err != nil {
-// 		return err
-// 	}
-//
-// 	if err := json.Unmarshal(m["data"], &f.data); err != nil {
-// 		return err
-// 	}
-//
-// 	return nil
-// }

@@ -7,13 +7,16 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/markbates/pkger/here"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_File_Stat_No_Info(t *testing.T) {
 	r := require.New(t)
 
-	pkg, err := New()
+	her, err := here.Current()
+	r.NoError(err)
+	pkg, err := New(her)
 	r.NoError(err)
 
 	f, err := pkg.Open(":/pkging/stdos/file_test.go")
@@ -35,7 +38,9 @@ func Test_File_Stat_No_Info(t *testing.T) {
 func Test_File_HTTP_Dir(t *testing.T) {
 	r := require.New(t)
 
-	pkg, err := New()
+	her, err := here.Current()
+	r.NoError(err)
+	pkg, err := New(her)
 	r.NoError(err)
 
 	fp := filepath.Join("..", "..", "examples", "app", "public")

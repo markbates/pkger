@@ -15,34 +15,8 @@ type File struct {
 	*os.File
 	info   *pkging.FileInfo
 	her    here.Info
-	path   pkging.Path
+	path   here.Path
 	pkging pkging.Pkger
-}
-
-func NewFile(fx pkging.Pkger, osf *os.File) (*File, error) {
-	name := osf.Name()
-	pt, err := fx.Parse(name)
-	if err != nil {
-		return nil, err
-	}
-	info, err := osf.Stat()
-	if err != nil {
-		return nil, err
-	}
-
-	f := &File{
-		File:   osf,
-		path:   pt,
-		pkging: fx,
-	}
-	f.info = pkging.WithName(pt.Name, info)
-
-	her, err := here.Package(pt.Pkg)
-	if err != nil {
-		return nil, err
-	}
-	f.her = her
-	return f, nil
 }
 
 func (f *File) Close() error {
@@ -82,7 +56,7 @@ func (f *File) Open(name string) (http.File, error) {
 	return f2, nil
 }
 
-func (f *File) Path() pkging.Path {
+func (f *File) Path() here.Path {
 	return f.path
 }
 
@@ -91,10 +65,10 @@ func (f *File) Stat() (os.FileInfo, error) {
 		return f.info, nil
 	}
 
-	nf, err := NewFile(f.pkging, f.File)
+	info, err := f.File.Stat()
 	if err != nil {
 		return nil, err
 	}
-	(*f) = *nf
+	f.info = pkging.WithName(f.path.Name, info)
 	return f.info, nil
 }

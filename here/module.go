@@ -1,13 +1,45 @@
 package here
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/markbates/hepa"
+	"github.com/markbates/hepa/filters"
+)
 
 type Module struct {
-	Path      string `json:"Path"`
-	Main      bool   `json:"Main"`
-	Dir       string `json:"Dir"`
-	GoMod     string `json:"GoMod"`
-	GoVersion string `json:"GoVersion"`
+	Path      string
+	Main      bool
+	Dir       string
+	GoMod     string
+	GoVersion string
+}
+
+func (m Module) MarshalJSON() ([]byte, error) {
+	mm := map[string]interface{}{
+		"Main":      m.Main,
+		"GoVersion": m.GoVersion,
+	}
+
+	hep := hepa.New()
+	hep = hepa.With(hep, filters.Home())
+	hep = hepa.With(hep, filters.Golang())
+
+	cm := map[string]string{
+		"Path":  m.Path,
+		"Dir":   m.Dir,
+		"GoMod": m.GoMod,
+	}
+
+	for k, v := range cm {
+		b, err := hep.Filter([]byte(v))
+		if err != nil {
+			return nil, err
+		}
+		mm[k] = string(b)
+	}
+
+	return json.Marshal(mm)
 }
 
 func (i Module) String() string {

@@ -27,7 +27,7 @@ func (w withPkger) String() string {
 	return fmt.Sprintf("%T > %T", w.base, w.parent)
 }
 
-func (w withPkger) Parse(p string) (Path, error) {
+func (w withPkger) Parse(p string) (here.Path, error) {
 	pt, err := w.base.Parse(p)
 	if err != nil {
 		if w.parent != nil {
@@ -49,7 +49,7 @@ func (w withPkger) Abs(p string) (string, error) {
 	return pt, nil
 }
 
-func (w withPkger) AbsPath(p Path) (string, error) {
+func (w withPkger) AbsPath(p here.Path) (string, error) {
 	pt, err := w.base.AbsPath(p)
 	if err != nil {
 		if w.parent != nil {

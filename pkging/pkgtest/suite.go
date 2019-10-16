@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/pkging"
 	"github.com/markbates/pkger/pkging/pkgutil"
 	"github.com/stretchr/testify/require"
@@ -323,17 +324,17 @@ func (s Suite) Test_Parse(t *testing.T) {
 	ip := cur.ImportPath
 	table := []struct {
 		in  string
-		exp pkging.Path
+		exp here.Path
 	}{
-		{in: mould, exp: pkging.Path{Pkg: ip, Name: mould}},
-		{in: filepath.Join(cur.Dir, mould), exp: pkging.Path{Pkg: ip, Name: mould}},
-		{in: ":" + mould, exp: pkging.Path{Pkg: ip, Name: mould}},
-		{in: ip + ":" + mould, exp: pkging.Path{Pkg: ip, Name: mould}},
-		{in: ip, exp: pkging.Path{Pkg: ip, Name: "/"}},
-		{in: ":", exp: pkging.Path{Pkg: ip, Name: "/"}},
-		{in: husker + ":" + mould, exp: pkging.Path{Pkg: husker, Name: mould}},
-		{in: husker, exp: pkging.Path{Pkg: husker, Name: "/"}},
-		{in: husker + ":", exp: pkging.Path{Pkg: husker, Name: "/"}},
+		{in: mould, exp: here.Path{Pkg: ip, Name: mould}},
+		{in: filepath.Join(cur.Dir, mould), exp: here.Path{Pkg: ip, Name: mould}},
+		{in: ":" + mould, exp: here.Path{Pkg: ip, Name: mould}},
+		{in: ip + ":" + mould, exp: here.Path{Pkg: ip, Name: mould}},
+		{in: ip, exp: here.Path{Pkg: ip, Name: "/"}},
+		{in: ":", exp: here.Path{Pkg: ip, Name: "/"}},
+		{in: husker + ":" + mould, exp: here.Path{Pkg: husker, Name: mould}},
+		{in: husker, exp: here.Path{Pkg: husker, Name: "/"}},
+		{in: husker + ":", exp: here.Path{Pkg: husker, Name: "/"}},
 	}
 
 	for _, tt := range table {

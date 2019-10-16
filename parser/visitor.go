@@ -1,300 +1,232 @@
 package parser
 
 import (
-	"fmt"
 	"go/ast"
+	"go/token"
+	"sort"
 	"strconv"
-	"strings"
-
-	"github.com/markbates/pkger"
-	"github.com/markbates/pkger/here"
-	"github.com/markbates/pkger/pkging"
 )
 
-type visitor struct {
-	File   string
-	Found  map[pkging.Path]bool
-	info   here.Info
-	errors []error
+type visitor func(node ast.Node) (w ast.Visitor)
+
+func (v visitor) Visit(node ast.Node) ast.Visitor {
+	return v(node)
 }
 
-func newVisitor(p string, info here.Info) (*visitor, error) {
-	return &visitor{
-		File:  p,
-		Found: map[pkging.Path]bool{},
-		info:  info,
-	}, nil
+// inspired by https://gist.github.com/cryptix/d1b129361cea51a59af2
+type file struct {
+	fset     *token.FileSet
+	astFile  *ast.File
+	filename string
+	decls    map[string]string
 }
 
-func (v *visitor) Run() ([]pkging.Path, error) {
-	pf, err := parseFile(v.File)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %v", v.File, err)
-	}
-
-	ast.Walk(v, pf.Ast)
-
-	var found []pkging.Path
-
-	for k := range v.Found {
-		found = append(found, k)
-	}
-
-	return found, nil
+func (f *file) walk(fn func(ast.Node) bool) {
+	ast.Walk(walker(fn), f.astFile)
 }
 
-func (v *visitor) addPath(p string) error {
-	p, _ = strconv.Unquote(p)
-	pt, err := pkger.Parse(p)
-	if err != nil {
-		return err
-	}
-	if strings.HasPrefix(p, ":") {
-		pt.Pkg = v.info.ImportPath
+func (f *file) find() ([]string, error) {
+	// if err := f.findDecals(); err != nil {
+	// 	return nil, err
+	// }
+	if err := f.findOpenCalls(); err != nil {
+		return nil, err
 	}
 
-	v.Found[pt] = true
+	if err := f.findWalkCalls(); err != nil {
+		return nil, err
+	}
 
-	return nil
+	if err := f.findImportCalls(); err != nil {
+		return nil, err
+	}
+
+	var paths []string
+	for _, p := range f.decls {
+		paths = append(paths, p)
+	}
+	sort.Slice(paths, func(a, b int) bool {
+		return paths[a] < paths[b]
+	})
+	return paths, nil
 }
 
-func (v *visitor) Visit(node ast.Node) ast.Visitor {
-	if node == nil {
-		return v
-	}
-	if err := v.eval(node); err != nil {
-		v.errors = append(v.errors, err)
-	}
+func (f *file) findDecals() error {
+	// iterate over all declarations
+	for _, d := range f.astFile.Decls {
 
-	return v
-}
+		// log.Printf("#%d Decl: %+v\n", i, d)
 
-func (v *visitor) eval(node ast.Node) error {
-	switch t := node.(type) {
-	case *ast.CallExpr:
-		return v.evalExpr(t)
-	case *ast.Ident:
-		return v.evalIdent(t)
-	case *ast.GenDecl:
-		for _, n := range t.Specs {
-			if err := v.eval(n); err != nil {
-				return err
-			}
-		}
-	case *ast.FuncDecl:
-		if t.Body == nil {
-			return nil
-		}
-		for _, b := range t.Body.List {
-			if err := v.evalStmt(b); err != nil {
-				return err
-			}
-		}
-		return nil
-	case *ast.ValueSpec:
-		for _, e := range t.Values {
-			if err := v.evalExpr(e); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
+		// only interested in generic declarations
+		if genDecl, ok := d.(*ast.GenDecl); ok {
 
-func (v *visitor) evalStmt(stmt ast.Stmt) error {
-	switch t := stmt.(type) {
-	case *ast.ExprStmt:
-		return v.evalExpr(t.X)
-	case *ast.AssignStmt:
-		for _, e := range t.Rhs {
-			if err := v.evalArgs(e); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
+			// handle const's and vars
+			if genDecl.Tok == token.CONST || genDecl.Tok == token.VAR {
 
-func (v *visitor) evalExpr(expr ast.Expr) error {
-	switch t := expr.(type) {
-	case *ast.CallExpr:
-		if t.Fun == nil {
-			return nil
-		}
-		for _, a := range t.Args {
-			switch at := a.(type) {
-			case *ast.CallExpr:
-				if sel, ok := t.Fun.(*ast.SelectorExpr); ok {
-					return v.evalSelector(at, sel)
-				}
+				// there may be multiple
+				// i.e. const ( ... )
+				for _, cDecl := range genDecl.Specs {
 
-				if err := v.evalArgs(at); err != nil {
-					return err
-				}
-			case *ast.CompositeLit:
-				for _, e := range at.Elts {
-					if err := v.evalExpr(e); err != nil {
-						return err
-					}
-				}
-			}
-		}
-		if ft, ok := t.Fun.(*ast.SelectorExpr); ok {
-			return v.evalSelector(t, ft)
-		}
-	case *ast.KeyValueExpr:
-		return v.evalExpr(t.Value)
-	}
-	return nil
-}
+					// havn't find another kind of spec then value but better check
+					if vSpec, ok := cDecl.(*ast.ValueSpec); ok {
+						// log.Printf("const ValueSpec: %+v\n", vSpec)
 
-func (v *visitor) evalArgs(expr ast.Expr) error {
-	switch at := expr.(type) {
-	case *ast.CompositeLit:
-		for _, e := range at.Elts {
-			if err := v.evalExpr(e); err != nil {
-				return err
-			}
-		}
-	case *ast.CallExpr:
-		if at.Fun == nil {
-			return nil
-		}
-		switch st := at.Fun.(type) {
-		case *ast.SelectorExpr:
-			if err := v.evalSelector(at, st); err != nil {
-				return err
-			}
-		case *ast.Ident:
-			return v.evalIdent(st)
-		}
-		for _, a := range at.Args {
-			if err := v.evalArgs(a); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func (v *visitor) evalSelector(expr *ast.CallExpr, sel *ast.SelectorExpr) error {
-	x, ok := sel.X.(*ast.Ident)
-	if !ok {
-		return nil
-	}
-	if x.Name == "pkger" {
-		switch sel.Sel.Name {
-		case "Walk":
-			if len(expr.Args) != 2 {
-				return fmt.Errorf("`Walk` requires two arguments")
-			}
-
-			zz := func(e ast.Expr) (string, error) {
-				switch at := e.(type) {
-				case *ast.Ident:
-					switch at.Obj.Kind {
-					case ast.Var:
-						if as, ok := at.Obj.Decl.(*ast.AssignStmt); ok {
-							return v.fromVariable(as)
-						}
-					case ast.Con:
-						if vs, ok := at.Obj.Decl.(*ast.ValueSpec); ok {
-							return v.fromConstant(vs)
+						// iterate over Name/Value pair
+						for i := 0; i < len(vSpec.Names); i++ {
+							// TODO: only basic literals work currently
+							if i > len(vSpec.Values) || len(vSpec.Values) == 0 {
+								break
+							}
+							switch v := vSpec.Values[i].(type) {
+							case *ast.BasicLit:
+								f.decls[vSpec.Names[i].Name] = v.Value
+							default:
+								// log.Printf("Name: %s - Unsupported ValueSpec: %+v\n", vSpec.Names[i].Name, v)
+							}
 						}
 					}
-					return "", v.evalIdent(at)
-				case *ast.BasicLit:
-					return at.Value, nil
-				case *ast.CallExpr:
-					return "", v.evalExpr(at)
 				}
-				return "", fmt.Errorf("can't handle %T", e)
 			}
 
-			k1, err := zz(expr.Args[0])
+		}
+	}
+
+	return nil
+}
+
+func (f *file) findOpenCalls() error {
+	var err error
+	f.walk(func(node ast.Node) bool {
+		ce, ok := node.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+
+		exists := isPkgDot(ce.Fun, "pkger", "Open")
+		if !(exists) || len(ce.Args) != 1 {
+			return true
+		}
+
+		switch x := ce.Args[0].(type) {
+
+		case *ast.BasicLit:
+			s, err := strconv.Unquote(x.Value)
 			if err != nil {
-				return err
+				err = nil
+				return false
 			}
-			if err := v.addPath(k1); err != nil {
-				return err
+			f.decls[s] = s
+		case *ast.Ident:
+			val, ok := f.decls[x.Name]
+			if !ok {
+				//TODO: Add ERRORs list to file type and return after iteration!
+				// log.Printf("Could not find identifier[%s] in decls map\n", x.Name)
+				return true
 			}
-
-			return nil
-		case "Open":
-			for _, e := range expr.Args {
-				switch at := e.(type) {
-				case *ast.Ident:
-					switch at.Obj.Kind {
-					case ast.Var:
-						if as, ok := at.Obj.Decl.(*ast.AssignStmt); ok {
-							v.addVariable("", as)
-						}
-					case ast.Con:
-						if vs, ok := at.Obj.Decl.(*ast.ValueSpec); ok {
-							v.addConstant("", vs)
-						}
-					}
-					return v.evalIdent(at)
-				case *ast.BasicLit:
-					return v.addPath(at.Value)
-				case *ast.CallExpr:
-					return v.evalExpr(at)
-				}
+			s, err := strconv.Unquote(val)
+			if err != nil {
+				err = nil
+				return false
 			}
+			f.decls[s] = s
+
+		default:
 		}
-	}
 
-	return nil
+		return true
+	})
+	return err
 }
 
-func (v *visitor) evalIdent(i *ast.Ident) error {
-	if i.Obj == nil {
-		return nil
-	}
-	if s, ok := i.Obj.Decl.(*ast.AssignStmt); ok {
-		return v.evalStmt(s)
-	}
-	return nil
-}
-
-func (v *visitor) fromVariable(as *ast.AssignStmt) (string, error) {
-	if len(as.Rhs) == 1 {
-		if bs, ok := as.Rhs[0].(*ast.BasicLit); ok {
-			return bs.Value, nil
+func (f *file) findWalkCalls() error {
+	var err error
+	f.walk(func(node ast.Node) bool {
+		ce, ok := node.(*ast.CallExpr)
+		if !ok {
+			return true
 		}
-	}
-	return "", fmt.Errorf("unable to find value from variable %v", as)
-}
 
-func (v *visitor) addVariable(bn string, as *ast.AssignStmt) error {
-	bv, err := v.fromVariable(as)
-	if err != nil {
-		return nil
-	}
-	if len(bn) == 0 {
-		bn = bv
-	}
-	return v.addPath(bn)
-}
-
-func (v *visitor) fromConstant(vs *ast.ValueSpec) (string, error) {
-	if len(vs.Values) == 1 {
-		if bs, ok := vs.Values[0].(*ast.BasicLit); ok {
-			return bs.Value, nil
+		exists := isPkgDot(ce.Fun, "pkger", "Walk")
+		if !(exists) || len(ce.Args) != 2 {
+			return true
 		}
-	}
-	return "", fmt.Errorf("unable to find value from constant %v", vs)
-}
 
-func (v *visitor) addConstant(bn string, vs *ast.ValueSpec) error {
-	if len(vs.Values) == 1 {
-		if bs, ok := vs.Values[0].(*ast.BasicLit); ok {
-			bv := bs.Value
-			if len(bn) == 0 {
-				bn = bv
+		switch x := ce.Args[0].(type) {
+
+		case *ast.BasicLit:
+			s, err := strconv.Unquote(x.Value)
+			if err != nil {
+				err = nil
+				return false
 			}
-			return v.addPath(bn)
+			f.decls[s] = s
+		case *ast.Ident:
+			val, ok := f.decls[x.Name]
+			if !ok {
+				//TODO: Add ERRORs list to file type and return after iteration!
+				// log.Printf("Could not find identifier[%s] in decls map\n", x.Name)
+				return true
+			}
+			s, err := strconv.Unquote(val)
+			if err != nil {
+				err = nil
+				return false
+			}
+			f.decls[s] = s
+		default:
 		}
+
+		return true
+	})
+	return err
+}
+
+func (f *file) findImportCalls() error {
+	var err error
+	f.walk(func(node ast.Node) bool {
+		// ce, ok := node.(*ast.ImportSpec)
+		// if !ok {
+		// 	return true
+		// }
+
+		// s, err := strconv.Unquote(ce.Path.Value)
+		// if err != nil {
+		// 	return false
+		// }
+		// fmt.Println(">>>TODO parser/visitor.go:215: s ", s)
+		// info, err := here.Package(s)
+		// if err != nil {
+		// 	return false
+		// }
+		// fmt.Println(">>>TODO parser/visitor.go:216: info ", info)
+		// res, err := Parse(info)
+		// if err != nil {
+		// 	return false
+		// }
+		// fmt.Println(">>>TODO parser/visitor.go:224: res ", res)
+		return true
+	})
+	return err
+}
+
+// helpers
+// =======
+func isPkgDot(expr ast.Expr, pkg, name string) bool {
+	sel, ok := expr.(*ast.SelectorExpr)
+	return ok && isIdent(sel.X, pkg) && isIdent(sel.Sel, name)
+}
+
+func isIdent(expr ast.Expr, ident string) bool {
+	id, ok := expr.(*ast.Ident)
+	return ok && id.Name == ident
+}
+
+// wrap a function to fulfill ast.Visitor interface
+type walker func(ast.Node) bool
+
+func (w walker) Visit(node ast.Node) ast.Visitor {
+	if w(node) {
+		return w
 	}
 	return nil
 }

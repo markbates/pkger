@@ -7,9 +7,9 @@ import (
 	"sort"
 
 	"github.com/markbates/pkger"
+	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/parser"
-	"github.com/markbates/pkger/pkging"
-	"github.com/markbates/pkger/stuffing"
+	"github.com/markbates/pkger/pkging/mem"
 )
 
 const outName = "pkged.go"
@@ -31,24 +31,24 @@ func (e *packCmd) Exec(args []string) error {
 		return err
 	}
 
+	fp := info.FilePath(outName)
+	os.RemoveAll(fp)
+
 	res, err := parser.Parse(info)
 	if err != nil {
 		return err
 	}
 
 	if e.list {
-		fmt.Println(res.Path)
+		fmt.Println(info.ImportPath)
 
-		for _, p := range res.Paths {
+		for _, p := range res {
 			fmt.Printf("  > %s\n", p)
 		}
 		return nil
 	}
 
-	fp := info.FilePath(outName)
-	os.RemoveAll(fp)
-
-	if err := Package(fp, res.Paths); err != nil {
+	if err := Package(fp, res); err != nil {
 		return err
 	}
 
@@ -118,7 +118,7 @@ func (e *packCmd) Flags() *flag.FlagSet {
 	return e.FlagSet
 }
 
-func Package(out string, paths []pkging.Path) error {
+func Package(out string, paths []here.Path) error {
 	os.RemoveAll(out)
 
 	f, err := os.Create(out)
@@ -134,10 +134,13 @@ func Package(out string, paths []pkging.Path) error {
 	fmt.Fprintf(f, "package %s\n\n", c.Name)
 	fmt.Fprintf(f, "import \"github.com/markbates/pkger\"\n\n")
 	fmt.Fprintf(f, "import \"github.com/markbates/pkger/pkging/mem\"\n\n")
+	fmt.Fprintf(f, "// packing:\n")
+	for _, p := range paths {
+		fmt.Fprintf(f, "// %s\n", p)
+	}
+	fmt.Fprintf(f, "\nvar _ = pkger.Apply(mem.UnmarshalEmbed([]byte(`")
 
-	fmt.Fprintf(f, "var _ = pkger.Apply(mem.UnmarshalEmbed([]byte(`")
-
-	if err := stuffing.Stuff(f, c, paths); err != nil {
+	if err := mem.Stuff(f, c, paths); err != nil {
 		return err
 	}
 

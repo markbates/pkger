@@ -2,180 +2,117 @@ package parser
 
 import (
 	"fmt"
+	"go/parser"
+	"go/token"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 
-	"github.com/markbates/pkger"
 	"github.com/markbates/pkger/here"
-	"github.com/markbates/pkger/pkging"
+	"github.com/markbates/pkger/pkging/stdos"
 )
 
 var DefaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "_fixtures", "testdata"}
 
-func Parse(her here.Info) (Results, error) {
-	var r Results
+func Parse(her here.Info) ([]here.Path, error) {
 
-	name := her.ImportPath
-
-	pt, err := pkger.Parse(name)
+	src, err := fromSource(her)
 	if err != nil {
-		return r, err
-	}
-	r.Path = pt
-
-	m := map[pkging.Path]bool{}
-
-	root := r.Path.Name
-	if !strings.HasPrefix(root, string(filepath.Separator)) {
-		root = string(filepath.Separator) + root
+		return nil, err
 	}
 
-	if !strings.HasPrefix(root, her.Dir) {
-		root = filepath.Join(her.Dir, root)
-	}
-
-	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		base := filepath.Base(path)
-
-		for _, ig := range DefaultIgnoredFolders {
-			if strings.HasPrefix(base, ig) {
-				if info.IsDir() {
-					return filepath.SkipDir
-				}
-				return nil
-			}
-		}
-		if info.IsDir() {
-			if _, err := os.Stat(filepath.Join(path, "go.mod")); err == nil {
-				her, err = here.Dir(path)
-				if err != nil {
-					return err
-				}
-			}
-			n := fmt.Sprintf("%s:%s", her.ImportPath, strings.TrimPrefix(path, her.Dir))
-			pt, err := pkger.Parse(n)
-			if err != nil {
-				return err
-			}
-
-			m[pt] = true
-			return nil
-		}
-
-		ext := filepath.Ext(path)
-		if ext != ".go" {
-			return nil
-		}
-
-		v, err := newVisitor(path, her)
-		if err != nil {
-			return err
-		}
-
-		found, err := v.Run()
-		if err != nil {
-			return err
-		}
-
-		for _, p := range found {
-			if p.Pkg == "." {
-				p.Pkg = her.ImportPath
-			}
-			if _, ok := m[p]; ok {
-				continue
-			}
-
-			m[p] = true
-			found, err := sourceFiles(p)
-			if err != nil {
-				return err
-			}
-			for _, pf := range found {
-				pf.Pkg = p.Pkg
-				m[pf] = true
-			}
-		}
-
-		return nil
-	})
-
-	var found []pkging.Path
-
-	for k := range m {
-		if len(k.String()) == 0 {
-			continue
-		}
-		found = append(found, k)
-	}
-	sort.Slice(found, func(a, b int) bool {
-		return found[a].String() <= found[b].String()
-	})
-	r.Paths = found
-
-	return r, err
+	return src, nil
 }
 
-func sourceFiles(pt pkging.Path) ([]pkging.Path, error) {
-	var res []pkging.Path
-
-	her, err := pkger.Info(pt.Pkg)
-
+func fromSource(her here.Info) ([]here.Path, error) {
+	root := her.Dir
+	fi, err := os.Stat(root)
 	if err != nil {
-		return res, err
-	}
-
-	fp := her.FilePath(pt.Name)
-	fi, err := os.Stat(fp)
-	if err != nil {
-		return res, err
+		return nil, err
 	}
 	if !fi.IsDir() {
-		return res, nil
+		return nil, fmt.Errorf("%q is not a directory", root)
 	}
 
-	err = filepath.Walk(fp, func(p string, info os.FileInfo, err error) error {
+	fset := token.NewFileSet()
+
+	pkgs, err := parser.ParseDir(fset, root, nil, 0)
+	if err != nil {
+		return nil, err
+	}
+	pm := map[string]here.Path{}
+	for _, pkg := range pkgs {
+		for _, pf := range pkg.Files {
+			f := &file{
+				fset:     fset,
+				astFile:  pf,
+				filename: pf.Name.Name,
+				decls:    map[string]string{},
+			}
+
+			x, err := f.find()
+			if err != nil {
+				return nil, err
+			}
+			for _, dl := range x {
+				pt, err := her.Parse(dl)
+				if err != nil {
+					return nil, err
+				}
+				res, err := fromPath(pt)
+				if err != nil {
+					return nil, err
+				}
+				for _, p := range res {
+					pm[p.String()] = p
+				}
+			}
+		}
+	}
+	var paths []here.Path
+
+	for _, v := range pm {
+		paths = append(paths, v)
+	}
+
+	sort.Slice(paths, func(i, j int) bool {
+		return paths[i].String() < paths[j].String()
+	})
+
+	return paths, nil
+}
+
+func fromPath(pt here.Path) ([]here.Path, error) {
+	var paths []here.Path
+
+	her, err := here.Package(pt.Pkg)
+	if err != nil {
+		return nil, err
+	}
+
+	pkg, err := stdos.New(her)
+	if err != nil {
+		return nil, err
+	}
+
+	root := here.Path{
+		Pkg:  pt.Pkg,
+		Name: strings.Replace(filepath.Dir(pt.Name), "\\", "/", -1),
+	}
+	paths = append(paths, root)
+	err = pkg.Walk(pt.Name, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-
-		base := filepath.Base(p)
-
-		if base == "." {
-			return nil
+		p, err := her.Parse(path)
+		if err != nil {
+			return err
 		}
+		paths = append(paths, p)
 
-		for _, ig := range DefaultIgnoredFolders {
-			if strings.HasPrefix(base, ig) {
-				if info.IsDir() {
-					return filepath.SkipDir
-				}
-				return nil
-			}
-		}
-
-		if info.IsDir() {
-			return nil
-		}
-
-		n := strings.TrimPrefix(p, her.Dir)
-		n = strings.Replace(n, "\\", "/", -1)
-		pt := pkging.Path{
-			Name: n,
-		}
-		res = append(res, pt)
 		return nil
 	})
-	return res, err
 
-}
-
-type Results struct {
-	Paths []pkging.Path
-	Path  pkging.Path
+	return paths, nil
 }
