@@ -18,6 +18,7 @@ type Pkger struct {
 	infos *maps.Infos
 }
 
+// Abs returns an absolute representation of path. If the path is not absolute it will be joined with the current working directory to turn it into an absolute path. The absolute path name for a given file is not guaranteed to be unique. Abs calls Clean on the result.
 func (f *Pkger) Abs(p string) (string, error) {
 	pt, err := f.Parse(p)
 	if err != nil {
@@ -26,6 +27,7 @@ func (f *Pkger) Abs(p string) (string, error) {
 	return f.AbsPath(pt)
 }
 
+// AbsPath returns an absolute representation of here.Path. If the path is not absolute it will be joined with the current working directory to turn it into an absolute path. The absolute path name for a given file is not guaranteed to be unique. AbsPath calls Clean on the result.
 func (f *Pkger) AbsPath(pt here.Path) (string, error) {
 	if pt.Pkg == f.Here.ImportPath {
 		return filepath.Join(f.Here.Dir, pt.Name), nil
@@ -37,6 +39,7 @@ func (f *Pkger) AbsPath(pt here.Path) (string, error) {
 	return filepath.Join(info.Dir, pt.Name), nil
 }
 
+// New returns *Pkger for the provided here.Info
 func New(her here.Info) (*Pkger, error) {
 	p := &Pkger{
 		infos: &maps.Infos{},
@@ -46,6 +49,7 @@ func New(her here.Info) (*Pkger, error) {
 	return p, nil
 }
 
+// Create creates the named file with mode 0666 (before umask) - It's actually 0644, truncating it if it already exists. If successful, methods on the returned File can be used for I/O; the associated file descriptor has mode O_RDWR.
 func (fx *Pkger) Create(name string) (pkging.File, error) {
 	name, err := fx.Abs(name)
 	if err != nil {
@@ -80,10 +84,12 @@ func (fx *Pkger) Create(name string) (pkging.File, error) {
 	return nf, nil
 }
 
+// Current returns the here.Info representing the current Pkger implementation.
 func (f *Pkger) Current() (here.Info, error) {
 	return f.Here, nil
 }
 
+// Info returns the here.Info of the here.Path
 func (f *Pkger) Info(p string) (here.Info, error) {
 	info, ok := f.infos.Load(p)
 	if ok {
@@ -98,6 +104,7 @@ func (f *Pkger) Info(p string) (here.Info, error) {
 	return info, nil
 }
 
+// MkdirAll creates a directory named path, along with any necessary parents, and returns nil, or else returns an error. The permission bits perm (before umask) are used for all directories that MkdirAll creates. If path is already a directory, MkdirAll does nothing and returns nil.
 func (f *Pkger) MkdirAll(p string, perm os.FileMode) error {
 	p, err := f.Abs(p)
 	if err != nil {
@@ -106,6 +113,7 @@ func (f *Pkger) MkdirAll(p string, perm os.FileMode) error {
 	return os.MkdirAll(p, perm)
 }
 
+// Open opens the named file for reading. If successful, methods on the returned file can be used for reading; the associated file descriptor has mode O_RDONLY.
 func (fx *Pkger) Open(name string) (pkging.File, error) {
 	pt, err := fx.Parse(name)
 	if err != nil {
@@ -142,10 +150,12 @@ func (fx *Pkger) Open(name string) (pkging.File, error) {
 	return nf, nil
 }
 
+// Parse the string in here.Path format.
 func (f *Pkger) Parse(p string) (here.Path, error) {
 	return f.Here.Parse(p)
 }
 
+// Stat returns a FileInfo describing the named file.
 func (f *Pkger) Stat(name string) (os.FileInfo, error) {
 	pt, err := f.Parse(name)
 	if err != nil {
@@ -167,6 +177,7 @@ func (f *Pkger) Stat(name string) (os.FileInfo, error) {
 	return info, nil
 }
 
+// Walk walks the file tree rooted at root, calling walkFn for each file or directory in the tree, including root. All errors that arise visiting files and directories are filtered by walkFn. The files are walked in lexical order, which makes the output deterministic but means that for very large directories Walk can be inefficient. Walk does not follow symbolic links. - That is from the standard library. I know. Their grammar teachers can not be happy with them right now.
 func (f *Pkger) Walk(p string, wf filepath.WalkFunc) error {
 	fp, err := f.Abs(p)
 	if err != nil {
@@ -198,6 +209,7 @@ func (f *Pkger) Walk(p string, wf filepath.WalkFunc) error {
 	return err
 }
 
+// Remove removes the named file or (empty) directory.
 func (fx *Pkger) Remove(name string) error {
 	name, err := fx.Abs(name)
 	if err != nil {
@@ -206,6 +218,7 @@ func (fx *Pkger) Remove(name string) error {
 	return os.Remove(name)
 }
 
+// RemoveAll removes path and any children it contains. It removes everything it can but returns the first error it encounters. If the path does not exist, RemoveAll returns nil (no error).
 func (fx *Pkger) RemoveAll(name string) error {
 	name, err := fx.Abs(name)
 	if err != nil {

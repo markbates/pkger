@@ -30,7 +30,6 @@ func Stuff(w io.Writer, cur here.Info, paths []here.Path) error {
 			}
 
 			return nil
-			// WithInfo(ng, og)
 		}()
 		if err != nil {
 			return err

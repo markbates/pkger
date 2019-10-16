@@ -12,6 +12,9 @@ import (
 func Apply(pkg pkging.Pkger, err error) error {
 	gil.Lock()
 	defer gil.Unlock()
+	if err != nil {
+		return err
+	}
 	if err := pkgutil.Dump(os.Stdout, pkg); err != nil {
 		return err
 	}
