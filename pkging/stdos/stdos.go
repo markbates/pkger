@@ -181,13 +181,16 @@ func (f *Pkger) Walk(p string, wf filepath.WalkFunc) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println("path", path)
-		path = strings.TrimPrefix(path, f.Here.Dir)
-		fmt.Println("path", path)
 		pt, err := f.Parse(fmt.Sprintf("%s:%s", pt.Pkg, path))
 		if err != nil {
 			return err
 		}
+		info, err := f.Info(pt.Pkg)
+		if err != nil {
+			return err
+		}
+		path = strings.TrimPrefix(path, info.Dir)
+		pt.Name = path
 		return wf(pt.String(), pkging.WithName(path, pkging.NewFileInfo(fi)), nil)
 	})
 

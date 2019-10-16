@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 
-	_ "github.com/gobuffalo/buffalo"
 	"github.com/markbates/pkger"
 )
 
