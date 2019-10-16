@@ -5,8 +5,6 @@ import (
 	"compress/gzip"
 	"encoding/hex"
 	"encoding/json"
-
-	"github.com/markbates/pkger/pkging"
 )
 
 func (pkg *Pkger) MarshalEmbed() ([]byte, error) {
@@ -23,7 +21,7 @@ func (pkg *Pkger) MarshalEmbed() ([]byte, error) {
 	return []byte(s), nil
 }
 
-func UnmarshalEmbed(in []byte) (pkging.Pkger, error) {
+func UnmarshalEmbed(in []byte) (*Pkger, error) {
 	b := make([]byte, len(in))
 	if _, err := hex.Decode(b, in); err != nil {
 		return nil, err
