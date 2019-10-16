@@ -1,9 +1,10 @@
-package mem
+package stuffing
 
 import (
 	"io"
 
 	"github.com/markbates/pkger/here"
+	"github.com/markbates/pkger/pkging/mem"
 	"github.com/markbates/pkger/pkging/stdos"
 )
 
@@ -13,7 +14,7 @@ func Stuff(w io.Writer, cur here.Info, paths []here.Path) error {
 		return err
 	}
 
-	pkg, err := New(cur)
+	pkg, err := mem.New(cur)
 	if err != nil {
 		return err
 	}
