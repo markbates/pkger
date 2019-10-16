@@ -9,7 +9,7 @@ import (
 	"github.com/markbates/pkger"
 	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/parser"
-	"github.com/markbates/pkger/pkging/mem"
+	"github.com/markbates/pkger/pkging/stuffing"
 )
 
 const outName = "pkged.go"
@@ -140,7 +140,7 @@ func Package(out string, paths []here.Path) error {
 	}
 	fmt.Fprintf(f, "\nvar _ = pkger.Apply(mem.UnmarshalEmbed([]byte(`")
 
-	if err := mem.Stuff(f, c, paths); err != nil {
+	if err := stuffing.Stuff(f, c, paths); err != nil {
 		return err
 	}
 
