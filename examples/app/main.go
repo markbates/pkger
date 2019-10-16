@@ -24,7 +24,8 @@ func main() {
 	fmt.Println(current)
 
 	fmt.Printf("Walking files for %s\n", current.ImportPath)
-	// walk the files in this module. "/" is where the `go.mod` for this module is
+	// walk the files in the github.com/gobuffalo/buffalo module.
+	// "/render" is relative to where that module's `go.mod` is.
 	err = pkger.Walk("github.com/gobuffalo/buffalo:/render", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err

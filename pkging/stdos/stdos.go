@@ -190,6 +190,7 @@ func (f *Pkger) Walk(p string, wf filepath.WalkFunc) error {
 			return err
 		}
 		path = strings.TrimPrefix(path, info.Dir)
+		path = strings.ReplaceAll(path, "\\", "/")
 		pt.Name = path
 		return wf(pt.String(), pkging.WithName(path, pkging.NewFileInfo(fi)), nil)
 	})
