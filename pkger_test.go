@@ -1,7 +1,6 @@
 package pkger
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -106,7 +105,6 @@ func Test_Walk(t *testing.T) {
 	})
 	r.NoError(err)
 
-	fmt.Println(">>>TODO pkger_test.go:109: files ", files)
 	r.True(len(files) > 10)
 }
 

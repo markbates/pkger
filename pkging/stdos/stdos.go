@@ -181,7 +181,9 @@ func (f *Pkger) Walk(p string, wf filepath.WalkFunc) error {
 		if err != nil {
 			return err
 		}
-		path = strings.TrimPrefix(path, filepath.Dir(f.Here.ImportPath))
+		fmt.Println("path", path)
+		path = strings.TrimPrefix(path, f.Here.Dir)
+		fmt.Println("path", path)
 		pt, err := f.Parse(fmt.Sprintf("%s:%s", pt.Pkg, path))
 		if err != nil {
 			return err

@@ -97,8 +97,10 @@ func (s Suite) Test_HTTP_Dir(t *testing.T) {
 
 			b, err := ioutil.ReadAll(res.Body)
 			r.NoError(err)
-			r.Contains(string(b), tt.exp)
-			r.NotContains(string(b), "mark.png")
+
+			s := clean(string(b))
+			r.Contains(s, tt.exp)
+			r.NotContains(s, "mark.png")
 		})
 	}
 }
@@ -152,7 +154,7 @@ func (s Suite) Test_HTTP_Dir_IndexHTML(t *testing.T) {
 			b, err := ioutil.ReadAll(res.Body)
 			r.NoError(err)
 
-			body := string(b)
+			body := clean(string(b))
 			r.Contains(body, exp)
 			r.NotContains(body, "mark.png")
 		})
@@ -226,7 +228,8 @@ func (s Suite) Test_HTTP_File(t *testing.T) {
 					r.NoError(err)
 
 					exp := strings.ReplaceAll(string(gobody), tdir, "")
-					r.Equal(exp, string(pkgbody))
+					exp = clean(exp)
+					r.Equal(exp, clean(string(pkgbody)))
 				})
 			}
 		})
