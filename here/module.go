@@ -3,8 +3,8 @@ package here
 import (
 	"encoding/json"
 
-	"github.com/markbates/hepa"
-	"github.com/markbates/hepa/filters"
+	"github.com/markbates/pkger/internal/takeon/github.com/markbates/hepa"
+	"github.com/markbates/pkger/internal/takeon/github.com/markbates/hepa/filters"
 )
 
 type Module struct {

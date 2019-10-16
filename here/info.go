@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/markbates/hepa"
-	"github.com/markbates/hepa/filters"
+	"github.com/markbates/pkger/internal/takeon/github.com/markbates/hepa"
+	"github.com/markbates/pkger/internal/takeon/github.com/markbates/hepa/filters"
 )
 
 // Info represents details about the directory/package
