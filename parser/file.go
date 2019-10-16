@@ -6,8 +6,6 @@ import (
 	"go/token"
 	"io"
 	"io/ioutil"
-
-	"github.com/markbates/errx"
 )
 
 type parsedFile struct {
@@ -30,7 +28,7 @@ func parseFileMode(f string, mode parser.Mode) (parsedFile, error) {
 	src := string(b)
 
 	pff, err := parser.ParseFile(pf.FileSet, f, src, mode)
-	if err != nil && errx.Unwrap(err) != io.EOF {
+	if err != nil && err != io.EOF {
 		return pf, err
 	}
 	pf.Ast = pff
