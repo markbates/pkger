@@ -1,11 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
-	"fmt"
+	"os"
 
 	"github.com/markbates/pkger"
-	"github.com/markbates/pkger/pkging"
 )
 
 type infoCmd struct {
@@ -16,41 +16,29 @@ func (s *infoCmd) Name() string {
 	return s.Flags().Name()
 }
 
-func (f *infoCmd) Flags() *flag.FlagSet {
-	if f.FlagSet == nil {
-		f.FlagSet = flag.NewFlagSet("info", flag.ExitOnError)
+func (r *infoCmd) Flags() *flag.FlagSet {
+	if r.FlagSet == nil {
+		r.FlagSet = flag.NewFlagSet("info", flag.ExitOnError)
 	}
-	return f.FlagSet
+	return r.FlagSet
 }
 
-func (f *infoCmd) Exec(args []string) error {
+func (r *infoCmd) Exec(args []string) error {
 	if len(args) == 0 {
 		args = []string{"."}
 	}
 	for _, a := range args {
-		f, err := pkger.Open(a)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
 
-		fi, err := f.Stat()
+		fi, err := pkger.Info(a)
 		if err != nil {
 			return err
 		}
 
-		if fi.IsDir() {
-			files, err := f.Readdir(-1)
-			if err != nil {
-				return err
-			}
-			for _, ff := range files {
-				fmt.Println(pkging.NewFileInfo(ff))
-			}
-			continue
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", " ")
+		if err := enc.Encode(fi); err != nil {
+			return err
 		}
-
-		fmt.Println(pkging.NewFileInfo(fi))
 	}
 
 	return nil
