@@ -25,6 +25,8 @@ changelog:
       - '^test:'
 
 brews:
+  -
+  name: pkger
   github:
     owner: markbates
     name: homebrew-tap
