@@ -68,7 +68,7 @@ type File interface {
 ├── public
 │   ├── images
 │   │   ├── mark-small.png
-│   │   ├── mark.png
+│   │   ├── img1.png
 │   │   ├── mark_250px.png
 │   │   └── mark_400px.png
 │   └── index.html
@@ -124,7 +124,7 @@ $ go build -v; ./app
 /public                       | 128      | drwxr-xr-x | 2019-10-17T15:02:57-04:00 |
 /public/images                | 192      | drwxr-xr-x | 2019-10-17T15:02:57-04:00 |
 /public/images/mark-small.png | 649549   | -rw-r--r-- | 2019-10-17T15:02:56-04:00 |
-/public/images/mark.png       | 50401191 | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
+/public/images/img1.png       | 50401191 | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
 /public/images/mark_250px.png | 27718    | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
 /public/images/mark_400px.png | 63543    | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
 /public/index.html            | 257      | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
@@ -141,7 +141,7 @@ $ go build -v; ./app
 /                      | 128      | drwxr-xr-x | 2019-10-17T15:02:57-04:00 |
 /images                | 192      | drwxr-xr-x | 2019-10-17T15:02:57-04:00 |
 /images/mark-small.png | 649549   | -rw-r--r-- | 2019-10-17T15:02:56-04:00 |
-/images/mark.png       | 50401191 | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
+/images/img1.png       | 50401191 | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
 /images/mark_250px.png | 27718    | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
 /images/mark_400px.png | 63543    | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
 /index.html            | 257      | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |

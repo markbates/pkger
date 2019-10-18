@@ -477,7 +477,7 @@ func (s Suite) Test_Walk(t *testing.T) {
 				"app:/main.go",
 				"app:/public",
 				"app:/public/images",
-				"app:/public/images/mark.png",
+				"app:/public/images/img1.png",
 				"app:/public/index.html",
 				"app:/templates",
 				"app:/templates/a.txt",
@@ -504,9 +504,9 @@ func (s Suite) Test_Remove(t *testing.T) {
 	table := []struct {
 		in string
 	}{
-		{in: "/public/images/mark.png"},
-		{in: ":/public/images/mark.png"},
-		{in: ip + ":/public/images/mark.png"},
+		{in: "/public/images/img1.png"},
+		{in: ":/public/images/img1.png"},
+		{in: ip + ":/public/images/img1.png"},
 	}
 
 	for _, tt := range table {

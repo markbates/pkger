@@ -10,18 +10,18 @@ import (
 func Test_NewFileInfo(t *testing.T) {
 
 	in := []string{
-		"/public/images/mark.png",
-		"public/images/mark.png",
-		"/public\\images/mark.png",
-		"public/images\\mark.png",
-		"\\public\\images\\mark.png",
-		"public\\images\\mark.png",
-		"\\public/images\\mark.png",
-		"public\\images/mark.png",
-		"\\public\\images\\mark.png",
+		"/public/images/img1.png",
+		"public/images/img1.png",
+		"/public\\images/img1.png",
+		"public/images\\img1.png",
+		"\\public\\images\\img1.png",
+		"public\\images\\img1.png",
+		"\\public/images\\img1.png",
+		"public\\images/img1.png",
+		"\\public\\images\\img1.png",
 	}
 
-	const exp = "/public/images/mark.png"
+	const exp = "/public/images/img1.png"
 	for _, n := range in {
 		t.Run(n, func(st *testing.T) {
 			r := require.New(st)
@@ -57,17 +57,17 @@ func Test_WithName(t *testing.T) {
 		},
 	}
 
-	const exp = "/public/images/mark.png"
+	const exp = "/public/images/img1.png"
 	in := []string{
-		"/public/images/mark.png",
-		"public/images/mark.png",
-		"/public\\images/mark.png",
-		"public/images\\mark.png",
-		"\\public\\images\\mark.png",
-		"public\\images\\mark.png",
-		"\\public/images\\mark.png",
-		"public\\images/mark.png",
-		"\\public\\images\\mark.png",
+		"/public/images/img1.png",
+		"public/images/img1.png",
+		"/public\\images/img1.png",
+		"public/images\\img1.png",
+		"\\public\\images\\img1.png",
+		"public\\images\\img1.png",
+		"\\public/images\\img1.png",
+		"public\\images/img1.png",
+		"\\public\\images\\img1.png",
 	}
 
 	for _, n := range in {

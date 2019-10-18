@@ -98,7 +98,7 @@ func (s Suite) Test_File_Readdir(t *testing.T) {
 				return infos[i].Name() < infos[j].Name()
 			})
 
-			r.Equal("mark.png", infos[0].Name())
+			r.Equal("img1.png", infos[0].Name())
 
 		})
 	}

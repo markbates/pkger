@@ -28,11 +28,11 @@ var _ = func() error {
 	func() {
 		b := packr.New("demo", "./public")
 		b.SetResolver("images/mark-small.png", packr.Pointer{ForwardBox: gk, ForwardPath: "a689331d911d0cbde15d7e8c3c58de24"})
-		b.SetResolver("images/mark.png", packr.Pointer{ForwardBox: gk, ForwardPath: "2f74a807d522eeea13c8b2d14a5b5d2a"})
+		b.SetResolver("images/img1.png", packr.Pointer{ForwardBox: gk, ForwardPath: "2f74a807d522eeea13c8b2d14a5b5d2a"})
 		b.SetResolver("images/mark_250px.png", packr.Pointer{ForwardBox: gk, ForwardPath: "fedc04d0db3eb8c431bd9499e363d5e2"})
 		b.SetResolver("images/mark_400px.png", packr.Pointer{ForwardBox: gk, ForwardPath: "b52c6d64db611b2d96d98ee2bf189c62"})
 		b.SetResolver("index.html", packr.Pointer{ForwardBox: gk, ForwardPath: "b6ff149c0b7c934a0d88fe4f54689842"})
-		}()
+	}()
 
 	return nil
 }()
