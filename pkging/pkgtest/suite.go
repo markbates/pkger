@@ -57,36 +57,6 @@ func (s Suite) Test(t *testing.T) {
 	}
 }
 
-// func (s Suite) clone() (Suite, error) {
-// 	if ns, ok := s.Pkger.(Newable); ok {
-// 		pkg, err := ns.New()
-// 		if err != nil {
-// 			return s, err
-// 		}
-// 		s, err = NewSuite(pkg)
-// 		if err != nil {
-// 			return s, err
-// 		}
-// 	}
-// 	if ns, ok := s.Pkger.(WithRootable); ok {
-// 		dir, err := ioutil.TempDir("")
-// 		if err != nil {
-// 			return s, err
-// 		}
-// 		// defer opkg.RemoveAll(dir)
-//
-// 		pkg, err := ns.WithRoot(dir)
-// 		if err != nil {
-// 			return s, err
-// 		}
-// 		s, err = NewSuite(pkg)
-// 		if err != nil {
-// 			return s, err
-// 		}
-// 	}
-// 	return s, nil
-// }
-
 func (s Suite) Run(t *testing.T, name string, fn func(t *testing.T)) {
 	t.Run(name, func(st *testing.T) {
 		fn(st)
@@ -95,10 +65,6 @@ func (s Suite) Run(t *testing.T, name string, fn func(t *testing.T)) {
 
 func (s Suite) sub(t *testing.T, m reflect.Method) {
 	name := fmt.Sprintf("%s/%s", s.Name, m.Name)
-	// s, err := s.clone()
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
 	s.Run(t, name, func(st *testing.T) {
 		m.Func.Call([]reflect.Value{
 			reflect.ValueOf(s),
@@ -476,6 +442,7 @@ func (s Suite) Test_Walk(t *testing.T) {
 
 	pkg, err := s.Make()
 	r.NoError(err)
+
 	r.NoError(s.LoadFolder(pkg))
 
 	cur, err := pkg.Current()
@@ -506,16 +473,16 @@ func (s Suite) Test_Walk(t *testing.T) {
 			r.NoError(err)
 
 			exp := []string{
-				"github.com/markbates/pkger:/",
-				"github.com/markbates/pkger:/main.go",
-				"github.com/markbates/pkger:/public",
-				"github.com/markbates/pkger:/public/images",
-				"github.com/markbates/pkger:/public/images/mark.png",
-				"github.com/markbates/pkger:/public/index.html",
-				"github.com/markbates/pkger:/templates",
-				"github.com/markbates/pkger:/templates/a.txt",
-				"github.com/markbates/pkger:/templates/b",
-				"github.com/markbates/pkger:/templates/b/b.txt",
+				"app:/",
+				"app:/main.go",
+				"app:/public",
+				"app:/public/images",
+				"app:/public/images/mark.png",
+				"app:/public/index.html",
+				"app:/templates",
+				"app:/templates/a.txt",
+				"app:/templates/b",
+				"app:/templates/b/b.txt",
 			}
 			r.Equal(exp, act)
 		})

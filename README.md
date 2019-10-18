@@ -72,10 +72,6 @@ type File interface {
 │   │   ├── mark_250px.png
 │   │   └── mark_400px.png
 │   └── index.html
-└── templates
-    ├── a.txt
-    └── b
-        └── b.txt
 ```
 
 ```go
@@ -84,69 +80,39 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
+	"text/tabwriter"
+	"time"
 
 	"github.com/markbates/pkger"
 )
 
-const host = ":3000"
-
 func main() {
-	// get the currently running application's here.Info.
-	// this contains really, really, really useful information
-	// about your application, check it out. :)
-	// we don't need it for this example, but i thought it could
-	// be good to show.
-	current, err := pkger.Current()
-	if err != nil {
+	if err := run(); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(current)
+}
 
-	fmt.Printf("Walking files for %s\n", current.ImportPath)
-	// walk the files in this module. "/" is where the `go.mod` for this module is
-	err = pkger.Walk("github.com/gobuffalo/buffalo:/render", func(path string, info os.FileInfo, err error) error {
+func run() error {
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.Debug)
+	defer w.Flush()
+
+	return pkger.Walk("/public", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(">> ", path)
+
+		fmt.Fprintf(w,
+			"%s \t %d \t %s \t %s \t\n",
+			info.Name(),
+			info.Size(),
+			info.Mode(),
+			info.ModTime().Format(time.RFC3339),
+		)
+
 		return nil
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	// find the public directory with using the full pkger path <pkg:/path> to it:
-	// 	pkg - is the module/package you want to get a file from
-	// 		if pkg is empty then it is assumed to be current.ImportPath
-	// 	: - seperator between the module/package name, pkg, and the "file path"
-	// 	path - this is the ABSOLUTE path to the file/directory you want, as relative
-	// 	to the root of the module/package's go.mod file.
-	dir, err := pkger.Open("github.com/markbates/pkger/examples/app:/public")
-	if err != nil {
-		log.Fatal(err)
-	}
-	// don't forget to close the file later
-	defer dir.Close()
-
-	fmt.Printf("\nServing %q on %s\n", dir.Path(), host)
-
-	// serve the public directory on the host (":3000")
-	// just like using the os package you still need to use
-	// http.FileServer to serve a directory.
-	// you DON'T, however, need to use http.Dir all pkger files
-	// already implement that interface.
-	log.Fatal(http.ListenAndServe(host, logger(http.FileServer(dir))))
-}
-
-// logger will print out the requests as they come in, otherwise its a blank
-// screen, and that's no fun.
-func logger(h http.Handler) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
-		log.Println(req.Method, req.URL.String())
-		h.ServeHTTP(res, req)
-	}
 }
 ```
 
@@ -155,65 +121,13 @@ func logger(h http.Handler) http.HandlerFunc {
 ```bash
 # compile the go binary as usual and run the app:
 $ go build -v; ./app
-
-{
-  "Dir": "$GOPATH/src/github.com/markbates/pkger/examples/app",
-  "ImportPath": "github.com/markbates/pkger/examples/app",
-  "Imports": [
-    "fmt",
-    "github.com/markbates/pkger",
-    "log",
-    "net/http",
-    "os"
-  ],
-  "Module": {
-    "Dir": "$GOPATH/src/github.com/markbates/pkger/examples/app",
-    "GoMod": "$GOPATH/src/github.com/markbates/pkger/examples/app/go.mod",
-    "GoVersion": "1.13",
-    "Main": true,
-    "Path": "github.com/markbates/pkger/examples/app"
-  },
-  "Name": "main"
-}
-Walking files for github.com/markbates/pkger/examples/app
->>  github.com/gobuffalo/buffalo:/render
->>  github.com/gobuffalo/buffalo:/render/auto.go
->>  github.com/gobuffalo/buffalo:/render/auto_test.go
->>  github.com/gobuffalo/buffalo:/render/download.go
->>  github.com/gobuffalo/buffalo:/render/download_test.go
->>  github.com/gobuffalo/buffalo:/render/func.go
->>  github.com/gobuffalo/buffalo:/render/func_test.go
->>  github.com/gobuffalo/buffalo:/render/helpers.go
->>  github.com/gobuffalo/buffalo:/render/html.go
->>  github.com/gobuffalo/buffalo:/render/html_test.go
->>  github.com/gobuffalo/buffalo:/render/js.go
->>  github.com/gobuffalo/buffalo:/render/js_test.go
->>  github.com/gobuffalo/buffalo:/render/json.go
->>  github.com/gobuffalo/buffalo:/render/json_test.go
->>  github.com/gobuffalo/buffalo:/render/markdown_test.go
->>  github.com/gobuffalo/buffalo:/render/options.go
->>  github.com/gobuffalo/buffalo:/render/partials_test.go
->>  github.com/gobuffalo/buffalo:/render/plain.go
->>  github.com/gobuffalo/buffalo:/render/plain_test.go
->>  github.com/gobuffalo/buffalo:/render/render.go
->>  github.com/gobuffalo/buffalo:/render/render_test.go
->>  github.com/gobuffalo/buffalo:/render/renderer.go
->>  github.com/gobuffalo/buffalo:/render/sse.go
->>  github.com/gobuffalo/buffalo:/render/string.go
->>  github.com/gobuffalo/buffalo:/render/string_map.go
->>  github.com/gobuffalo/buffalo:/render/string_map_test.go
->>  github.com/gobuffalo/buffalo:/render/string_test.go
->>  github.com/gobuffalo/buffalo:/render/template.go
->>  github.com/gobuffalo/buffalo:/render/template_engine.go
->>  github.com/gobuffalo/buffalo:/render/template_helpers.go
->>  github.com/gobuffalo/buffalo:/render/template_helpers_test.go
->>  github.com/gobuffalo/buffalo:/render/template_test.go
->>  github.com/gobuffalo/buffalo:/render/xml.go
->>  github.com/gobuffalo/buffalo:/render/xml_test.go
-
-Serving "github.com/markbates/pkger/examples/app:/public" on :3000
-2019/09/22 14:07:41 GET /
-2019/09/22 14:07:41 GET /images/mark.png
+/public                       | 128      | drwxr-xr-x | 2019-10-17T15:02:57-04:00 |
+/public/images                | 192      | drwxr-xr-x | 2019-10-17T15:02:57-04:00 |
+/public/images/mark-small.png | 649549   | -rw-r--r-- | 2019-10-17T15:02:56-04:00 |
+/public/images/mark.png       | 50401191 | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
+/public/images/mark_250px.png | 27718    | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
+/public/images/mark_400px.png | 63543    | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
+/public/index.html            | 257      | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
 ```
 
 ### Output With Packing
@@ -224,62 +138,11 @@ $ pkger
 
 # compile the go binary as usual and run the app:
 $ go build -v; ./app
-{
-  "Dir": "$GOPATH/src/github.com/markbates/pkger/examples/app",
-  "ImportPath": "github.com/markbates/pkger/examples/app",
-  "Imports": [
-    "fmt",
-    "github.com/markbates/pkger",
-    "log",
-    "net/http",
-    "os"
-  ],
-  "Module": {
-    "Dir": "$GOPATH/src/github.com/markbates/pkger/examples/app",
-    "GoMod": "$GOPATH/src/github.com/markbates/pkger/examples/app/go.mod",
-    "GoVersion": "1.13",
-    "Main": true,
-    "Path": "github.com/markbates/pkger/examples/app"
-  },
-  "Name": "main"
-}
-Walking files for github.com/markbates/pkger/examples/app
->>  github.com/gobuffalo/buffalo:/render
->>  github.com/gobuffalo/buffalo:/render/auto.go
->>  github.com/gobuffalo/buffalo:/render/auto_test.go
->>  github.com/gobuffalo/buffalo:/render/download.go
->>  github.com/gobuffalo/buffalo:/render/download_test.go
->>  github.com/gobuffalo/buffalo:/render/func.go
->>  github.com/gobuffalo/buffalo:/render/func_test.go
->>  github.com/gobuffalo/buffalo:/render/helpers.go
->>  github.com/gobuffalo/buffalo:/render/html.go
->>  github.com/gobuffalo/buffalo:/render/html_test.go
->>  github.com/gobuffalo/buffalo:/render/js.go
->>  github.com/gobuffalo/buffalo:/render/js_test.go
->>  github.com/gobuffalo/buffalo:/render/json.go
->>  github.com/gobuffalo/buffalo:/render/json_test.go
->>  github.com/gobuffalo/buffalo:/render/markdown_test.go
->>  github.com/gobuffalo/buffalo:/render/options.go
->>  github.com/gobuffalo/buffalo:/render/partials_test.go
->>  github.com/gobuffalo/buffalo:/render/plain.go
->>  github.com/gobuffalo/buffalo:/render/plain_test.go
->>  github.com/gobuffalo/buffalo:/render/render.go
->>  github.com/gobuffalo/buffalo:/render/render_test.go
->>  github.com/gobuffalo/buffalo:/render/renderer.go
->>  github.com/gobuffalo/buffalo:/render/sse.go
->>  github.com/gobuffalo/buffalo:/render/string.go
->>  github.com/gobuffalo/buffalo:/render/string_map.go
->>  github.com/gobuffalo/buffalo:/render/string_map_test.go
->>  github.com/gobuffalo/buffalo:/render/string_test.go
->>  github.com/gobuffalo/buffalo:/render/template.go
->>  github.com/gobuffalo/buffalo:/render/template_engine.go
->>  github.com/gobuffalo/buffalo:/render/template_helpers.go
->>  github.com/gobuffalo/buffalo:/render/template_helpers_test.go
->>  github.com/gobuffalo/buffalo:/render/template_test.go
->>  github.com/gobuffalo/buffalo:/render/xml.go
->>  github.com/gobuffalo/buffalo:/render/xml_test.go
-
-Serving "github.com/markbates/pkger/examples/app:/public" on :3000
-2019/09/22 14:07:41 GET /
-2019/09/22 14:07:41 GET /images/mark.png
+/                      | 128      | drwxr-xr-x | 2019-10-17T15:02:57-04:00 |
+/images                | 192      | drwxr-xr-x | 2019-10-17T15:02:57-04:00 |
+/images/mark-small.png | 649549   | -rw-r--r-- | 2019-10-17T15:02:56-04:00 |
+/images/mark.png       | 50401191 | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
+/images/mark_250px.png | 27718    | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
+/images/mark_400px.png | 63543    | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
+/index.html            | 257      | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
 ```
