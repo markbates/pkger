@@ -22,7 +22,7 @@ changelog:
       - '^test:'
 <%= if (brew) { %>
 brews:
-  -
+-
   name: pkger
   github:
     owner: markbates
