@@ -1,4 +1,4 @@
-package main
+package cmds
 
 import (
 	"flag"
@@ -141,6 +141,7 @@ func Package(out string, paths []here.Path) error {
 	fmt.Fprintf(f, "\nvar _ = pkger.Apply(mem.UnmarshalEmbed([]byte(`")
 
 	if err := stuffing.Stuff(f, c, paths); err != nil {
+		os.RemoveAll(out)
 		return err
 	}
 

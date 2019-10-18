@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
+
+	"github.com/markbates/pkger/cmd/pkger/cmds"
 )
 
 func main() {
@@ -23,7 +25,7 @@ func main() {
 }
 
 func run() error {
-	root, err := New()
+	root, err := cmds.New()
 	if err != nil {
 		return err
 	}
