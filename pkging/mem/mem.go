@@ -188,6 +188,7 @@ func (fx *Pkger) Add(f pkging.File) error {
 
 // Create creates the named file with mode 0666 (before umask) - It's actually 0644, truncating it if it already exists. If successful, methods on the returned File can be used for I/O; the associated file descriptor has mode O_RDWR.
 func (fx *Pkger) Create(name string) (pkging.File, error) {
+	fx.MkdirAll("/", 0755)
 	pt, err := fx.Parse(name)
 	if err != nil {
 		return nil, err
