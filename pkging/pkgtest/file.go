@@ -92,13 +92,14 @@ func (s Suite) Test_File_Readdir(t *testing.T) {
 
 			infos, err = dir.Readdir(-1)
 			r.NoError(err)
-			r.Len(infos, 1)
+			r.Len(infos, 2)
 
 			sort.Slice(infos, func(i, j int) bool {
 				return infos[i].Name() < infos[j].Name()
 			})
 
 			r.Equal("img1.png", infos[0].Name())
+			r.Equal("img2.png", infos[1].Name())
 
 		})
 	}

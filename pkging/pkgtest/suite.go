@@ -474,10 +474,12 @@ func (s Suite) Test_Walk(t *testing.T) {
 
 			exp := []string{
 				"app:/",
+				"app:/go.mod",
 				"app:/main.go",
 				"app:/public",
 				"app:/public/images",
 				"app:/public/images/img1.png",
+				"app:/public/images/img2.png",
 				"app:/public/index.html",
 				"app:/templates",
 				"app:/templates/a.txt",
