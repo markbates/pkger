@@ -9,12 +9,12 @@ import (
 
 func Test_Pkger(t *testing.T) {
 	suite, err := pkgtest.NewSuite("memos", func() (pkging.Pkger, error) {
-		info, err := pkgtest.App()
+		app, err := pkgtest.App()
 		if err != nil {
 			return nil, err
 		}
 
-		pkg, err := New(info)
+		pkg, err := New(app.Info)
 		if err != nil {
 			return nil, err
 		}

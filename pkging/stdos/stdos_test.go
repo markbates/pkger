@@ -10,7 +10,7 @@ import (
 
 func Test_Pkger(t *testing.T) {
 	suite, err := pkgtest.NewSuite("stdos", func() (pkging.Pkger, error) {
-		info, err := pkgtest.App()
+		app, err := pkgtest.App()
 		if err != nil {
 			return nil, err
 		}
@@ -20,9 +20,9 @@ func Test_Pkger(t *testing.T) {
 			return nil, err
 		}
 
-		info.Dir = dir
+		app.Dir = dir
 
-		mypkging, err := New(info)
+		mypkging, err := New(app.Info)
 		if err != nil {
 			return nil, err
 		}

@@ -445,25 +445,49 @@ func (s Suite) Test_Walk(t *testing.T) {
 
 	r.NoError(s.LoadFolder(pkg))
 
-	cur, err := pkg.Current()
+	app, err := App()
 	r.NoError(err)
 
-	ip := cur.ImportPath
-
 	table := []struct {
-		in string
+		in  string
+		exp []string
 	}{
-		{in: ip},
-		{in: "/"},
-		{in: ":/"},
-		{in: ip + ":/"},
+		{in: "/", exp: app.Paths.Root},
+		{in: "/public", exp: app.Paths.Public},
 	}
 
 	for _, tt := range table {
 		s.Run(t, tt.in, func(st *testing.T) {
+
+			tdir, err := ioutil.TempDir("", "")
+			r.NoError(err)
+			defer os.RemoveAll(tdir)
+			r.NoError(s.WriteFolder(tdir))
+
+			var goact []string
+			err = filepath.Walk(filepath.Join(tdir, tt.in), func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				path = strings.TrimPrefix(path, tdir)
+
+				if path == "" || path == "." {
+					path = "/"
+				}
+
+				pt, err := pkg.Parse(path)
+				if err != nil {
+					return err
+				}
+				goact = append(goact, pt.String())
+				return nil
+			})
+			r.NoError(err)
+			r.Equal(tt.exp, goact)
+
 			r := require.New(st)
 			var act []string
-			err := pkg.Walk(tt.in, func(path string, info os.FileInfo, err error) error {
+			err = pkg.Walk(tt.in, func(path string, info os.FileInfo, err error) error {
 				if err != nil {
 					return err
 				}
@@ -472,21 +496,7 @@ func (s Suite) Test_Walk(t *testing.T) {
 			})
 			r.NoError(err)
 
-			exp := []string{
-				"app:/",
-				"app:/go.mod",
-				"app:/main.go",
-				"app:/public",
-				"app:/public/images",
-				"app:/public/images/img1.png",
-				"app:/public/images/img2.png",
-				"app:/public/index.html",
-				"app:/templates",
-				"app:/templates/a.txt",
-				"app:/templates/b",
-				"app:/templates/b/b.txt",
-			}
-			r.Equal(exp, act)
+			r.Equal(tt.exp, act)
 		})
 	}
 

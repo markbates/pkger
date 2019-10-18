@@ -11,10 +11,10 @@ import (
 func Test_Parser_App(t *testing.T) {
 	r := require.New(t)
 
-	info, err := pkgtest.App()
+	app, err := pkgtest.App()
 	r.NoError(err)
 
-	res, err := Parse(info)
+	res, err := Parse(app.Info)
 
 	r.NoError(err)
 
@@ -24,5 +24,5 @@ func Test_Parser_App(t *testing.T) {
 	}
 
 	sort.Strings(act)
-	r.Equal(pkgtest.AppPaths, act)
+	r.Equal(app.Paths.Parser, act)
 }

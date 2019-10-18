@@ -6,15 +6,41 @@ import (
 	"github.com/markbates/pkger/here"
 )
 
+type AppDetails struct {
+	here.Info
+	Paths struct {
+		Root   []string
+		Parser []string
+		Public []string
+	}
+}
+
 // App returns here.info that represents the
 // ./internal/testdata/app. This should be used
 // by tests.
-func App() (here.Info, error) {
+func App() (AppDetails, error) {
+	var app AppDetails
+
 	her, err := here.Package("github.com/markbates/pkger")
 	if err != nil {
-		return her, err
+		return app, err
 	}
-	var info here.Info
+
+	info := here.Info{
+		ImportPath: "app",
+	}
+
+	x := make([]string, len(rootPaths))
+	copy(x, rootPaths)
+	app.Paths.Root = x
+
+	x = make([]string, len(parserPaths))
+	copy(x, parserPaths)
+	app.Paths.Parser = x
+
+	x = make([]string, len(publicPaths))
+	copy(x, publicPaths)
+	app.Paths.Public = x
 
 	ch := filepath.Join(
 		her.Dir,
@@ -25,13 +51,41 @@ func App() (here.Info, error) {
 		"app")
 
 	info.Dir = ch
-	info.ImportPath = "app"
-	return here.Cache(info.ImportPath, func(s string) (here.Info, error) {
+
+	info, err = here.Cache(info.ImportPath, func(s string) (here.Info, error) {
 		return info, nil
 	})
+	if err != nil {
+		return app, err
+	}
+	app.Info = info
+	return app, nil
 }
 
-var AppPaths = []string{
+var rootPaths = []string{
+	"app:/",
+	"app:/go.mod",
+	"app:/main.go",
+	"app:/public",
+	"app:/public/images",
+	"app:/public/images/img1.png",
+	"app:/public/images/img2.png",
+	"app:/public/index.html",
+	"app:/templates",
+	"app:/templates/a.txt",
+	"app:/templates/b",
+	"app:/templates/b/b.txt",
+}
+
+var publicPaths = []string{
+	"app:/public",
+	"app:/public/images",
+	"app:/public/images/img1.png",
+	"app:/public/images/img2.png",
+	"app:/public/index.html",
+}
+
+var parserPaths = []string{
 	"app:/",
 	"app:/public",
 	"app:/public/images",

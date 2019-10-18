@@ -3,6 +3,7 @@ package mem_test
 import (
 	"bytes"
 	"os"
+	"sort"
 	"testing"
 
 	"github.com/markbates/pkger/parser"
@@ -16,10 +17,10 @@ import (
 func Test_Pkger_Embedding(t *testing.T) {
 	r := require.New(t)
 
-	info, err := pkgtest.App()
+	app, err := pkgtest.App()
 	r.NoError(err)
 
-	paths, err := parser.Parse(info)
+	paths, err := parser.Parse(app.Info)
 	r.NoError(err)
 
 	ps := make([]string, len(paths))
@@ -27,12 +28,12 @@ func Test_Pkger_Embedding(t *testing.T) {
 		ps[i] = p.String()
 	}
 
-	r.Equal(pkgtest.AppPaths, ps)
+	r.Equal(app.Paths.Parser, ps)
 
-	base, err := mem.New(info)
+	base, err := mem.New(app.Info)
 	r.NoError(err)
 
-	disk, err := stdos.New(info)
+	disk, err := stdos.New(app.Info)
 	r.NoError(err)
 
 	err = disk.Walk("/", func(path string, info os.FileInfo, err error) error {
@@ -63,7 +64,7 @@ func Test_Pkger_Embedding(t *testing.T) {
 	})
 
 	r.NoError(err)
-	r.Equal(rootWalk, res)
+	r.Equal(app.Paths.Root, res)
 
 	res = []string{}
 	err = base.Walk("/public", func(path string, info os.FileInfo, err error) error {
@@ -75,11 +76,11 @@ func Test_Pkger_Embedding(t *testing.T) {
 	})
 
 	r.NoError(err)
-	r.Equal(pubWalk[1:], res)
+	r.Equal(app.Paths.Public, res)
 
 	bb := &bytes.Buffer{}
 
-	err = stuffing.Stuff(bb, info, paths)
+	err = stuffing.Stuff(bb, app.Info, paths)
 	r.NoError(err)
 
 	pkg, err := mem.UnmarshalEmbed(bb.Bytes())
@@ -95,7 +96,10 @@ func Test_Pkger_Embedding(t *testing.T) {
 	})
 
 	r.NoError(err)
-	r.Equal(rootWalk, res)
+
+	exp := append(app.Paths.Public, "app:/")
+	sort.Strings(exp)
+	r.Equal(exp, res)
 
 	res = []string{}
 	err = pkg.Walk("/public", func(path string, info os.FileInfo, err error) error {
@@ -107,29 +111,5 @@ func Test_Pkger_Embedding(t *testing.T) {
 	})
 
 	r.NoError(err)
-	r.Equal(pubWalk, res)
-}
-
-var pubWalk = []string{
-	"app:/",
-	"app:/public",
-	"app:/public/images",
-	"app:/public/images/img1.png",
-	"app:/public/images/img2.png",
-	"app:/public/index.html",
-}
-
-var rootWalk = []string{
-	"app:/",
-	"app:/go.mod",
-	"app:/main.go",
-	"app:/public",
-	"app:/public/images",
-	"app:/public/images/img1.png",
-	"app:/public/images/img2.png",
-	"app:/public/index.html",
-	"app:/templates",
-	"app:/templates/a.txt",
-	"app:/templates/b",
-	"app:/templates/b/b.txt",
+	r.Equal(app.Paths.Public, res)
 }
