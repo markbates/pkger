@@ -4,25 +4,25 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/pkging"
 	"github.com/markbates/pkger/pkging/pkgtest"
 )
 
 func Test_Pkger(t *testing.T) {
 	suite, err := pkgtest.NewSuite("stdos", func() (pkging.Pkger, error) {
-		her, err := here.Current()
+		app, err := pkgtest.App()
 		if err != nil {
 			return nil, err
 		}
+
 		dir, err := ioutil.TempDir("", "stdos")
 		if err != nil {
 			return nil, err
 		}
 
-		her.Dir = dir
+		app.Dir = dir
 
-		mypkging, err := New(her)
+		mypkging, err := New(app.Info)
 		if err != nil {
 			return nil, err
 		}

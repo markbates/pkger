@@ -18,16 +18,16 @@ type Info struct {
 	Dir        string
 	ImportPath string
 	Name       string
-	Imports    []string
-	Module     Module
+	// Imports    []string
+	Module Module
 }
 
 func (fi Info) MarshalJSON() ([]byte, error) {
 	mm := map[string]interface{}{
 		"ImportPath": fi.ImportPath,
 		"Name":       fi.Name,
-		"Imports":    fi.Imports,
-		"Module":     fi.Module,
+		// "Imports":    fi.Imports,
+		"Module": fi.Module,
 	}
 
 	hep := hepa.New()

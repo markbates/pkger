@@ -57,36 +57,6 @@ func (s Suite) Test(t *testing.T) {
 	}
 }
 
-// func (s Suite) clone() (Suite, error) {
-// 	if ns, ok := s.Pkger.(Newable); ok {
-// 		pkg, err := ns.New()
-// 		if err != nil {
-// 			return s, err
-// 		}
-// 		s, err = NewSuite(pkg)
-// 		if err != nil {
-// 			return s, err
-// 		}
-// 	}
-// 	if ns, ok := s.Pkger.(WithRootable); ok {
-// 		dir, err := ioutil.TempDir("")
-// 		if err != nil {
-// 			return s, err
-// 		}
-// 		// defer opkg.RemoveAll(dir)
-//
-// 		pkg, err := ns.WithRoot(dir)
-// 		if err != nil {
-// 			return s, err
-// 		}
-// 		s, err = NewSuite(pkg)
-// 		if err != nil {
-// 			return s, err
-// 		}
-// 	}
-// 	return s, nil
-// }
-
 func (s Suite) Run(t *testing.T, name string, fn func(t *testing.T)) {
 	t.Run(name, func(st *testing.T) {
 		fn(st)
@@ -95,10 +65,6 @@ func (s Suite) Run(t *testing.T, name string, fn func(t *testing.T)) {
 
 func (s Suite) sub(t *testing.T, m reflect.Method) {
 	name := fmt.Sprintf("%s/%s", s.Name, m.Name)
-	// s, err := s.clone()
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
 	s.Run(t, name, func(st *testing.T) {
 		m.Func.Call([]reflect.Value{
 			reflect.ValueOf(s),
@@ -476,27 +442,52 @@ func (s Suite) Test_Walk(t *testing.T) {
 
 	pkg, err := s.Make()
 	r.NoError(err)
+
 	r.NoError(s.LoadFolder(pkg))
 
-	cur, err := pkg.Current()
+	app, err := App()
 	r.NoError(err)
 
-	ip := cur.ImportPath
-
 	table := []struct {
-		in string
+		in  string
+		exp []string
 	}{
-		{in: ip},
-		{in: "/"},
-		{in: ":/"},
-		{in: ip + ":/"},
+		{in: "/", exp: app.Paths.Root},
+		{in: "/public", exp: app.Paths.Public},
 	}
 
 	for _, tt := range table {
 		s.Run(t, tt.in, func(st *testing.T) {
+
+			tdir, err := ioutil.TempDir("", "")
+			r.NoError(err)
+			defer os.RemoveAll(tdir)
+			r.NoError(s.WriteFolder(tdir))
+
+			var goact []string
+			err = filepath.Walk(filepath.Join(tdir, tt.in), func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				path = strings.TrimPrefix(path, tdir)
+
+				if path == "" || path == "." {
+					path = "/"
+				}
+
+				pt, err := pkg.Parse(path)
+				if err != nil {
+					return err
+				}
+				goact = append(goact, pt.String())
+				return nil
+			})
+			r.NoError(err)
+			r.Equal(tt.exp, goact)
+
 			r := require.New(st)
 			var act []string
-			err := pkg.Walk(tt.in, func(path string, info os.FileInfo, err error) error {
+			err = pkg.Walk(tt.in, func(path string, info os.FileInfo, err error) error {
 				if err != nil {
 					return err
 				}
@@ -505,19 +496,7 @@ func (s Suite) Test_Walk(t *testing.T) {
 			})
 			r.NoError(err)
 
-			exp := []string{
-				"github.com/markbates/pkger:/",
-				"github.com/markbates/pkger:/main.go",
-				"github.com/markbates/pkger:/public",
-				"github.com/markbates/pkger:/public/images",
-				"github.com/markbates/pkger:/public/images/mark.png",
-				"github.com/markbates/pkger:/public/index.html",
-				"github.com/markbates/pkger:/templates",
-				"github.com/markbates/pkger:/templates/a.txt",
-				"github.com/markbates/pkger:/templates/b",
-				"github.com/markbates/pkger:/templates/b/b.txt",
-			}
-			r.Equal(exp, act)
+			r.Equal(tt.exp, act)
 		})
 	}
 
@@ -537,9 +516,9 @@ func (s Suite) Test_Remove(t *testing.T) {
 	table := []struct {
 		in string
 	}{
-		{in: "/public/images/mark.png"},
-		{in: ":/public/images/mark.png"},
-		{in: ip + ":/public/images/mark.png"},
+		{in: "/public/images/img1.png"},
+		{in: ":/public/images/img1.png"},
+		{in: ip + ":/public/images/img1.png"},
 	}
 
 	for _, tt := range table {

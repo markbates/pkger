@@ -3,19 +3,18 @@ package mem
 import (
 	"testing"
 
-	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/pkging"
 	"github.com/markbates/pkger/pkging/pkgtest"
 )
 
 func Test_Pkger(t *testing.T) {
 	suite, err := pkgtest.NewSuite("memos", func() (pkging.Pkger, error) {
-		info, err := here.Current()
+		app, err := pkgtest.App()
 		if err != nil {
 			return nil, err
 		}
 
-		pkg, err := New(info)
+		pkg, err := New(app.Info)
 		if err != nil {
 			return nil, err
 		}

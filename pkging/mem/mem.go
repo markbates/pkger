@@ -25,7 +25,6 @@ func New(info here.Info) (*Pkger, error) {
 		Here:  info,
 	}
 	f.infos.Store(info.ImportPath, info)
-	f.MkdirAll("/", 0755)
 	return f, nil
 }
 
@@ -152,15 +151,17 @@ func (fx *Pkger) RemoveAll(name string) error {
 
 // Add copies the pkging.File into the *Pkger
 func (fx *Pkger) Add(f pkging.File) error {
-	fx.MkdirAll("/", 0755)
 	info, err := f.Stat()
 	if err != nil {
 		return err
 	}
 
 	if f.Path().Pkg == fx.Here.ImportPath {
-		if err := fx.MkdirAll(filepath.Dir(f.Name()), 0755); err != nil {
-			return err
+		dir := filepath.Dir(f.Name())
+		if dir != "/" {
+			if err := fx.MkdirAll(dir, 0755); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -199,8 +200,10 @@ func (fx *Pkger) Create(name string) (pkging.File, error) {
 	}
 
 	dir := filepath.Dir(pt.Name)
-	if _, err := fx.Stat(dir); err != nil {
-		return nil, err
+	if dir != "/" {
+		if _, err := fx.Stat(dir); err != nil {
+			return nil, err
+		}
 	}
 
 	f := &File{
@@ -328,22 +331,28 @@ func (f *Pkger) Walk(p string, wf filepath.WalkFunc) error {
 
 	skip := "!"
 	for _, k := range keys {
+		if k.Pkg != pt.Pkg {
+			continue
+		}
 		if !strings.HasPrefix(k.Name, pt.Name) {
 			continue
 		}
 		if strings.HasPrefix(k.Name, skip) {
 			continue
 		}
+
 		fl, ok := f.files.Load(k)
 		if !ok {
-			return fmt.Errorf("could not find %s", k)
+			return os.ErrNotExist
 		}
+
 		fi, err := fl.Stat()
 		if err != nil {
 			return err
 		}
 
 		fi = pkging.WithName(strings.TrimPrefix(k.Name, pt.Name), fi)
+
 		err = wf(k.String(), fi, nil)
 		if err == filepath.SkipDir {
 

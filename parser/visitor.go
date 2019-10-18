@@ -79,7 +79,11 @@ func (f *file) findDecals() error {
 							}
 							switch v := vSpec.Values[i].(type) {
 							case *ast.BasicLit:
-								f.decls[vSpec.Names[i].Name] = v.Value
+
+								if e := f.addNode(v); e != nil {
+									return e
+								}
+								// f.decls[vSpec.Names[i].Name] = v.Value
 							default:
 								// log.Printf("Name: %s - Unsupported ValueSpec: %+v\n", vSpec.Names[i].Name, v)
 							}
@@ -91,6 +95,29 @@ func (f *file) findDecals() error {
 		}
 	}
 
+	return nil
+}
+
+func (f *file) addNode(node ast.Node) error {
+	switch x := node.(type) {
+	case *ast.BasicLit:
+		return f.add(x.Value)
+	case *ast.Ident:
+		return f.add(x.Name)
+	default:
+	}
+	return nil
+}
+
+func (f *file) add(s string) error {
+	s, err := strconv.Unquote(s)
+	if err != nil {
+		return err
+	}
+	if _, ok := f.decls[s]; !ok {
+		// fmt.Println(">>>TODO parser/visitor.go:98: s ", s)
+		f.decls[s] = s
+	}
 	return nil
 }
 
@@ -107,30 +134,10 @@ func (f *file) findOpenCalls() error {
 			return true
 		}
 
-		switch x := ce.Args[0].(type) {
-
-		case *ast.BasicLit:
-			s, err := strconv.Unquote(x.Value)
-			if err != nil {
-				err = nil
-				return false
-			}
-			f.decls[s] = s
-		case *ast.Ident:
-			val, ok := f.decls[x.Name]
-			if !ok {
-				//TODO: Add ERRORs list to file type and return after iteration!
-				// log.Printf("Could not find identifier[%s] in decls map\n", x.Name)
-				return true
-			}
-			s, err := strconv.Unquote(val)
-			if err != nil {
-				err = nil
-				return false
-			}
-			f.decls[s] = s
-
-		default:
+		// fmt.Println(">>>TODO parser/visitor.go:138: findOpenCalls ", ce.Args[0])
+		if e := f.addNode(ce.Args[0]); e != nil {
+			err = e
+			return false
 		}
 
 		return true
@@ -151,29 +158,10 @@ func (f *file) findWalkCalls() error {
 			return true
 		}
 
-		switch x := ce.Args[0].(type) {
-
-		case *ast.BasicLit:
-			s, err := strconv.Unquote(x.Value)
-			if err != nil {
-				err = nil
-				return false
-			}
-			f.decls[s] = s
-		case *ast.Ident:
-			val, ok := f.decls[x.Name]
-			if !ok {
-				//TODO: Add ERRORs list to file type and return after iteration!
-				// log.Printf("Could not find identifier[%s] in decls map\n", x.Name)
-				return true
-			}
-			s, err := strconv.Unquote(val)
-			if err != nil {
-				err = nil
-				return false
-			}
-			f.decls[s] = s
-		default:
+		// fmt.Println(">>>TODO parser/visitor.go:138: findWalkCalls ", ce.Args[0])
+		if e := f.addNode(ce.Args[0]); e != nil {
+			err = e
+			return false
 		}
 
 		return true

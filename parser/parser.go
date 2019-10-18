@@ -13,7 +13,7 @@ import (
 	"github.com/markbates/pkger/pkging/stdos"
 )
 
-var DefaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "_fixtures", "testdata"}
+// var DefaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "_fixtures", "testdata"}
 
 func Parse(her here.Info) ([]here.Path, error) {
 
