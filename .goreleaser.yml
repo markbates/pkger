@@ -9,7 +9,7 @@ builds:
     - windows
   env:
     - CGO_ENABLED=0
-  main: ./pkger/cmd/pkger/main.go
+  main: ./cmd/pkger/main.go
 
 checksum:
   name_template: 'checksums.txt'
