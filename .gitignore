@@ -31,3 +31,5 @@ gin-bin
 pkged.go
 cover.out
 .pkgtest
+example
+app
