@@ -2,6 +2,7 @@ package stdos
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/internal/maps"
 	"github.com/markbates/pkger/pkging"
+	"github.com/markbates/pkger/pkging/mem"
 )
 
 var _ pkging.Pkger = &Pkger{}
@@ -16,6 +18,38 @@ var _ pkging.Pkger = &Pkger{}
 type Pkger struct {
 	Here  here.Info
 	infos *maps.Infos
+}
+
+func (disk *Pkger) Stuff(w io.Writer, paths []here.Path) error {
+	pkg, err := mem.New(disk.Here)
+	if err != nil {
+		return err
+	}
+
+	for _, pt := range paths {
+		err = func() error {
+			f, err := disk.Open(pt.String())
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+			if err := pkg.Add(f); err != nil {
+				return err
+			}
+
+			return nil
+		}()
+		if err != nil {
+			return err
+		}
+	}
+
+	b, err := pkg.MarshalEmbed()
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(b)
+	return err
 }
 
 // Abs returns an absolute representation of path. If the path is not absolute it will be joined with the current working directory to turn it into an absolute path. The absolute path name for a given file is not guaranteed to be unique. Abs calls Clean on the result.

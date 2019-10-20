@@ -2,7 +2,6 @@ package mem
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -21,45 +20,14 @@ const timeFmt = time.RFC3339Nano
 var _ pkging.File = &File{}
 
 type File struct {
+	Here   here.Info
 	info   *pkging.FileInfo
-	her    here.Info
 	path   here.Path
 	data   []byte
 	parent here.Path
 	writer *bytes.Buffer
 	reader io.Reader
 	pkging pkging.Pkger
-}
-
-type fJay struct {
-	Info   *pkging.FileInfo `json:"info"`
-	Her    here.Info        `json:"her"`
-	Path   here.Path        `json:"path"`
-	Data   []byte           `json:"data"`
-	Parent here.Path        `json:"parent"`
-}
-
-func (f File) MarshalJSON() ([]byte, error) {
-	return json.Marshal(fJay{
-		Info:   f.info,
-		Her:    f.her,
-		Path:   f.path,
-		Data:   f.data,
-		Parent: f.parent,
-	})
-}
-
-func (f *File) UnmarshalJSON(b []byte) error {
-	var y fJay
-	if err := json.Unmarshal(b, &y); err != nil {
-		return err
-	}
-	f.info = y.Info
-	f.her = y.Her
-	f.path = y.Path
-	f.data = y.Data
-	f.parent = y.Parent
-	return nil
 }
 
 // Seek sets the offset for the next Read or Write on file to offset, interpreted according to whence: 0 means relative to the origin of the file, 1 means relative to the current offset, and 2 means relative to the end. It returns the new offset and an error, if any.
@@ -121,7 +89,7 @@ func (f *File) Write(b []byte) (int, error) {
 
 // Info returns the here.Info of the file
 func (f File) Info() here.Info {
-	return f.her
+	return f.Here
 }
 
 // Stat returns the FileInfo structure describing file. If there is an error, it will be of type *PathError.
@@ -203,7 +171,7 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 
 // Open implements the http.FileSystem interface. A FileSystem implements access to a collection of named files. The elements in a file path are separated by slash ('/', U+002F) characters, regardless of host operating system convention.
 func (f *File) Open(name string) (http.File, error) {
-	pt, err := f.her.Parse(name)
+	pt, err := f.Here.Parse(name)
 	if err != nil {
 		return nil, err
 	}
@@ -227,7 +195,7 @@ func (f *File) Open(name string) (http.File, error) {
 	if fi.IsDir() {
 		d2 := &File{
 			info:   pkging.NewFileInfo(fi),
-			her:    di.Info(),
+			Here:   di.Info(),
 			path:   pt,
 			parent: f.path,
 			pkging: f.pkging,

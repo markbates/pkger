@@ -10,7 +10,6 @@ import (
 	"github.com/markbates/pkger/pkging/mem"
 	"github.com/markbates/pkger/pkging/pkgtest"
 	"github.com/markbates/pkger/pkging/stdos"
-	"github.com/markbates/pkger/pkging/stuffing"
 	"github.com/stretchr/testify/require"
 )
 
@@ -80,10 +79,11 @@ func Test_Pkger_Embedding(t *testing.T) {
 
 	bb := &bytes.Buffer{}
 
-	err = stuffing.Stuff(bb, app.Info, paths)
+	err = disk.Stuff(bb, paths)
 	r.NoError(err)
 
-	pkg, err := mem.UnmarshalEmbed(bb.Bytes())
+	pkg := &mem.Pkger{}
+	err = pkg.UnmarshalEmbed(bb.Bytes())
 	r.NoError(err)
 
 	res = []string{}
