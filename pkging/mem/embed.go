@@ -21,6 +21,26 @@ func (pkg *Pkger) MarshalEmbed() ([]byte, error) {
 	return []byte(s), nil
 }
 
+func (pkg *Pkger) UnmarshalEmbed(in []byte) error {
+	b := make([]byte, len(in))
+	if _, err := hex.Decode(b, in); err != nil {
+		return err
+	}
+
+	gz, err := gzip.NewReader(bytes.NewReader(b))
+	if err != nil {
+		return err
+	}
+	defer gz.Close()
+
+	p := &Pkger{}
+	if err := json.NewDecoder(gz).Decode(p); err != nil {
+		return err
+	}
+	(*pkg) = *p
+	return nil
+}
+
 func UnmarshalEmbed(in []byte) (*Pkger, error) {
 	b := make([]byte, len(in))
 	if _, err := hex.Decode(b, in); err != nil {
@@ -33,10 +53,9 @@ func UnmarshalEmbed(in []byte) (*Pkger, error) {
 	}
 	defer gz.Close()
 
-	pkg := &Pkger{}
-	if err := json.NewDecoder(gz).Decode(pkg); err != nil {
+	p := &Pkger{}
+	if err := json.NewDecoder(gz).Decode(p); err != nil {
 		return nil, err
 	}
-
-	return pkg, nil
+	return p, nil
 }

@@ -1,10 +1,8 @@
 package mem
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +11,7 @@ import (
 	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/internal/maps"
 	"github.com/markbates/pkger/pkging"
+	"github.com/markbates/pkger/pkging/embed"
 )
 
 var _ pkging.Pkger = &Pkger{}
@@ -34,43 +33,55 @@ type Pkger struct {
 	files *maps.Files
 }
 
-type jay struct {
-	Infos   *maps.Infos      `json:"infos"`
-	Files   map[string]*File `json:"files"`
-	Current here.Info        `json:"current"`
-}
-
 // MarshalJSON creates a fully re-hydratable JSON representation of *Pkger
 func (p *Pkger) MarshalJSON() ([]byte, error) {
-	files := map[string]*File{}
+	files := map[string]embed.File{}
 
 	p.files.Range(func(key here.Path, file pkging.File) bool {
 		f, ok := file.(*File)
 		if !ok {
 			return true
 		}
-		files[key.String()] = f
+		ef := embed.File{
+			Info:   f.info,
+			Here:   f.Here,
+			Path:   f.path,
+			Parent: f.parent,
+			Data:   f.data,
+		}
+		files[key.String()] = ef
 		return true
 	})
 
-	return json.Marshal(jay{
-		Infos:   p.infos,
-		Files:   files,
-		Current: p.Here,
+	infos := map[string]here.Info{}
+	p.infos.Range(func(key string, info here.Info) bool {
+		infos[key] = info
+		return true
+	})
+
+	return json.Marshal(embed.Data{
+		Infos: infos,
+		Files: files,
+		Here:  p.Here,
 	})
 }
 
 // UnmarshalJSON re-hydrates the *Pkger
 func (p *Pkger) UnmarshalJSON(b []byte) error {
-	y := jay{}
+	y := &embed.Data{
+		Infos: map[string]here.Info{},
+		Files: map[string]embed.File{},
+	}
 
 	if err := json.Unmarshal(b, &y); err != nil {
 		return err
 	}
 
-	p.Here = y.Current
-
-	p.infos = y.Infos
+	p.Here = y.Here
+	p.infos = &maps.Infos{}
+	for k, v := range y.Infos {
+		p.infos.Store(k, v)
+	}
 
 	p.files = &maps.Files{}
 	for k, v := range y.Files {
@@ -78,7 +89,15 @@ func (p *Pkger) UnmarshalJSON(b []byte) error {
 		if err != nil {
 			return err
 		}
-		p.files.Store(pt, v)
+
+		f := &File{
+			Here:   v.Here,
+			info:   v.Info,
+			path:   v.Path,
+			data:   v.Data,
+			parent: v.Parent,
+		}
+		p.files.Store(pt, f)
 	}
 	return nil
 }
@@ -149,43 +168,6 @@ func (fx *Pkger) RemoveAll(name string) error {
 	return nil
 }
 
-// Add copies the pkging.File into the *Pkger
-func (fx *Pkger) Add(f pkging.File) error {
-	info, err := f.Stat()
-	if err != nil {
-		return err
-	}
-
-	if f.Path().Pkg == fx.Here.ImportPath {
-		dir := filepath.Dir(f.Name())
-		if dir != "/" {
-			if err := fx.MkdirAll(dir, 0755); err != nil {
-				return err
-			}
-		}
-	}
-
-	mf := &File{
-		her:    f.Info(),
-		info:   pkging.NewFileInfo(info),
-		path:   f.Path(),
-		pkging: fx,
-	}
-
-	if !info.IsDir() {
-		bb := &bytes.Buffer{}
-		_, err = io.Copy(bb, f)
-		if err != nil {
-			return err
-		}
-		mf.data = bb.Bytes()
-	}
-
-	fx.files.Store(mf.Path(), mf)
-
-	return nil
-}
-
 // Create creates the named file with mode 0666 (before umask) - It's actually 0644, truncating it if it already exists. If successful, methods on the returned File can be used for I/O; the associated file descriptor has mode O_RDWR.
 func (fx *Pkger) Create(name string) (pkging.File, error) {
 	fx.MkdirAll("/", 0755)
@@ -207,8 +189,8 @@ func (fx *Pkger) Create(name string) (pkging.File, error) {
 	}
 
 	f := &File{
+		Here: her,
 		path: pt,
-		her:  her,
 		info: &pkging.FileInfo{
 			Details: pkging.Details{
 				Name:    pt.Name,
@@ -249,9 +231,9 @@ func (fx *Pkger) MkdirAll(p string, perm os.FileMode) error {
 			continue
 		}
 		f := &File{
+			Here:   cur,
 			pkging: fx,
 			path:   pt,
-			her:    cur,
 			info: &pkging.FileInfo{
 				Details: pkging.Details{
 					Name:    pt.Name,
@@ -301,7 +283,7 @@ func (fx *Pkger) Open(name string) (pkging.File, error) {
 		info:   pkging.WithName(f.info.Name(), f.info),
 		path:   f.path,
 		data:   f.data,
-		her:    f.her,
+		Here:   f.Here,
 	}
 
 	return nf, nil
