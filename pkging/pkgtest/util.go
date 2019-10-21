@@ -13,20 +13,17 @@ import (
 func (s Suite) Test_Util_ReadFile(t *testing.T) {
 	r := require.New(t)
 
-	pkg, err := s.Make()
+	app, err := App()
 	r.NoError(err)
 
-	cur, err := pkg.Current()
-	r.NoError(err)
+	ip := app.Info.ImportPath
+	mould := "/public/index.html"
 
-	ip := cur.ImportPath
 	table := []struct {
 		in string
 	}{
 		{in: mould},
-		{in: ":" + mould},
 		{in: ip + ":" + mould},
-		{in: hart},
 	}
 
 	for _, tt := range table {

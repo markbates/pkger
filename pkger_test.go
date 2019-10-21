@@ -1,27 +1,34 @@
-package pkger
+package pkger_test
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/markbates/pkger"
 	"github.com/markbates/pkger/here"
+	"github.com/markbates/pkger/pkging/pkgtest"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_Parse(t *testing.T) {
 	r := require.New(t)
 
-	pt, err := Parse("github.com/rocket/ship:/little")
+	app, err := pkgtest.App()
 	r.NoError(err)
-	r.Equal("github.com/rocket/ship", pt.Pkg)
-	r.Equal("/little", pt.Name)
+
+	pt, err := pkger.Parse(fmt.Sprintf("%s:/public/index.html", app.Info.ImportPath))
+
+	r.NoError(err)
+	r.Equal(app.Info.ImportPath, pt.Pkg)
+	r.Equal("/public/index.html", pt.Name)
 }
 
 func Test_Abs(t *testing.T) {
 	r := require.New(t)
 
-	s, err := Abs(":/rocket.ship")
+	s, err := pkger.Abs("/rocket.ship")
 	r.NoError(err)
 
 	pwd, err := os.Getwd()
@@ -32,7 +39,7 @@ func Test_Abs(t *testing.T) {
 func Test_AbsPath(t *testing.T) {
 	r := require.New(t)
 
-	s, err := AbsPath(here.Path{
+	s, err := pkger.AbsPath(here.Path{
 		Pkg:  "github.com/markbates/pkger",
 		Name: "/rocket.ship",
 	})
@@ -46,7 +53,7 @@ func Test_AbsPath(t *testing.T) {
 func Test_Current(t *testing.T) {
 	r := require.New(t)
 
-	info, err := Current()
+	info, err := pkger.Current()
 	r.NoError(err)
 	r.Equal("github.com/markbates/pkger", info.ImportPath)
 }
@@ -54,7 +61,7 @@ func Test_Current(t *testing.T) {
 func Test_Info(t *testing.T) {
 	r := require.New(t)
 
-	info, err := Info("github.com/markbates/pkger")
+	info, err := pkger.Info("github.com/markbates/pkger")
 	r.NoError(err)
 	r.Equal("github.com/markbates/pkger", info.ImportPath)
 }
@@ -62,9 +69,9 @@ func Test_Info(t *testing.T) {
 func Test_Create(t *testing.T) {
 	r := require.New(t)
 
-	MkdirAll("/tmp", 0755)
-	defer RemoveAll("/tmp")
-	f, err := Create("/tmp/test.create")
+	pkger.MkdirAll("/tmp", 0755)
+	defer pkger.RemoveAll("/tmp")
+	f, err := pkger.Create("/tmp/test.create")
 	r.NoError(err)
 	r.Equal("/tmp/test.create", f.Name())
 	r.NoError(f.Close())
@@ -73,12 +80,12 @@ func Test_Create(t *testing.T) {
 func Test_MkdirAll(t *testing.T) {
 	r := require.New(t)
 
-	_, err := Open("/tmp")
+	_, err := pkger.Open("/tmp")
 	r.Error(err)
-	r.NoError(MkdirAll("/tmp", 0755))
-	defer RemoveAll("/tmp")
+	r.NoError(pkger.MkdirAll("/tmp", 0755))
+	defer pkger.RemoveAll("/tmp")
 
-	f, err := Open("/tmp")
+	f, err := pkger.Open("/tmp")
 	r.NoError(err)
 	r.Equal("/tmp", f.Name())
 	r.NoError(f.Close())
@@ -87,7 +94,7 @@ func Test_MkdirAll(t *testing.T) {
 func Test_Stat(t *testing.T) {
 	r := require.New(t)
 
-	info, err := Stat("/go.mod")
+	info, err := pkger.Stat("/go.mod")
 	r.NoError(err)
 	r.Equal("/go.mod", info.Name())
 }
@@ -96,7 +103,7 @@ func Test_Walk(t *testing.T) {
 	r := require.New(t)
 
 	files := map[string]os.FileInfo{}
-	err := Walk("/pkging/pkgtest/internal/testdata/app", func(path string, info os.FileInfo, err error) error {
+	err := pkger.Walk("/pkging/pkgtest/internal/testdata/app", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -111,14 +118,14 @@ func Test_Walk(t *testing.T) {
 func Test_Remove(t *testing.T) {
 	r := require.New(t)
 
-	MkdirAll("/tmp", 0755)
-	defer RemoveAll("/tmp")
-	f, err := Create("/tmp/test.create")
+	pkger.MkdirAll("/tmp", 0755)
+	defer pkger.RemoveAll("/tmp")
+	f, err := pkger.Create("/tmp/test.create")
 	r.NoError(err)
 	r.Equal("/tmp/test.create", f.Name())
 	r.NoError(f.Close())
-	r.NoError(Remove("/tmp/test.create"))
+	r.NoError(pkger.Remove("/tmp/test.create"))
 
-	_, err = Stat("/tmp/test.create")
+	_, err = pkger.Stat("/tmp/test.create")
 	r.Error(err)
 }

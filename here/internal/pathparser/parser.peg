@@ -1,0 +1,37 @@
+{
+  package pathparser
+}
+
+DOC <- pkg:PKG? n:NAME? (nl / EOF) {
+    return toPath(pkg, n)
+}
+
+PKG <- !"/" n:STRING v:(VERSION)? ":"? {
+    return toPackage(n, v)
+}
+
+NAME <- "/" n:STRING {
+  return toName(n)
+}
+
+VERSION <- "@" ( "v" NUMBER "." NUMBER "." NUMBER ) {
+return strings.TrimPrefix( string(c.text), "@" ), nil
+}
+
+STRING <- ([^@:\\\n]+) {
+    return strings.TrimSpace(string(c.text)), nil
+}
+
+NUMBER <- [0-9]+ {
+	return strconv.Atoi(strings.TrimSpace( string(c.text) ))
+}
+
+_ "whitespace" ← [ \t]*
+
+nl "newline" ← [\n\r]*
+
+EOF <- !. {
+  return nil, nil
+}
+
+

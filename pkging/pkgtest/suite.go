@@ -17,10 +17,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const mould = "/easy/listening/sugar.file"
-const hart = "/easy/listening/grant.hart"
-const husker = "github.com/husker/du"
-
 type Suite struct {
 	Name string
 	gen  func() (pkging.Pkger, error)
@@ -58,6 +54,7 @@ func (s Suite) Test(t *testing.T) {
 }
 
 func (s Suite) Run(t *testing.T, name string, fn func(t *testing.T)) {
+	t.Helper()
 	t.Run(name, func(st *testing.T) {
 		fn(st)
 	})
@@ -79,16 +76,14 @@ func (s Suite) Test_Create(t *testing.T) {
 	pkg, err := s.Make()
 	r.NoError(err)
 
-	cur, err := pkg.Current()
+	app, err := App()
 	r.NoError(err)
 
-	ip := cur.ImportPath
 	table := []struct {
 		in string
 	}{
-		{in: mould},
-		{in: ":" + mould},
-		{in: ip + ":" + mould},
+		{in: "/public/index.html"},
+		{in: app.Info.ImportPath + ":" + "/public/index.html"},
 	}
 
 	for _, tt := range table {
@@ -118,21 +113,18 @@ func (s Suite) Test_Create(t *testing.T) {
 func (s Suite) Test_Create_No_MkdirAll(t *testing.T) {
 	r := require.New(t)
 
-	pkg, err := s.Make()
+	app, err := App()
 	r.NoError(err)
 
-	cur, err := pkg.Current()
-	r.NoError(err)
+	ip := app.Info.ImportPath
+	mould := "/easy/listening/file.under"
 
-	ip := cur.ImportPath
 	table := []struct {
 		in string
 	}{
 		{in: mould},
-		{in: ":" + mould},
 		{in: ip + ":" + mould},
 		{in: filepath.Dir(mould)},
-		{in: ":" + filepath.Dir(mould)},
 		{in: ip + ":" + filepath.Dir(mould)},
 	}
 
@@ -181,21 +173,18 @@ func (s Suite) Test_Info(t *testing.T) {
 func (s Suite) Test_MkdirAll(t *testing.T) {
 	r := require.New(t)
 
-	pkg, err := s.Make()
+	app, err := App()
 	r.NoError(err)
 
-	cur, err := pkg.Current()
-	r.NoError(err)
+	ip := app.Info.ImportPath
+	mould := "/public/index.html"
 
-	ip := cur.ImportPath
 	table := []struct {
 		in string
 	}{
 		{in: mould},
-		{in: ":" + mould},
 		{in: ip + ":" + mould},
 		{in: filepath.Dir(mould)},
-		{in: ":" + filepath.Dir(mould)},
 		{in: ip + ":" + filepath.Dir(mould)},
 	}
 
@@ -228,20 +217,17 @@ func (s Suite) Test_MkdirAll(t *testing.T) {
 func (s Suite) Test_Open_File(t *testing.T) {
 	r := require.New(t)
 
-	pkg, err := s.Make()
+	app, err := App()
 	r.NoError(err)
 
-	cur, err := pkg.Current()
-	r.NoError(err)
+	ip := app.Info.ImportPath
+	mould := "/public/index.html"
 
-	ip := cur.ImportPath
 	table := []struct {
 		in string
 	}{
 		{in: mould},
-		{in: ":" + mould},
 		{in: ip + ":" + mould},
-		{in: hart},
 	}
 
 	for _, tt := range table {
@@ -285,22 +271,17 @@ func (s Suite) Test_Parse(t *testing.T) {
 	r.NoError(err)
 
 	cur, err := pkg.Current()
-	r.NoError(err)
-
 	ip := cur.ImportPath
+	mould := "/public/index.html"
+
 	table := []struct {
 		in  string
 		exp here.Path
 	}{
 		{in: mould, exp: here.Path{Pkg: ip, Name: mould}},
 		{in: filepath.Join(cur.Dir, mould), exp: here.Path{Pkg: ip, Name: mould}},
-		{in: ":" + mould, exp: here.Path{Pkg: ip, Name: mould}},
 		{in: ip + ":" + mould, exp: here.Path{Pkg: ip, Name: mould}},
 		{in: ip, exp: here.Path{Pkg: ip, Name: "/"}},
-		{in: ":", exp: here.Path{Pkg: ip, Name: "/"}},
-		{in: husker + ":" + mould, exp: here.Path{Pkg: husker, Name: mould}},
-		{in: husker, exp: here.Path{Pkg: husker, Name: "/"}},
-		{in: husker + ":", exp: here.Path{Pkg: husker, Name: "/"}},
 	}
 
 	for _, tt := range table {
@@ -320,19 +301,18 @@ func (s Suite) Test_Stat_Error(t *testing.T) {
 	pkg, err := s.Make()
 	r.NoError(err)
 
-	cur, err := pkg.Current()
+	app, err := App()
 	r.NoError(err)
 
-	ip := cur.ImportPath
+	ip := app.Info.ImportPath
 
 	table := []struct {
 		in string
 	}{
-		{in: hart},
-		{in: ":" + hart},
+		{in: "/dontexist"},
 		{in: ip},
 		{in: ip + ":"},
-		{in: ip + ":" + hart},
+		{in: ip + ":" + "/dontexist"},
 	}
 
 	for _, tt := range table {
@@ -357,18 +337,17 @@ func (s Suite) Test_Stat_Dir(t *testing.T) {
 	pkg, err := s.Make()
 	r.NoError(err)
 
-	cur, err := pkg.Current()
+	app, err := App()
 	r.NoError(err)
 
-	dir := filepath.Dir(mould)
-	ip := cur.ImportPath
+	ip := app.Info.ImportPath
+	dir := app.Paths.Public[1]
 
 	table := []struct {
 		in string
 	}{
 		{in: ip},
 		{in: dir},
-		{in: ":" + dir},
 		{in: ip + ":" + dir},
 	}
 
@@ -393,20 +372,17 @@ func (s Suite) Test_Stat_Dir(t *testing.T) {
 func (s Suite) Test_Stat_File(t *testing.T) {
 	r := require.New(t)
 
-	pkg, err := s.Make()
+	app, err := App()
 	r.NoError(err)
 
-	cur, err := pkg.Current()
-	r.NoError(err)
+	ip := app.Info.ImportPath
+	mould := "/public/index.html"
 
-	ip := cur.ImportPath
 	table := []struct {
 		in string
 	}{
 		{in: mould},
-		{in: ":" + mould},
 		{in: ip + ":" + mould},
-		{in: hart},
 	}
 
 	for _, tt := range table {
@@ -517,7 +493,6 @@ func (s Suite) Test_Remove(t *testing.T) {
 		in string
 	}{
 		{in: "/public/images/img1.png"},
-		{in: ":/public/images/img1.png"},
 		{in: ip + ":/public/images/img1.png"},
 	}
 
@@ -558,7 +533,6 @@ func (s Suite) Test_RemoveAll(t *testing.T) {
 		in string
 	}{
 		{in: "/public"},
-		{in: ":/public"},
 		{in: ip + ":/public"},
 	}
 

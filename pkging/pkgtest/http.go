@@ -113,7 +113,6 @@ func (s Suite) Test_HTTP(t *testing.T) {
 		in string
 	}{
 		{in: "/public"},
-		{in: ":" + "/public"},
 		{in: ip + ":" + "/public"},
 	}
 

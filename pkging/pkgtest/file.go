@@ -15,15 +15,16 @@ func (s Suite) Test_File_Info(t *testing.T) {
 	pkg, err := s.Make()
 	r.NoError(err)
 
-	cur, err := pkg.Current()
+	app, err := App()
 	r.NoError(err)
 
-	ip := cur.ImportPath
+	ip := app.Info.ImportPath
+	mould := "/public/index.html"
+
 	table := []struct {
 		in string
 	}{
 		{in: mould},
-		{in: ":" + mould},
 		{in: ip + ":" + mould},
 	}
 
@@ -39,7 +40,7 @@ func (s Suite) Test_File_Info(t *testing.T) {
 			f, err := pkg.Open(tt.in)
 			r.NoError(err)
 			r.Equal(mould, f.Name())
-			r.Equal(cur.ImportPath, f.Info().ImportPath)
+			r.Equal(ip, f.Info().ImportPath)
 			r.NoError(f.Close())
 		})
 	}
@@ -62,7 +63,7 @@ func (s Suite) Test_File_Readdir(t *testing.T) {
 	table := []struct {
 		in string
 	}{
-		{in: ":/public"},
+		{in: "/public"},
 		{in: ip + ":/public"},
 	}
 

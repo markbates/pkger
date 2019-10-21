@@ -16,7 +16,7 @@ build: tidy
 	$(GO_BIN) build -v .
 	make tidy
 
-test: tidy
+test: tidy peg
 	$(GO_BIN) test -cover -tags ${TAGS} -timeout 5s ./...
 	make tidy
 
@@ -51,4 +51,6 @@ release:
 	release -y -f version.go --skip-packr
 	make tidy
 
-
+peg:
+	pigeon here/internal/pathparser/parser.peg | goimports > here/internal/pathparser/parser.go
+	go test ./here/internal/pathparser
