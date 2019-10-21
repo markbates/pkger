@@ -1,4 +1,4 @@
-package stdos
+package stdos_test
 
 import (
 	"io/ioutil"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/markbates/pkger/pkging"
 	"github.com/markbates/pkger/pkging/pkgtest"
+	"github.com/markbates/pkger/pkging/stdos"
 )
 
 func Test_Pkger(t *testing.T) {
@@ -22,7 +23,7 @@ func Test_Pkger(t *testing.T) {
 
 		app.Dir = dir
 
-		mypkging, err := New(app.Info)
+		mypkging, err := stdos.New(app.Info)
 		if err != nil {
 			return nil, err
 		}

@@ -7,9 +7,8 @@ import (
 	"sort"
 
 	"github.com/markbates/pkger"
-	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/parser"
-	"github.com/markbates/pkger/pkging/stdos"
+	"github.com/markbates/pkger/pkging/pkgutil"
 )
 
 const outName = "pkged.go"
@@ -118,7 +117,7 @@ func (e *packCmd) Flags() *flag.FlagSet {
 	return e.FlagSet
 }
 
-func Package(out string, paths []here.Path) error {
+func Package(out string, decls parser.Decls) error {
 	os.RemoveAll(out)
 
 	f, err := os.Create(out)
@@ -135,17 +134,12 @@ func Package(out string, paths []here.Path) error {
 	fmt.Fprintf(f, "import \"github.com/markbates/pkger\"\n\n")
 	fmt.Fprintf(f, "import \"github.com/markbates/pkger/pkging/mem\"\n\n")
 	fmt.Fprintf(f, "// packing:\n")
-	for _, p := range paths {
-		fmt.Fprintf(f, "// %s\n", p)
-	}
+	// for _, p := range paths {
+	// 	fmt.Fprintf(f, "// %s\n", p)
+	// }
 	fmt.Fprintf(f, "\nvar _ = pkger.Apply(mem.UnmarshalEmbed([]byte(`")
 
-	disk, err := stdos.New(c)
-	if err != nil {
-		return err
-	}
-
-	if err := disk.Stuff(f, paths); err != nil {
+	if err := pkgutil.Stuff(f, c, decls); err != nil {
 		return err
 	}
 

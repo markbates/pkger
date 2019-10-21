@@ -1,9 +1,10 @@
-package mem
+package mem_test
 
 import (
 	"testing"
 
 	"github.com/markbates/pkger/pkging"
+	"github.com/markbates/pkger/pkging/mem"
 	"github.com/markbates/pkger/pkging/pkgtest"
 )
 
@@ -14,7 +15,7 @@ func Test_Pkger(t *testing.T) {
 			return nil, err
 		}
 
-		pkg, err := New(app.Info)
+		pkg, err := mem.New(app.Info)
 		if err != nil {
 			return nil, err
 		}

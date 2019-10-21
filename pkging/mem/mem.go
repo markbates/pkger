@@ -58,12 +58,12 @@ func (p *Pkger) MarshalJSON() ([]byte, error) {
 		infos[key] = info
 		return true
 	})
-
-	return json.Marshal(embed.Data{
+	ed := embed.Data{
 		Infos: infos,
 		Files: files,
 		Here:  p.Here,
-	})
+	}
+	return json.Marshal(ed)
 }
 
 // UnmarshalJSON re-hydrates the *Pkger

@@ -3,8 +3,10 @@ package parser
 import (
 	"go/ast"
 	"go/token"
-	"sort"
+	"path/filepath"
 	"strconv"
+
+	"github.com/markbates/pkger/here"
 )
 
 type visitor func(node ast.Node) (w ast.Visitor)
@@ -18,17 +20,14 @@ type file struct {
 	fset     *token.FileSet
 	astFile  *ast.File
 	filename string
-	decls    map[string]string
+	decls    Decls
 }
 
 func (f *file) walk(fn func(ast.Node) bool) {
 	ast.Walk(walker(fn), f.astFile)
 }
 
-func (f *file) find() ([]string, error) {
-	// if err := f.findDecals(); err != nil {
-	// 	return nil, err
-	// }
+func (f *file) find() (Decls, error) {
 	if err := f.findOpenCalls(); err != nil {
 		return nil, err
 	}
@@ -37,88 +36,20 @@ func (f *file) find() ([]string, error) {
 		return nil, err
 	}
 
-	if err := f.findImportCalls(); err != nil {
-		return nil, err
-	}
-
-	var paths []string
-	for _, p := range f.decls {
-		paths = append(paths, p)
-	}
-	sort.Slice(paths, func(a, b int) bool {
-		return paths[a] < paths[b]
-	})
-	return paths, nil
+	return f.decls, nil
 }
 
-func (f *file) findDecals() error {
-	// iterate over all declarations
-	for _, d := range f.astFile.Decls {
+func (f *file) asValue(node ast.Node) (string, error) {
+	var s string
 
-		// log.Printf("#%d Decl: %+v\n", i, d)
-
-		// only interested in generic declarations
-		if genDecl, ok := d.(*ast.GenDecl); ok {
-
-			// handle const's and vars
-			if genDecl.Tok == token.CONST || genDecl.Tok == token.VAR {
-
-				// there may be multiple
-				// i.e. const ( ... )
-				for _, cDecl := range genDecl.Specs {
-
-					// havn't find another kind of spec then value but better check
-					if vSpec, ok := cDecl.(*ast.ValueSpec); ok {
-						// log.Printf("const ValueSpec: %+v\n", vSpec)
-
-						// iterate over Name/Value pair
-						for i := 0; i < len(vSpec.Names); i++ {
-							// TODO: only basic literals work currently
-							if i > len(vSpec.Values) || len(vSpec.Values) == 0 {
-								break
-							}
-							switch v := vSpec.Values[i].(type) {
-							case *ast.BasicLit:
-
-								if e := f.addNode(v); e != nil {
-									return e
-								}
-								// f.decls[vSpec.Names[i].Name] = v.Value
-							default:
-								// log.Printf("Name: %s - Unsupported ValueSpec: %+v\n", vSpec.Names[i].Name, v)
-							}
-						}
-					}
-				}
-			}
-
-		}
-	}
-
-	return nil
-}
-
-func (f *file) addNode(node ast.Node) error {
 	switch x := node.(type) {
 	case *ast.BasicLit:
-		return f.add(x.Value)
+		s = x.Value
 	case *ast.Ident:
-		return f.add(x.Name)
-	default:
+		s = x.Name
 	}
-	return nil
-}
 
-func (f *file) add(s string) error {
-	s, err := strconv.Unquote(s)
-	if err != nil {
-		return err
-	}
-	if _, ok := f.decls[s]; !ok {
-		// fmt.Println(">>>TODO parser/visitor.go:98: s ", s)
-		f.decls[s] = s
-	}
-	return nil
+	return strconv.Unquote(s)
 }
 
 func (f *file) findOpenCalls() error {
@@ -134,12 +65,30 @@ func (f *file) findOpenCalls() error {
 			return true
 		}
 
-		// fmt.Println(">>>TODO parser/visitor.go:138: findOpenCalls ", ce.Args[0])
-		if e := f.addNode(ce.Args[0]); e != nil {
-			err = e
+		n := ce.Args[0]
+
+		s, err := f.asValue(n)
+		if err != nil {
 			return false
 		}
 
+		info, err := here.Dir(filepath.Dir(f.filename))
+		if err != nil {
+			return false
+		}
+
+		pf := &File{
+			Abs:  f.filename,
+			Here: info,
+		}
+
+		decl := OpenDecl{
+			file:  pf,
+			pos:   n.Pos(),
+			value: s,
+		}
+
+		f.decls = append(f.decls, decl)
 		return true
 	})
 	return err
@@ -158,40 +107,30 @@ func (f *file) findWalkCalls() error {
 			return true
 		}
 
-		// fmt.Println(">>>TODO parser/visitor.go:138: findWalkCalls ", ce.Args[0])
-		if e := f.addNode(ce.Args[0]); e != nil {
-			err = e
+		n := ce.Args[0]
+
+		s, err := f.asValue(n)
+		if err != nil {
 			return false
 		}
 
-		return true
-	})
-	return err
-}
+		info, err := here.Dir(filepath.Dir(f.filename))
+		if err != nil {
+			return false
+		}
 
-func (f *file) findImportCalls() error {
-	var err error
-	f.walk(func(node ast.Node) bool {
-		// ce, ok := node.(*ast.ImportSpec)
-		// if !ok {
-		// 	return true
-		// }
+		pf := &File{
+			Abs:  f.filename,
+			Here: info,
+		}
 
-		// s, err := strconv.Unquote(ce.Path.Value)
-		// if err != nil {
-		// 	return false
-		// }
-		// fmt.Println(">>>TODO parser/visitor.go:215: s ", s)
-		// info, err := here.Package(s)
-		// if err != nil {
-		// 	return false
-		// }
-		// fmt.Println(">>>TODO parser/visitor.go:216: info ", info)
-		// res, err := Parse(info)
-		// if err != nil {
-		// 	return false
-		// }
-		// fmt.Println(">>>TODO parser/visitor.go:224: res ", res)
+		decl := WalkDecl{
+			file:  pf,
+			pos:   n.Pos(),
+			value: s,
+		}
+
+		f.decls = append(f.decls, decl)
 		return true
 	})
 	return err
