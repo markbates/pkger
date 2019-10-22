@@ -16,35 +16,27 @@ type Info struct {
 	Dir        string
 	ImportPath string
 	Name       string
-	// Imports    []string
-	Module Module
+	Module     Module
 }
 
 func (fi Info) MarshalJSON() ([]byte, error) {
 	mm := map[string]interface{}{
 		"ImportPath": fi.ImportPath,
 		"Name":       fi.Name,
-		// "Imports":    fi.Imports,
-		"Module": fi.Module,
+		"Module":     fi.Module,
+		"Dir":        fi.Dir,
+	}
+
+	b, err := json.Marshal(mm)
+	if err != nil {
+		return nil, err
 	}
 
 	hep := hepa.New()
 	hep = hepa.With(hep, filters.Home())
 	hep = hepa.With(hep, filters.Golang())
 
-	cm := map[string]string{
-		"Dir": fi.Dir,
-	}
-
-	for k, v := range cm {
-		b, err := hep.Filter([]byte(v))
-		if err != nil {
-			return nil, err
-		}
-		mm[k] = string(b)
-	}
-
-	return json.Marshal(mm)
+	return hep.Filter(b)
 }
 
 func (i Info) FilePath(paths ...string) string {

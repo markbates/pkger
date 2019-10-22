@@ -17,7 +17,6 @@ const outName = "pkged.go"
 type packCmd struct {
 	*flag.FlagSet
 	help bool
-	list bool
 	subs []command
 }
 
@@ -34,21 +33,12 @@ func (e *packCmd) Exec(args []string) error {
 	fp := info.FilePath(outName)
 	os.RemoveAll(fp)
 
-	res, err := parser.Parse(info)
+	decls, err := parser.Parse(info)
 	if err != nil {
 		return err
 	}
 
-	if e.list {
-		fmt.Println(info.ImportPath)
-
-		for _, p := range res {
-			fmt.Printf("  > %s\n", p)
-		}
-		return nil
-	}
-
-	if err := Package(fp, res); err != nil {
+	if err := Package(fp, decls); err != nil {
 		return err
 	}
 
@@ -90,14 +80,13 @@ func New() (*packCmd, error) {
 	c := &packCmd{}
 
 	c.subs = []command{
-		&serveCmd{}, &statCmd{}, &infoCmd{}, &pathCmd{}, &parseCmd{},
+		&serveCmd{}, &statCmd{}, &infoCmd{}, &pathCmd{}, &parseCmd{}, &listCmd{},
 	}
 	sort.Slice(c.subs, func(a, b int) bool {
 		return c.subs[a].Name() <= c.subs[b].Name()
 	})
 
 	c.FlagSet = flag.NewFlagSet("pkger", flag.ExitOnError)
-	c.BoolVar(&c.list, "list", false, "prints a list of files/dirs to be packaged")
 	c.BoolVar(&c.help, "h", false, "prints help information")
 	c.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage:\n\n")
@@ -112,7 +101,6 @@ func New() (*packCmd, error) {
 func (e *packCmd) Flags() *flag.FlagSet {
 	if e.FlagSet == nil {
 		e.FlagSet = flag.NewFlagSet("", flag.ExitOnError)
-		e.BoolVar(&e.list, "list", false, "prints a list of files/dirs to be packaged")
 	}
 	e.Usage = Usage(os.Stderr, e.FlagSet)
 	return e.FlagSet
@@ -134,10 +122,6 @@ func Package(out string, decls parser.Decls) error {
 	fmt.Fprintf(f, "package %s\n\n", c.Name)
 	fmt.Fprintf(f, "import \"github.com/markbates/pkger\"\n\n")
 	fmt.Fprintf(f, "import \"github.com/markbates/pkger/pkging/mem\"\n\n")
-	fmt.Fprintf(f, "// packing:\n")
-	// for _, p := range paths {
-	// 	fmt.Fprintf(f, "// %s\n", p)
-	// }
 	fmt.Fprintf(f, "\nvar _ = pkger.Apply(mem.UnmarshalEmbed([]byte(`")
 
 	if err := pkgutil.Stuff(f, c, decls); err != nil {
