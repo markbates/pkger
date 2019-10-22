@@ -96,7 +96,6 @@ func (s Suite) LoadFolder(pkg pkging.Pkger) error {
 		}
 		return nil
 	})
-	return nil
 }
 
 func (s Suite) Test_HTTP(t *testing.T) {

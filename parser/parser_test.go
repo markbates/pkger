@@ -1,9 +1,11 @@
-package parser
+package parser_test
 
 import (
+	"fmt"
 	"sort"
 	"testing"
 
+	"github.com/markbates/pkger/parser"
 	"github.com/markbates/pkger/pkging/pkgtest"
 	"github.com/stretchr/testify/require"
 )
@@ -14,15 +16,22 @@ func Test_Parser_App(t *testing.T) {
 	app, err := pkgtest.App()
 	r.NoError(err)
 
-	res, err := Parse(app.Info)
+	res, err := parser.Parse(app.Info)
 
 	r.NoError(err)
 
-	act := make([]string, len(res))
-	for i := 0; i < len(res); i++ {
-		act[i] = res[i].String()
+	files, err := res.Files()
+	r.NoError(err)
+
+	act := make([]string, len(files))
+	for i := 0; i < len(files); i++ {
+		act[i] = files[i].Path.String()
 	}
 
 	sort.Strings(act)
+
+	for _, a := range act {
+		fmt.Println(a)
+	}
 	r.Equal(app.Paths.Parser, act)
 }

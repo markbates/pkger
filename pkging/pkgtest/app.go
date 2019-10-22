@@ -65,6 +65,7 @@ func App() (AppDetails, error) {
 var rootPaths = []string{
 	"app:/",
 	"app:/go.mod",
+	"app:/go.sum",
 	"app:/main.go",
 	"app:/public",
 	"app:/public/images",
@@ -86,13 +87,11 @@ var publicPaths = []string{
 }
 
 var parserPaths = []string{
-	"app:/",
 	"app:/public",
 	"app:/public/images",
 	"app:/public/images/img1.png",
 	"app:/public/images/img2.png",
 	"app:/public/index.html",
-	"github.com/gobuffalo/buffalo:/",
 	"github.com/gobuffalo/buffalo:/render",
 	"github.com/gobuffalo/buffalo:/render/auto.go",
 	"github.com/gobuffalo/buffalo:/render/auto_test.go",

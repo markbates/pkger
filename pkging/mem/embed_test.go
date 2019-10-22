@@ -3,12 +3,12 @@ package mem_test
 import (
 	"bytes"
 	"os"
-	"sort"
 	"testing"
 
 	"github.com/markbates/pkger/parser"
 	"github.com/markbates/pkger/pkging/mem"
 	"github.com/markbates/pkger/pkging/pkgtest"
+	"github.com/markbates/pkger/pkging/pkgutil"
 	"github.com/markbates/pkger/pkging/stdos"
 	"github.com/stretchr/testify/require"
 )
@@ -19,12 +19,15 @@ func Test_Pkger_Embedding(t *testing.T) {
 	app, err := pkgtest.App()
 	r.NoError(err)
 
-	paths, err := parser.Parse(app.Info)
+	res, err := parser.Parse(app.Info)
 	r.NoError(err)
 
-	ps := make([]string, len(paths))
-	for i, p := range paths {
-		ps[i] = p.String()
+	files, err := res.Files()
+	r.NoError(err)
+
+	ps := make([]string, len(files))
+	for i, f := range files {
+		ps[i] = f.Path.String()
 	}
 
 	r.Equal(app.Paths.Parser, ps)
@@ -53,63 +56,36 @@ func Test_Pkger_Embedding(t *testing.T) {
 	})
 	r.NoError(err)
 
-	var res []string
-	err = base.Walk("/", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		res = append(res, path)
-		return nil
-	})
-
-	r.NoError(err)
-	r.Equal(app.Paths.Root, res)
-
-	res = []string{}
+	act := []string{}
 	err = base.Walk("/public", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		res = append(res, path)
+		act = append(act, path)
 		return nil
 	})
 
 	r.NoError(err)
-	r.Equal(app.Paths.Public, res)
+	r.Equal(app.Paths.Public, act)
 
 	bb := &bytes.Buffer{}
 
-	err = disk.Stuff(bb, paths)
+	err = pkgutil.Stuff(bb, app.Info, res)
 	r.NoError(err)
 
 	pkg := &mem.Pkger{}
 	err = pkg.UnmarshalEmbed(bb.Bytes())
 	r.NoError(err)
 
-	res = []string{}
-	err = pkg.Walk("/", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		res = append(res, path)
-		return nil
-	})
-
-	r.NoError(err)
-
-	exp := append(app.Paths.Public, "app:/")
-	sort.Strings(exp)
-	r.Equal(exp, res)
-
-	res = []string{}
+	act = []string{}
 	err = pkg.Walk("/public", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		res = append(res, path)
+		act = append(act, path)
 		return nil
 	})
 
 	r.NoError(err)
-	r.Equal(app.Paths.Public, res)
+	r.Equal(app.Paths.Public, act)
 }
