@@ -56,19 +56,7 @@ func Test_Pkger_Embedding(t *testing.T) {
 	})
 	r.NoError(err)
 
-	var act []string
-	err = base.Walk("/", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		act = append(act, path)
-		return nil
-	})
-
-	r.NoError(err)
-	r.Equal(app.Paths.Root, act)
-
-	act = []string{}
+	act := []string{}
 	err = base.Walk("/public", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -88,19 +76,6 @@ func Test_Pkger_Embedding(t *testing.T) {
 	pkg := &mem.Pkger{}
 	err = pkg.UnmarshalEmbed(bb.Bytes())
 	r.NoError(err)
-
-	act = []string{}
-	err = pkg.Walk("/", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		act = append(act, path)
-		return nil
-	})
-
-	r.NoError(err)
-
-	r.Equal(app.Paths.Public, act)
 
 	act = []string{}
 	err = pkg.Walk("/public", func(path string, info os.FileInfo, err error) error {
