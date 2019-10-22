@@ -2,6 +2,7 @@ package pkger
 
 import (
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"sync"
@@ -93,4 +94,13 @@ func Remove(name string) error {
 // RemoveAll removes path and any children it contains. It removes everything it can but returns the first error it encounters. If the path does not exist, RemoveAll returns nil (no error).
 func RemoveAll(name string) error {
 	return impl().RemoveAll(name)
+}
+
+// HTTP returns an http.FileServer for the specified path.
+func HTTP(p string) (http.Handler, error) {
+	f, err := Open(p)
+	if err != nil {
+		return nil, err
+	}
+	return http.FileServer(f), nil
 }
