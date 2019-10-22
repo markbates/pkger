@@ -82,7 +82,7 @@ func (e *packCmd) Route(args []string) error {
 		}
 	}
 
-	return e.Exec(args)
+	return fmt.Errorf("unknown arguments %q", args)
 }
 
 func New() (*packCmd, error) {
