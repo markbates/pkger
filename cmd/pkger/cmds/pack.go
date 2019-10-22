@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/markbates/pkger"
 	"github.com/markbates/pkger/parser"
@@ -82,7 +83,7 @@ func (e *packCmd) Route(args []string) error {
 		}
 	}
 
-	return e.Exec(args)
+	return fmt.Errorf("unknown arguments: %s", strings.Join(args, " "))
 }
 
 func New() (*packCmd, error) {
