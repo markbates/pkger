@@ -1,4 +1,4 @@
 package pkger
 
 // Version of pkger
-const Version = "v0.3.1"
+const Version = "v0.3.2"
