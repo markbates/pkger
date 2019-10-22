@@ -3,33 +3,32 @@ package cmds
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"os"
 
-	"github.com/markbates/pkger"
 	"github.com/markbates/pkger/here"
+	"github.com/markbates/pkger/parser"
 )
 
-type pathCmd struct {
+type parseCmd struct {
 	*flag.FlagSet
 	json bool
 	help bool
 }
 
-func (s *pathCmd) Name() string {
+func (s *parseCmd) Name() string {
 	return s.Flags().Name()
 }
 
-func (c *pathCmd) Flags() *flag.FlagSet {
+func (c *parseCmd) Flags() *flag.FlagSet {
 	if c.FlagSet == nil {
-		c.FlagSet = flag.NewFlagSet("path", flag.ExitOnError)
+		c.FlagSet = flag.NewFlagSet("parse", flag.ExitOnError)
 		// c.BoolVar(&c.json, "json", false, "outputs as json")
 		c.BoolVar(&c.help, "h", false, "prints help information")
 	}
 	return c.FlagSet
 }
 
-func (c *pathCmd) Exec(args []string) error {
+func (c *parseCmd) Exec(args []string) error {
 
 	c.Parse(args)
 
@@ -40,19 +39,25 @@ func (c *pathCmd) Exec(args []string) error {
 
 	args = c.Args()
 	if len(args) == 0 {
-		return fmt.Errorf("you specify at least one path")
+		args = append(args, ".")
 	}
 
-	paths := map[string]here.Path{}
+	m := map[string]parser.Decls{}
+
 	for _, a := range args {
-		pt, err := pkger.Parse(a)
+		info, err := here.Package(a)
 		if err != nil {
 			return err
 		}
-		paths[a] = pt
+
+		decls, err := parser.Parse(info)
+		if err != nil {
+			return err
+		}
+		m[a] = decls
 	}
 
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetIndent("", " ")
-	return enc.Encode(paths)
+	return enc.Encode(m)
 }

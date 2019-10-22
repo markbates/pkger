@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"encoding/json"
 	"go/token"
 	"os"
 	"path/filepath"
@@ -16,6 +17,15 @@ type WalkDecl struct {
 	file  *File
 	pos   token.Pos
 	value string
+}
+
+func (d WalkDecl) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]interface{}{
+		"type":  "pkger.Walk",
+		"file":  d.file,
+		"pos":   d.pos,
+		"value": d.value,
+	})
 }
 
 func (d WalkDecl) File() (*File, error) {

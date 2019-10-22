@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"encoding/json"
 	"go/token"
 	"os"
 	"path/filepath"
@@ -15,6 +16,15 @@ type OpenDecl struct {
 	file  *File
 	pos   token.Pos
 	value string
+}
+
+func (d OpenDecl) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]interface{}{
+		"type":  "pkger.Open",
+		"file":  d.file,
+		"pos":   d.pos,
+		"value": d.value,
+	})
 }
 
 func (d OpenDecl) File() (*File, error) {

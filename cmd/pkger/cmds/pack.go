@@ -90,7 +90,7 @@ func New() (*packCmd, error) {
 	c := &packCmd{}
 
 	c.subs = []command{
-		&serveCmd{}, &statCmd{}, &infoCmd{}, &pathCmd{},
+		&serveCmd{}, &statCmd{}, &infoCmd{}, &pathCmd{}, &parseCmd{},
 	}
 	sort.Slice(c.subs, func(a, b int) bool {
 		return c.subs[a].Name() <= c.subs[b].Name()
