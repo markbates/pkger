@@ -32,6 +32,10 @@ func (f *file) find() (Decls, error) {
 		return nil, err
 	}
 
+	if err := f.findHTTPCalls(); err != nil {
+		return nil, err
+	}
+
 	if err := f.findWalkCalls(); err != nil {
 		return nil, err
 	}
@@ -125,6 +129,48 @@ func (f *file) findWalkCalls() error {
 		}
 
 		decl := WalkDecl{
+			file:  pf,
+			pos:   n.Pos(),
+			value: s,
+		}
+
+		f.decls = append(f.decls, decl)
+		return true
+	})
+	return err
+}
+
+func (f *file) findHTTPCalls() error {
+	var err error
+	f.walk(func(node ast.Node) bool {
+		ce, ok := node.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+
+		exists := isPkgDot(ce.Fun, "pkger", "HTTP")
+		if !(exists) || len(ce.Args) != 1 {
+			return true
+		}
+
+		n := ce.Args[0]
+
+		s, err := f.asValue(n)
+		if err != nil {
+			return false
+		}
+
+		info, err := here.Dir(filepath.Dir(f.filename))
+		if err != nil {
+			return false
+		}
+
+		pf := &File{
+			Abs:  f.filename,
+			Here: info,
+		}
+
+		decl := HTTPDecl{
 			file:  pf,
 			pos:   n.Pos(),
 			value: s,

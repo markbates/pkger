@@ -14,10 +14,9 @@ func main() {
 }
 
 func run() error {
-	f, err := pkger.Open("/public")
+	dir, err := pkger.HTTP("/public")
 	if err != nil {
 		return err
 	}
-	dir := http.FileServer(f)
 	return http.ListenAndServe(":3000", dir)
 }
