@@ -21,7 +21,6 @@ func run() error {
 		return err
 	}
 	fmt.Println(info)
-
 	if err := pkger.MkdirAll("/foo/bar/baz", 0755); err != nil {
 		return err
 	}
@@ -31,7 +30,6 @@ func run() error {
 		return err
 	}
 	f.Write([]byte("BIZ!!"))
-
 	if err := f.Close(); err != nil {
 		return err
 	}
@@ -41,6 +39,5 @@ func run() error {
 		return err
 	}
 	io.Copy(os.Stdout, f)
-
 	return f.Close()
 }
