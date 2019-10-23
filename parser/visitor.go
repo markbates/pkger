@@ -28,6 +28,20 @@ func (f *file) walk(fn func(ast.Node) bool) {
 }
 
 func (f *file) find() (Decls, error) {
+	// --- virtual calls first ---
+	if err := f.findMkdirAllCalls(); err != nil {
+		return nil, err
+	}
+
+	if err := f.findCreateCalls(); err != nil {
+		return nil, err
+	}
+
+	// -- physical calls second ---
+	if err := f.findStatCalls(); err != nil {
+		return nil, err
+	}
+
 	if err := f.findOpenCalls(); err != nil {
 		return nil, err
 	}
@@ -56,6 +70,130 @@ func (f *file) asValue(node ast.Node) (string, error) {
 	return strconv.Unquote(s)
 }
 
+func (f *file) findMkdirAllCalls() error {
+	var err error
+	f.walk(func(node ast.Node) bool {
+		ce, ok := node.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+
+		exists := isPkgDot(ce.Fun, "pkger", "MkdirAll")
+		if !(exists) || len(ce.Args) != 2 {
+			return true
+		}
+
+		n := ce.Args[0]
+
+		s, err := f.asValue(n)
+		if err != nil {
+			return false
+		}
+
+		info, err := here.Dir(filepath.Dir(f.filename))
+		if err != nil {
+			return false
+		}
+
+		pf := &File{
+			Abs:  f.filename,
+			Here: info,
+		}
+
+		decl := MkdirAllDecl{
+			file:  pf,
+			pos:   n.Pos(),
+			value: s,
+		}
+
+		f.decls = append(f.decls, decl)
+		return true
+	})
+	return err
+}
+
+func (f *file) findStatCalls() error {
+	var err error
+	f.walk(func(node ast.Node) bool {
+		ce, ok := node.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+
+		exists := isPkgDot(ce.Fun, "pkger", "Stat")
+		if !(exists) || len(ce.Args) != 1 {
+			return true
+		}
+
+		n := ce.Args[0]
+
+		s, err := f.asValue(n)
+		if err != nil {
+			return false
+		}
+
+		info, err := here.Dir(filepath.Dir(f.filename))
+		if err != nil {
+			return false
+		}
+
+		pf := &File{
+			Abs:  f.filename,
+			Here: info,
+		}
+
+		decl := StatDecl{
+			file:  pf,
+			pos:   n.Pos(),
+			value: s,
+		}
+
+		f.decls = append(f.decls, decl)
+		return true
+	})
+	return err
+}
+func (f *file) findCreateCalls() error {
+	var err error
+	f.walk(func(node ast.Node) bool {
+		ce, ok := node.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+
+		exists := isPkgDot(ce.Fun, "pkger", "Create")
+		if !(exists) || len(ce.Args) != 1 {
+			return true
+		}
+
+		n := ce.Args[0]
+
+		s, err := f.asValue(n)
+		if err != nil {
+			return false
+		}
+
+		info, err := here.Dir(filepath.Dir(f.filename))
+		if err != nil {
+			return false
+		}
+
+		pf := &File{
+			Abs:  f.filename,
+			Here: info,
+		}
+
+		decl := CreateDecl{
+			file:  pf,
+			pos:   n.Pos(),
+			value: s,
+		}
+
+		f.decls = append(f.decls, decl)
+		return true
+	})
+	return err
+}
 func (f *file) findOpenCalls() error {
 	var err error
 	f.walk(func(node ast.Node) bool {

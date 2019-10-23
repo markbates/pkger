@@ -6,54 +6,49 @@ import (
 	"os"
 )
 
-var _ Decl = HTTPDecl{}
+var _ Decl = CreateDecl{}
 
-type HTTPDecl struct {
+type CreateDecl struct {
 	file  *File
 	pos   token.Pos
 	value string
 }
 
-func (d HTTPDecl) String() string {
+func (d CreateDecl) String() string {
 	b, _ := json.Marshal(d)
 	return string(b)
 }
 
-func (d HTTPDecl) MarshalJSON() ([]byte, error) {
+func (d CreateDecl) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
-		"type":  "pkger.HTTP",
+		"type":  "pkger.Create",
 		"file":  d.file,
 		"pos":   d.pos,
 		"value": d.value,
 	})
 }
 
-func (d HTTPDecl) File() (*File, error) {
+func (d CreateDecl) File() (*File, error) {
 	if d.file == nil {
 		return nil, os.ErrNotExist
 	}
 	return d.file, nil
 }
 
-func (d HTTPDecl) Pos() (token.Pos, error) {
+func (d CreateDecl) Pos() (token.Pos, error) {
 	if d.pos <= 0 {
 		return -1, os.ErrNotExist
 	}
 	return d.pos, nil
 }
 
-func (d HTTPDecl) Value() (string, error) {
+func (d CreateDecl) Value() (string, error) {
 	if d.value == "" {
 		return "", os.ErrNotExist
 	}
 	return d.value, nil
 }
 
-func (d HTTPDecl) Files(virtual map[string]string) ([]*File, error) {
-	od := OpenDecl{
-		file:  d.file,
-		pos:   d.pos,
-		value: d.value,
-	}
-	return od.Files(virtual)
+func (d CreateDecl) VirtualPaths() []string {
+	return []string{d.value}
 }

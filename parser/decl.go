@@ -12,21 +12,32 @@ type Decl interface {
 }
 
 type Filer interface {
-	Files() ([]*File, error)
+	Files(map[string]string) ([]*File, error)
+}
+
+type Virtualer interface {
+	VirtualPaths() []string
 }
 
 type Decls []Decl
 
 func (decls Decls) Files() ([]*File, error) {
 	m := map[string]*File{}
+	v := map[string]string{}
 
 	for _, d := range decls {
+		if vt, ok := d.(Virtualer); ok {
+			for _, s := range vt.VirtualPaths() {
+				v[s] = s
+			}
+		}
+
 		fl, ok := d.(Filer)
 		if !ok {
 			continue
 		}
 
-		files, err := fl.Files()
+		files, err := fl.Files(v)
 		if err != nil {
 			return nil, err
 		}

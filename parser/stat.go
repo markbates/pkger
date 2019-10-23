@@ -10,50 +10,50 @@ import (
 	"github.com/markbates/pkger/here"
 )
 
-var _ Decl = OpenDecl{}
+var _ Decl = StatDecl{}
 
-type OpenDecl struct {
+type StatDecl struct {
 	file  *File
 	pos   token.Pos
 	value string
 }
 
-func (d OpenDecl) String() string {
+func (d StatDecl) String() string {
 	b, _ := json.Marshal(d)
 	return string(b)
 }
 
-func (d OpenDecl) MarshalJSON() ([]byte, error) {
+func (d StatDecl) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
-		"type":  "pkger.Open",
+		"type":  "pkger.Stat",
 		"file":  d.file,
 		"pos":   d.pos,
 		"value": d.value,
 	})
 }
 
-func (d OpenDecl) File() (*File, error) {
+func (d StatDecl) File() (*File, error) {
 	if d.file == nil {
 		return nil, os.ErrNotExist
 	}
 	return d.file, nil
 }
 
-func (d OpenDecl) Pos() (token.Pos, error) {
+func (d StatDecl) Pos() (token.Pos, error) {
 	if d.pos <= 0 {
 		return -1, os.ErrNotExist
 	}
 	return d.pos, nil
 }
 
-func (d OpenDecl) Value() (string, error) {
+func (d StatDecl) Value() (string, error) {
 	if d.value == "" {
 		return "", os.ErrNotExist
 	}
 	return d.value, nil
 }
 
-func (d OpenDecl) Files(virtual map[string]string) ([]*File, error) {
+func (d StatDecl) Files(virtual map[string]string) ([]*File, error) {
 	if _, ok := virtual[d.value]; ok {
 		return nil, nil
 	}
@@ -66,22 +66,6 @@ func (d OpenDecl) Files(virtual map[string]string) ([]*File, error) {
 	her, err := here.Package(pt.Pkg)
 	if err != nil {
 		return nil, err
-	}
-
-	fp := filepath.Join(her.Dir, pt.Name)
-
-	osf, err := os.Stat(fp)
-	if err != nil {
-		return nil, err
-	}
-
-	if osf.IsDir() {
-		wd := WalkDecl{
-			file:  d.file,
-			pos:   d.pos,
-			value: d.value,
-		}
-		return wd.Files(virtual)
 	}
 
 	var files []*File
