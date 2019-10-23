@@ -19,6 +19,11 @@ type WalkDecl struct {
 	value string
 }
 
+func (d WalkDecl) String() string {
+	b, _ := json.Marshal(d)
+	return string(b)
+}
+
 func (d WalkDecl) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
 		"type":  "pkger.Walk",
@@ -49,7 +54,7 @@ func (d WalkDecl) Value() (string, error) {
 	return d.value, nil
 }
 
-func (d WalkDecl) Files() ([]*File, error) {
+func (d WalkDecl) Files(virtual map[string]string) ([]*File, error) {
 	pt, err := pkger.Parse(d.value)
 	if err != nil {
 		return nil, err
@@ -69,6 +74,12 @@ func (d WalkDecl) Files() ([]*File, error) {
 		}
 
 		n := strings.TrimPrefix(path, cur.Dir)
+		if _, ok := virtual[n]; ok {
+			if info.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
 
 		pt, err := pkger.Parse(n)
 		if err != nil {
