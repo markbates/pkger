@@ -54,16 +54,11 @@ func (e *listCmd) Exec(args []string) error {
 		ImportPath: info.ImportPath,
 	}
 
-	for _, decl := range decls {
-		if fl, ok := decl.(parser.Filer); ok {
-			files, err := fl.Files()
-			if err != nil {
-				return err
-			}
-			jay.Files = append(jay.Files, files...)
-		}
-
+	files, err := decls.Files()
+	if err != nil {
+		return err
 	}
+	jay.Files = files
 
 	if e.json {
 		bb := &bytes.Buffer{}
