@@ -34,9 +34,9 @@ func (f *File) Info() here.Info {
 	return f.her
 }
 
-// Name retuns the name of the file
-func (f *File) Name() string {
-	return f.info.Name()
+// Name retuns the name of the file in pkger format
+func (f File) Name() string {
+	return f.path.String()
 }
 
 // Readdir reads the contents of the directory associated with file and returns a slice of up to n FileInfo values, as would be returned by Lstat, in directory order. Subsequent calls on the same file will yield further FileInfos.
@@ -45,16 +45,7 @@ func (f *File) Name() string {
 //
 // If n <= 0, Readdir returns all the FileInfo from the directory in a single slice. In this case, if Readdir succeeds (reads all the way to the end of the directory), it returns the slice and a nil error. If it encounters an error before the end of the directory, Readdir returns the FileInfo read until that point and a non-nil error.
 func (f *File) Readdir(count int) ([]os.FileInfo, error) {
-	osinfos, err := f.File.Readdir(count)
-	if err != nil {
-		return nil, err
-	}
-
-	infos := make([]os.FileInfo, len(osinfos))
-	for i, info := range osinfos {
-		infos[i] = pkging.WithRelName(info.Name(), info)
-	}
-	return infos, err
+	return f.File.Readdir(count)
 }
 
 // Open implements the http.FileSystem interface. A FileSystem implements access to a collection of named files. The elements in a file path are separated by slash ('/', U+002F) characters, regardless of host operating system convention.
@@ -82,6 +73,6 @@ func (f *File) Stat() (os.FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	f.info = pkging.WithName(f.path.Name, info)
+	f.info = pkging.NewFileInfo(info)
 	return f.info, nil
 }

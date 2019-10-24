@@ -64,15 +64,15 @@ func (s Suite) LoadFolder(pkg pkging.Pkger) error {
 		if err != nil {
 			return err
 		}
-		if info.IsDir() {
-			return nil
-		}
-
 		of, err := os.Open(path)
 		if err != nil {
 			return err
 		}
 		defer of.Close()
+
+		if a, ok := pkg.(pkging.Adder); ok {
+			return a.Add(of)
+		}
 
 		path = strings.TrimPrefix(path, app.Dir)
 
@@ -85,6 +85,9 @@ func (s Suite) LoadFolder(pkg pkging.Pkger) error {
 			return err
 		}
 
+		if info.IsDir() {
+			return nil
+		}
 		f, err := pkg.Create(pt.String())
 		if err != nil {
 			return err

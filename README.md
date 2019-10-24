@@ -121,13 +121,12 @@ func run() error {
 ```bash
 # compile the go binary as usual and run the app:
 $ go build -v; ./app
-/public                       | 128      | drwxr-xr-x | 2019-10-17T15:02:57-04:00 |
-/public/images                | 192      | drwxr-xr-x | 2019-10-17T15:02:57-04:00 |
-/public/images/mark-small.png | 649549   | -rw-r--r-- | 2019-10-17T15:02:56-04:00 |
-/public/images/img1.png       | 50401191 | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
-/public/images/mark_250px.png | 27718    | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
-/public/images/mark_400px.png | 63543    | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
-/public/index.html            | 257      | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
+
+public     | 128   | drwxr-xr-x | 2019-10-18T16:24:55-04:00 |
+images     | 128   | drwxr-xr-x | 2019-10-18T16:24:55-04:00 |
+img1.png   | 27718 | -rw-r--r-- | 2019-10-18T16:24:55-04:00 |
+img2.png   | 27718 | -rw-r--r-- | 2019-10-18T16:24:55-04:00 |
+index.html | 257   | -rw-r--r-- | 2019-10-18T16:24:55-04:00 |
 ```
 
 ### Output With Packing
@@ -138,11 +137,10 @@ $ pkger
 
 # compile the go binary as usual and run the app:
 $ go build -v; ./app
-/                      | 128      | drwxr-xr-x | 2019-10-17T15:02:57-04:00 |
-/images                | 192      | drwxr-xr-x | 2019-10-17T15:02:57-04:00 |
-/images/mark-small.png | 649549   | -rw-r--r-- | 2019-10-17T15:02:56-04:00 |
-/images/img1.png       | 50401191 | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
-/images/mark_250px.png | 27718    | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
-/images/mark_400px.png | 63543    | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
-/index.html            | 257      | -rw-r--r-- | 2019-10-17T15:02:57-04:00 |
+
+public     | 128   | drwxr-xr-x | 2019-10-18T16:24:55-04:00 |
+images     | 128   | drwxr-xr-x | 2019-10-18T16:24:55-04:00 |
+img1.png   | 27718 | -rw-r--r-- | 2019-10-18T16:24:55-04:00 |
+img2.png   | 27718 | -rw-r--r-- | 2019-10-18T16:24:55-04:00 |
+index.html | 257   | -rw-r--r-- | 2019-10-18T16:24:55-04:00 |
 ```

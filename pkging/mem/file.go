@@ -8,7 +8,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/markbates/pkger/here"
@@ -100,9 +99,9 @@ func (f File) Stat() (os.FileInfo, error) {
 	return f.info, nil
 }
 
-// Name retuns the name of the file
+// Name retuns the name of the file in pkger format
 func (f File) Name() string {
-	return f.info.Name()
+	return f.path.String()
 }
 
 // Abs returns an absolute representation of the file. If the path is not absolute it will be joined with the current working directory to turn it into an absolute path. The absolute path name for a given file is not guaranteed to be unique. Abs calls Clean on the result.
@@ -148,7 +147,6 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 			return nil
 		}
 
-		info = pkging.WithRelName(strings.TrimPrefix(info.Name(), f.parent.Name), info)
 		infos = append(infos, info)
 		if info.IsDir() && path != root {
 			return filepath.SkipDir

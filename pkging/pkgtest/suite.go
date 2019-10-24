@@ -2,7 +2,6 @@ package pkgtest
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -102,13 +101,13 @@ func (s Suite) Test_Create(t *testing.T) {
 
 			f, err := pkg.Create(pt.Name)
 			r.NoError(err)
-			r.Equal(pt.Name, f.Name())
+			r.Equal(pt.String(), f.Name())
 
 			fi, err := f.Stat()
 			r.NoError(err)
 			r.NoError(f.Close())
 
-			r.Equal(pt.Name, fi.Name())
+			r.Equal(filepath.Base(pt.Name), fi.Name())
 			r.NotZero(fi.ModTime())
 			r.NoError(pkg.RemoveAll(pt.String()))
 		})
@@ -218,7 +217,7 @@ func (s Suite) Test_MkdirAll(t *testing.T) {
 			if runtime.GOOS == "windows" {
 				dir = strings.Replace(dir, "\\", "/", -1)
 			}
-			r.Equal(dir, fi.Name())
+			r.Equal(filepath.Base(dir), fi.Name())
 			r.NotZero(fi.ModTime())
 			r.NoError(pkg.RemoveAll(pt.String()))
 		})
@@ -354,87 +353,51 @@ func (s Suite) Test_Stat_Error(t *testing.T) {
 func (s Suite) Test_Stat_Dir(t *testing.T) {
 	r := require.New(t)
 
+	app, err := App()
+	r.NoError(err)
+
+	exp, err := os.Stat(filepath.Join(app.Info.Dir, "public"))
+	r.NoError(err)
+
 	pkg, err := s.Make()
 	r.NoError(err)
 
-	cur, err := pkg.Current()
+	r.NoError(s.LoadFolder(pkg))
+
+	act, err := pkg.Stat("/public")
 	r.NoError(err)
 
-	dir := filepath.Dir(mould)
-	ip := cur.ImportPath
+	r.Equal(exp.Name(), act.Name())
+	r.Equal(exp.Size(), act.Size())
+	r.Equal(exp.Mode(), act.Mode())
+	r.Equal(exp.IsDir(), act.IsDir())
+	r.NotZero(act.ModTime())
 
-	table := []struct {
-		in string
-	}{
-		{in: ip},
-		{in: dir},
-		{in: ":" + dir},
-		{in: ip + ":" + dir},
-	}
-
-	for _, tt := range table {
-		s.Run(t, tt.in, func(st *testing.T) {
-
-			r := require.New(st)
-
-			pt, err := pkg.Parse(tt.in)
-			r.NoError(err)
-
-			r.NoError(pkg.RemoveAll(pt.String()))
-
-			r.NoError(pkg.MkdirAll(pt.Name, 0755))
-			info, err := pkg.Stat(tt.in)
-			r.NoError(err)
-			r.Equal(pt.Name, info.Name())
-		})
-	}
 }
 
 func (s Suite) Test_Stat_File(t *testing.T) {
 	r := require.New(t)
 
+	app, err := App()
+	r.NoError(err)
+
+	exp, err := os.Stat(filepath.Join(app.Info.Dir, "go.mod"))
+	r.NoError(err)
+
 	pkg, err := s.Make()
 	r.NoError(err)
 
-	cur, err := pkg.Current()
+	r.NoError(s.LoadFolder(pkg))
+
+	act, err := pkg.Stat("/go.mod")
 	r.NoError(err)
 
-	ip := cur.ImportPath
-	table := []struct {
-		in string
-	}{
-		{in: mould},
-		{in: ":" + mould},
-		{in: ip + ":" + mould},
-		{in: hart},
-	}
+	r.Equal(exp.Name(), act.Name())
+	r.Equal(exp.Size(), act.Size())
+	r.Equal(exp.Mode(), act.Mode())
+	r.Equal(exp.IsDir(), act.IsDir())
+	r.NotZero(act.ModTime())
 
-	for _, tt := range table {
-		s.Run(t, tt.in, func(st *testing.T) {
-
-			r := require.New(st)
-
-			pkg, err := s.Make()
-			r.NoError(err)
-
-			pt, err := pkg.Parse(tt.in)
-			r.NoError(err)
-
-			r.NoError(pkg.RemoveAll(pt.String()))
-			r.NoError(pkg.MkdirAll(filepath.Dir(pt.Name), 0755))
-
-			f, err := pkg.Create(tt.in)
-			r.NoError(err)
-
-			_, err = io.Copy(f, strings.NewReader("!"+pt.String()))
-			r.NoError(err)
-			r.NoError(f.Close())
-
-			info, err := pkg.Stat(tt.in)
-			r.NoError(err)
-			r.Equal(pt.Name, info.Name())
-		})
-	}
 }
 
 func (s Suite) Test_Walk(t *testing.T) {

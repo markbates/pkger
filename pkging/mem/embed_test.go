@@ -3,13 +3,13 @@ package mem_test
 import (
 	"bytes"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/markbates/pkger/parser"
 	"github.com/markbates/pkger/pkging/mem"
 	"github.com/markbates/pkger/pkging/pkgtest"
 	"github.com/markbates/pkger/pkging/pkgutil"
-	"github.com/markbates/pkger/pkging/stdos"
 	"github.com/stretchr/testify/require"
 )
 
@@ -35,22 +35,16 @@ func Test_Pkger_Embedding(t *testing.T) {
 	base, err := mem.New(app.Info)
 	r.NoError(err)
 
-	disk, err := stdos.New(app.Info)
-	r.NoError(err)
-
-	err = disk.Walk("/", func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(app.Info.Dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		if info.IsDir() {
-			return nil
-		}
-
-		f, err := disk.Open(path)
+		f, err := os.Open(path)
 		if err != nil {
 			return err
 		}
+		defer f.Close()
 		return base.Add(f)
 
 	})

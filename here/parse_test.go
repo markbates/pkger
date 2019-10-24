@@ -37,6 +37,7 @@ func Test_Info_Parse(t *testing.T) {
 		{in: ip2 + ":" + name, exp: here.Path{Pkg: ip2, Name: name}},
 		{in: ip2, exp: here.Path{Pkg: ip2, Name: "/"}},
 		{in: ip2 + ":", exp: here.Path{Pkg: ip2, Name: "/"}},
+		{in: filepath.Join(app.Info.Dir, "public"), exp: here.Path{Pkg: ip, Name: "/public"}},
 	}
 
 	for _, tt := range table {

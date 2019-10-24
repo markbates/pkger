@@ -3,7 +3,6 @@ package pkging
 import (
 	"encoding/json"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -15,6 +14,7 @@ type Details struct {
 	IsDir   bool        `json:"is_dir"`
 	Sys     interface{} `json:"sys"`
 }
+
 type FileInfo struct {
 	Details `json:"details"`
 }
@@ -53,7 +53,7 @@ var _ os.FileInfo = &FileInfo{}
 func NewFileInfo(info os.FileInfo) *FileInfo {
 	fi := &FileInfo{
 		Details: Details{
-			Name:    cleanName(info.Name()),
+			Name:    info.Name(),
 			Size:    info.Size(),
 			Mode:    info.Mode(),
 			ModTime: ModTime(info.ModTime()),
@@ -62,30 +62,4 @@ func NewFileInfo(info os.FileInfo) *FileInfo {
 		},
 	}
 	return fi
-}
-
-func WithName(name string, info os.FileInfo) *FileInfo {
-	fo := NewFileInfo(info)
-	fo.Details.Name = cleanName(name)
-	return fo
-}
-
-func WithRelName(name string, info os.FileInfo) *FileInfo {
-	fo := NewFileInfo(info)
-
-	s := cleanName(name)
-	s = strings.TrimPrefix(s, "/")
-
-	fo.Details.Name = s
-	return fo
-}
-
-func cleanName(s string) string {
-	if strings.Contains(s, "\\") {
-		s = strings.Replace(s, "\\", "/", -1)
-	}
-	if !strings.HasPrefix(s, "/") {
-		s = "/" + s
-	}
-	return s
 }
