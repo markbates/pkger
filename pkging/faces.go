@@ -1,5 +1,7 @@
 package pkging
 
+import "os"
+
 type Adder interface {
-	Add(files ...File) error
+	Add(files ...*os.File) error
 }

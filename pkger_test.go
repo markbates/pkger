@@ -66,7 +66,7 @@ func Test_Create(t *testing.T) {
 	defer RemoveAll("/tmp")
 	f, err := Create("/tmp/test.create")
 	r.NoError(err)
-	r.Equal("/tmp/test.create", f.Name())
+	r.Equal("github.com/markbates/pkger:/tmp/test.create", f.Name())
 	r.NoError(f.Close())
 }
 
@@ -80,7 +80,7 @@ func Test_MkdirAll(t *testing.T) {
 
 	f, err := Open("/tmp")
 	r.NoError(err)
-	r.Equal("/tmp", f.Name())
+	r.Equal("github.com/markbates/pkger:/tmp", f.Name())
 	r.NoError(f.Close())
 }
 
@@ -89,7 +89,7 @@ func Test_Stat(t *testing.T) {
 
 	info, err := Stat("/go.mod")
 	r.NoError(err)
-	r.Equal("/go.mod", info.Name())
+	r.Equal("go.mod", info.Name())
 }
 
 func Test_Walk(t *testing.T) {
@@ -115,7 +115,6 @@ func Test_Remove(t *testing.T) {
 	defer RemoveAll("/tmp")
 	f, err := Create("/tmp/test.create")
 	r.NoError(err)
-	r.Equal("/tmp/test.create", f.Name())
 	r.NoError(f.Close())
 	r.NoError(Remove("/tmp/test.create"))
 

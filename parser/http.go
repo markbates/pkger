@@ -21,7 +21,7 @@ func (d HTTPDecl) String() string {
 
 func (d HTTPDecl) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
-		"type":  "pkger.HTTP",
+		"type":  "pkger.Dir",
 		"file":  d.file,
 		"pos":   d.pos,
 		"value": d.value,

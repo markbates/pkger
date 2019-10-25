@@ -80,7 +80,7 @@ func (fx *Pkger) Create(name string) (pkging.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	nf.info = pkging.WithName(pt.Name, info)
+	nf.info = pkging.NewFileInfo(info)
 	return nf, nil
 }
 
@@ -145,7 +145,7 @@ func (fx *Pkger) Open(name string) (pkging.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	nf.info = pkging.WithName(pt.Name, info)
+	nf.info = pkging.NewFileInfo(info)
 
 	return nf, nil
 }
@@ -172,7 +172,7 @@ func (f *Pkger) Stat(name string) (os.FileInfo, error) {
 		return nil, err
 	}
 
-	info = pkging.WithName(pt.Name, pkging.NewFileInfo(info))
+	info = pkging.NewFileInfo(info)
 
 	return info, nil
 }
@@ -203,7 +203,7 @@ func (f *Pkger) Walk(p string, wf filepath.WalkFunc) error {
 		path = strings.TrimPrefix(path, info.Dir)
 		path = strings.ReplaceAll(path, "\\", "/")
 		pt.Name = path
-		return wf(pt.String(), pkging.WithName(path, pkging.NewFileInfo(fi)), nil)
+		return wf(pt.String(), pkging.NewFileInfo(fi), nil)
 	})
 
 	return err
