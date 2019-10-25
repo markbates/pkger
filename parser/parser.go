@@ -45,6 +45,7 @@ func fromSource(her here.Info) (Decls, error) {
 				fset:     fset,
 				astFile:  pf,
 				filename: name,
+				current:  her,
 			}
 
 			x, err := f.find()

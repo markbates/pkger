@@ -3,7 +3,9 @@ package here
 import (
 	"encoding/json"
 	"os"
+	"path"
 	"path/filepath"
+	"strings"
 )
 
 // Dir attempts to gather info for the requested directory.
@@ -31,6 +33,25 @@ func Dir(p string) (Info, error) {
 
 		b, err := run("go", "list", "-json")
 		if err != nil {
+
+			if !strings.Contains(err.Error(), "cannot find module for path .") {
+				return i, err
+			}
+
+			info, err := Dir(filepath.Dir(p))
+			if err != nil {
+				return info, err
+			}
+			i.Module = info.Module
+
+			ph := strings.TrimPrefix(p, info.Module.Dir)
+
+			i.ImportPath = path.Join(info.Module.Path, ph)
+			i.Name = path.Base(i.ImportPath)
+
+			ph = filepath.Join(info.Module.Dir, ph)
+			i.Dir = ph
+
 			return i, err
 		}
 

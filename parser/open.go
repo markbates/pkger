@@ -14,7 +14,7 @@ var _ Decl = OpenDecl{}
 
 type OpenDecl struct {
 	file  *File
-	pos   token.Pos
+	pos   token.Position
 	value string
 }
 
@@ -39,10 +39,7 @@ func (d OpenDecl) File() (*File, error) {
 	return d.file, nil
 }
 
-func (d OpenDecl) Pos() (token.Pos, error) {
-	if d.pos <= 0 {
-		return -1, os.ErrNotExist
-	}
+func (d OpenDecl) Position() (token.Position, error) {
 	return d.pos, nil
 }
 

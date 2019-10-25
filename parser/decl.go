@@ -7,7 +7,7 @@ import (
 
 type Decl interface {
 	File() (*File, error)
-	Pos() (token.Pos, error)
+	Position() (token.Position, error)
 	Value() (string, error)
 }
 

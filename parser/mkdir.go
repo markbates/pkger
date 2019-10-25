@@ -10,7 +10,7 @@ var _ Decl = MkdirAllDecl{}
 
 type MkdirAllDecl struct {
 	file  *File
-	pos   token.Pos
+	pos   token.Position
 	value string
 }
 
@@ -35,10 +35,7 @@ func (d MkdirAllDecl) File() (*File, error) {
 	return d.file, nil
 }
 
-func (d MkdirAllDecl) Pos() (token.Pos, error) {
-	if d.pos <= 0 {
-		return -1, os.ErrNotExist
-	}
+func (d MkdirAllDecl) Position() (token.Position, error) {
 	return d.pos, nil
 }
 

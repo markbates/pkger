@@ -14,7 +14,7 @@ var _ Decl = StatDecl{}
 
 type StatDecl struct {
 	file  *File
-	pos   token.Pos
+	pos   token.Position
 	value string
 }
 
@@ -39,10 +39,7 @@ func (d StatDecl) File() (*File, error) {
 	return d.file, nil
 }
 
-func (d StatDecl) Pos() (token.Pos, error) {
-	if d.pos <= 0 {
-		return -1, os.ErrNotExist
-	}
+func (d StatDecl) Position() (token.Position, error) {
 	return d.pos, nil
 }
 

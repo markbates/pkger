@@ -8,9 +8,26 @@ import (
 
 	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/parser"
+	"github.com/markbates/pkger/pkging/costello"
 	"github.com/markbates/pkger/pkging/pkgtest"
 	"github.com/stretchr/testify/require"
 )
+
+func Test_Parser_Ref(t *testing.T) {
+	r := require.New(t)
+
+	ref, err := costello.NewRef()
+	r.NoError(err)
+
+	res, err := parser.Parse(ref.Info)
+
+	r.NoError(err)
+
+	files, err := res.Files()
+	_ = files
+	r.NoError(err)
+	r.Len(files, 6)
+}
 
 func Test_Parser_App(t *testing.T) {
 	r := require.New(t)

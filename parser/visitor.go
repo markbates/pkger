@@ -21,6 +21,7 @@ type file struct {
 	astFile  *ast.File
 	filename string
 	decls    Decls
+	current  here.Info
 }
 
 func (f *file) walk(fn func(ast.Node) bool) {
@@ -102,7 +103,7 @@ func (f *file) findMkdirAllCalls() error {
 
 		decl := MkdirAllDecl{
 			file:  pf,
-			pos:   n.Pos(),
+			pos:   f.fset.Position(n.Pos()),
 			value: s,
 		}
 
@@ -144,7 +145,7 @@ func (f *file) findStatCalls() error {
 
 		decl := StatDecl{
 			file:  pf,
-			pos:   n.Pos(),
+			pos:   f.fset.Position(n.Pos()),
 			value: s,
 		}
 
@@ -185,7 +186,7 @@ func (f *file) findCreateCalls() error {
 
 		decl := CreateDecl{
 			file:  pf,
-			pos:   n.Pos(),
+			pos:   f.fset.Position(n.Pos()),
 			value: s,
 		}
 
@@ -226,7 +227,7 @@ func (f *file) findOpenCalls() error {
 
 		decl := OpenDecl{
 			file:  pf,
-			pos:   n.Pos(),
+			pos:   f.fset.Position(n.Pos()),
 			value: s,
 		}
 
@@ -253,22 +254,32 @@ func (f *file) findWalkCalls() error {
 
 		s, err := f.asValue(n)
 		if err != nil {
+			err = err
 			return false
 		}
 
-		info, err := here.Dir(filepath.Dir(f.filename))
+		dir := filepath.Dir(f.filename)
+		info, err := here.Dir(dir)
 		if err != nil {
+			err = err
+			return false
+		}
+
+		pt, err := info.Parse(f.filename)
+		if err != nil {
+			err = err
 			return false
 		}
 
 		pf := &File{
+			Path: pt,
 			Abs:  f.filename,
 			Here: info,
 		}
 
 		decl := WalkDecl{
 			file:  pf,
-			pos:   n.Pos(),
+			pos:   f.fset.Position(n.Pos()),
 			value: s,
 		}
 
@@ -308,9 +319,10 @@ func (f *file) findHTTPCalls() error {
 			Here: info,
 		}
 
+		pos := f.fset.Position(n.Pos())
 		decl := HTTPDecl{
 			file:  pf,
-			pos:   n.Pos(),
+			pos:   pos,
 			value: s,
 		}
 
