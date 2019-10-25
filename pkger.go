@@ -36,6 +36,16 @@ func impl() pkging.Pkger {
 	return current
 }
 
+type Dir string
+
+func (d Dir) Open(name string) (http.File, error) {
+	f, err := Open(string(d))
+	if err != nil {
+		return nil, err
+	}
+	return f.Open(name)
+}
+
 // Parse the string in here.Path format.
 func Parse(p string) (here.Path, error) {
 	return impl().Parse(p)
@@ -94,13 +104,4 @@ func Remove(name string) error {
 // RemoveAll removes path and any children it contains. It removes everything it can but returns the first error it encounters. If the path does not exist, RemoveAll returns nil (no error).
 func RemoveAll(name string) error {
 	return impl().RemoveAll(name)
-}
-
-// HTTP returns an http.FileServer for the specified path.
-func HTTP(p string) (http.Handler, error) {
-	f, err := Open(p)
-	if err != nil {
-		return nil, err
-	}
-	return http.FileServer(f), nil
 }

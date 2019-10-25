@@ -286,7 +286,7 @@ func (f *file) findHTTPCalls() error {
 			return true
 		}
 
-		exists := isPkgDot(ce.Fun, "pkger", "HTTP")
+		exists := isPkgDot(ce.Fun, "pkger", "Dir")
 		if !(exists) || len(ce.Args) != 1 {
 			return true
 		}
