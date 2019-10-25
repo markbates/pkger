@@ -6,6 +6,7 @@ import (
 
 	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/parser"
+	"github.com/markbates/pkger/pkging/embed"
 	"github.com/markbates/pkger/pkging/mem"
 )
 
@@ -38,11 +39,18 @@ func Stuff(w io.Writer, c here.Info, decls parser.Decls) error {
 		if err != nil {
 			return err
 		}
-		b, err := pkg.MarshalEmbed()
-		if err != nil {
-			return err
-		}
-		_, err = w.Write(b)
 	}
+
+	b, err := pkg.MarshalJSON()
+	if err != nil {
+		return err
+	}
+
+	b, err = embed.Encode(b)
+	if err != nil {
+		return err
+	}
+
+	_, err = w.Write(b)
 	return nil
 }

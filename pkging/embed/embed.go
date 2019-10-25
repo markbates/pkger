@@ -4,55 +4,63 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/hex"
-	"encoding/json"
+	"io"
 
 	"github.com/markbates/pkger/here"
+	"github.com/markbates/pkger/internal/takeon/github.com/markbates/hepa"
+	"github.com/markbates/pkger/internal/takeon/github.com/markbates/hepa/filters"
 )
 
-type Embedder interface {
-	MarshalEmbed() ([]byte, error)
+func Decode(src []byte) ([]byte, error) {
+	dst := make([]byte, hex.DecodedLen(len(src)))
+	_, err := hex.Decode(dst, src)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := gzip.NewReader(bytes.NewReader(dst))
+	if err != nil {
+		return nil, err
+	}
+
+	bb := &bytes.Buffer{}
+	if _, err := io.Copy(bb, r); err != nil {
+		return nil, err
+	}
+	return bb.Bytes(), nil
 }
 
-type Unembedder interface {
-	UnmarshalEmbed([]byte) error
+func Encode(b []byte) ([]byte, error) {
+	bb := &bytes.Buffer{}
+	gz := gzip.NewWriter(bb)
+
+	if _, err := gz.Write(b); err != nil {
+		return nil, err
+	}
+
+	if err := gz.Flush(); err != nil {
+		return nil, err
+	}
+
+	if err := gz.Close(); err != nil {
+		return nil, err
+	}
+
+	hep := hepa.New()
+	hep = hepa.With(hep, filters.Home())
+	hep = hepa.With(hep, filters.Golang())
+
+	b, err := hep.Filter(bb.Bytes())
+	if err != nil {
+		return nil, err
+	}
+
+	s := hex.EncodeToString(b)
+	return []byte(s), nil
 }
 
 type Data struct {
 	Infos map[string]here.Info `json:"infos"`
 	Files map[string]File      `json:"files"`
 	Here  here.Info            `json:"here"`
-}
-
-func (d *Data) MarshalEmbed() ([]byte, error) {
-	bb := &bytes.Buffer{}
-	gz := gzip.NewWriter(bb)
-	defer gz.Close()
-	if err := json.NewEncoder(gz).Encode(d); err != nil {
-		return nil, err
-	}
-	if err := gz.Close(); err != nil {
-		return nil, err
-	}
-	s := hex.EncodeToString(bb.Bytes())
-	return []byte(s), nil
-}
-
-func (d *Data) UnmarshalEmbed(in []byte) error {
-	b := make([]byte, len(in))
-	if _, err := hex.Decode(b, in); err != nil {
-		return err
-	}
-
-	gz, err := gzip.NewReader(bytes.NewReader(b))
-	if err != nil {
-		return err
-	}
-	defer gz.Close()
-
-	p := &Data{}
-	if err := json.NewDecoder(gz).Decode(p); err != nil {
-		return err
-	}
-	(*d) = *p
-	return nil
 }

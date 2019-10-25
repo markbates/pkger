@@ -11,6 +11,7 @@ import (
 // for layering of pkging.Pkger implementations.
 func Apply(pkg pkging.Pkger, err error) error {
 	if err != nil {
+		panic(err)
 		return err
 	}
 	gil.Lock()

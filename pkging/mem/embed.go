@@ -1,60 +1,91 @@
 package mem
 
 import (
-	"bytes"
-	"compress/gzip"
-	"encoding/hex"
 	"encoding/json"
+
+	"github.com/markbates/pkger/here"
+	"github.com/markbates/pkger/internal/maps"
+	"github.com/markbates/pkger/pkging"
+	"github.com/markbates/pkger/pkging/embed"
 )
 
-func (pkg *Pkger) MarshalEmbed() ([]byte, error) {
-	bb := &bytes.Buffer{}
-	gz := gzip.NewWriter(bb)
-	defer gz.Close()
-	if err := json.NewEncoder(gz).Encode(pkg); err != nil {
-		return nil, err
+// MarshalJSON creates a fully re-hydratable JSON representation of *Pkger
+func (p *Pkger) MarshalJSON() ([]byte, error) {
+	files := map[string]embed.File{}
+
+	p.files.Range(func(key here.Path, file pkging.File) bool {
+		f, ok := file.(*File)
+		if !ok {
+			return true
+		}
+		ef := embed.File{
+			Info:   f.info,
+			Here:   f.Here,
+			Path:   f.path,
+			Parent: f.parent,
+			Data:   f.data,
+		}
+		files[key.String()] = ef
+		return true
+	})
+
+	infos := map[string]here.Info{}
+	p.infos.Range(func(key string, info here.Info) bool {
+		infos[key] = info
+		return true
+	})
+	ed := embed.Data{
+		Infos: infos,
+		Files: files,
+		Here:  p.Here,
 	}
-	if err := gz.Close(); err != nil {
-		return nil, err
-	}
-	s := hex.EncodeToString(bb.Bytes())
-	return []byte(s), nil
+	return json.Marshal(ed)
 }
 
-func (pkg *Pkger) UnmarshalEmbed(in []byte) error {
-	b := make([]byte, len(in))
-	if _, err := hex.Decode(b, in); err != nil {
+// UnmarshalJSON re-hydrates the *Pkger
+func (p *Pkger) UnmarshalJSON(b []byte) error {
+	y := &embed.Data{
+		Infos: map[string]here.Info{},
+		Files: map[string]embed.File{},
+	}
+
+	if err := json.Unmarshal(b, &y); err != nil {
 		return err
 	}
 
-	gz, err := gzip.NewReader(bytes.NewReader(b))
-	if err != nil {
-		return err
+	p.Here = y.Here
+	p.infos = &maps.Infos{}
+	for k, v := range y.Infos {
+		p.infos.Store(k, v)
 	}
-	defer gz.Close()
 
-	p := &Pkger{}
-	if err := json.NewDecoder(gz).Decode(p); err != nil {
-		return err
+	p.files = &maps.Files{}
+	for k, v := range y.Files {
+		pt, err := p.Parse(k)
+		if err != nil {
+			return err
+		}
+
+		f := &File{
+			Here:   v.Here,
+			info:   v.Info,
+			path:   v.Path,
+			data:   v.Data,
+			parent: v.Parent,
+		}
+		p.files.Store(pt, f)
 	}
-	(*pkg) = *p
 	return nil
 }
 
 func UnmarshalEmbed(in []byte) (*Pkger, error) {
-	b := make([]byte, len(in))
-	if _, err := hex.Decode(b, in); err != nil {
-		return nil, err
-	}
-
-	gz, err := gzip.NewReader(bytes.NewReader(b))
+	b, err := embed.Decode(in)
 	if err != nil {
 		return nil, err
 	}
-	defer gz.Close()
 
 	p := &Pkger{}
-	if err := json.NewDecoder(gz).Decode(p); err != nil {
+	if err := json.Unmarshal(b, p); err != nil {
 		return nil, err
 	}
 	return p, nil
