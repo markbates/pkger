@@ -16,5 +16,5 @@ func Test_Pkger_Open(t *testing.T) {
 	pkg, err := New(ref.Info)
 	r.NoError(err)
 
-	costello.OpenTest(t, pkg)
+	costello.OpenTest(t, ref, pkg)
 }

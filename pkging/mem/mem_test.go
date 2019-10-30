@@ -9,7 +9,11 @@ import (
 )
 
 func Test_Pkger(t *testing.T) {
-	costello.All(t, func(ref *costello.Ref) (pkging.Pkger, error) {
+	ref, err := costello.NewRef()
+	if err != nil {
+		t.Fatal(err)
+	}
+	costello.All(t, ref, func(ref *costello.Ref) (pkging.Pkger, error) {
 		return mem.New(ref.Info)
 	})
 }

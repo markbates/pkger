@@ -11,11 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func CreateTest(t *testing.T, pkg pkging.Pkger) {
+func CreateTest(t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	r := require.New(t)
-
-	ref, err := NewRef()
-	r.NoError(err)
 
 	const name = "create.test"
 
@@ -23,7 +20,7 @@ func CreateTest(t *testing.T, pkg pkging.Pkger) {
 	os.RemoveAll(fp)
 	defer os.RemoveAll(fp)
 
-	_, err = os.Stat(fp)
+	_, err := os.Stat(fp)
 	r.Error(err)
 
 	_, err = pkg.Stat(name)
@@ -44,5 +41,5 @@ func CreateTest(t *testing.T, pkg pkging.Pkger) {
 	_, err = psf.Write(data)
 	r.NoError(err)
 	r.NoError(psf.Close())
-	openTest(name, t, pkg)
+	openTest(name, t, ref, pkg)
 }

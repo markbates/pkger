@@ -12,15 +12,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func OpenTest(t *testing.T, pkg pkging.Pkger) {
-	openTest("go.mod", t, pkg)
+func OpenTest(t *testing.T, ref *Ref, pkg pkging.Pkger) {
+	openTest("go.mod", t, ref, pkg)
 }
 
-func openTest(name string, t *testing.T, pkg pkging.Pkger) {
+func openTest(name string, t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	r := require.New(t)
-
-	ref, err := NewRef()
-	r.NoError(err)
 
 	osf, err := os.Open(filepath.Join(ref.Dir, name))
 	r.NoError(err)

@@ -10,11 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func StatTest(t *testing.T, pkg pkging.Pkger) {
+func StatTest(t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	r := require.New(t)
-
-	ref, err := NewRef()
-	r.NoError(err)
 
 	osi, err := os.Stat(filepath.Join(ref.Dir, "go.mod"))
 	r.NoError(err)

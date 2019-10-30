@@ -16,5 +16,5 @@ func Test_Pkger_Stat(t *testing.T) {
 	pkg, err := New(ref.Info)
 	r.NoError(err)
 
-	costello.StatTest(t, pkg)
+	costello.StatTest(t, ref, pkg)
 }

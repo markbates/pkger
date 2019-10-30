@@ -9,9 +9,10 @@ import (
 
 type AllFn func(ref *Ref) (pkging.Pkger, error)
 
-func All(t *testing.T, fn AllFn) {
+func All(t *testing.T, ref *Ref, fn AllFn) {
 	r := require.New(t)
-	type tf func(*testing.T, pkging.Pkger)
+
+	type tf func(*testing.T, *Ref, pkging.Pkger)
 
 	tests := map[string]tf{
 		"OpenTest":   OpenTest,
@@ -19,15 +20,12 @@ func All(t *testing.T, fn AllFn) {
 		"CreateTest": CreateTest,
 	}
 
-	ref, err := NewRef()
-	r.NoError(err)
-
 	for n, tt := range tests {
 		t.Run(n, func(st *testing.T) {
 			pkg, err := fn(ref)
 			r.NoError(err)
 
-			tt(st, pkg)
+			tt(st, ref, pkg)
 		})
 	}
 
