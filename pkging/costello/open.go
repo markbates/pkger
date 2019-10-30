@@ -25,10 +25,6 @@ func openTest(name string, t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	osi, err := osf.Stat()
 	r.NoError(err)
 
-	osb, err := ioutil.ReadAll(osf)
-	r.NoError(err)
-	r.NoError(osf.Close())
-
 	r.NoError(LoadRef(ref, pkg))
 
 	pf, err := pkg.Open(fmt.Sprintf("/%s", name))
@@ -37,13 +33,23 @@ func openTest(name string, t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	psi, err := pf.Stat()
 	r.NoError(err)
 
-	psb, err := ioutil.ReadAll(pf)
-	r.NoError(err)
-	r.NoError(pf.Close())
-
+	r.Equal(osi.IsDir(), psi.IsDir())
 	r.Equal(osi.Name(), psi.Name())
 	r.Equal(osi.Mode(), psi.Mode())
 	r.Equal(osi.Size(), psi.Size())
 	r.Equal(osi.ModTime().Format(time.RFC3339), psi.ModTime().Format(time.RFC3339))
+
+	if osi.IsDir() {
+		return
+	}
+
+	osb, err := ioutil.ReadAll(osf)
+	r.NoError(err)
+	r.NoError(osf.Close())
+
+	psb, err := ioutil.ReadAll(pf)
+	r.NoError(err)
+	r.NoError(pf.Close())
+
 	r.Equal(osb, psb)
 }
