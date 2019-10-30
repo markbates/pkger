@@ -10,6 +10,7 @@ import (
 )
 
 func Test_Pkger(t *testing.T) {
+	t.SkipNow()
 	suite, err := pkgtest.NewSuite("stdos", func() (pkging.Pkger, error) {
 		app, err := pkgtest.App()
 		if err != nil {

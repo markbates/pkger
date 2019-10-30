@@ -67,7 +67,7 @@ func (d StatDecl) Files(virtual map[string]string) ([]*File, error) {
 
 	var files []*File
 	files = append(files, &File{
-		Abs:  filepath.Join(her.Dir, pt.Name),
+		Abs:  filepath.Join(her.Module.Dir, pt.Name),
 		Path: pt,
 		Here: her,
 	})

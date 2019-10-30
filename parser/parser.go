@@ -5,6 +5,7 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
+	"path/filepath"
 
 	"github.com/markbates/pkger/here"
 )
@@ -30,31 +31,41 @@ func fromSource(her here.Info) (Decls, error) {
 		return nil, fmt.Errorf("%q is not a directory", root)
 	}
 
-	fset := token.NewFileSet()
-
-	pkgs, err := parser.ParseDir(fset, root, nil, 0)
-	if err != nil {
-		return nil, err
-	}
-
 	var decls Decls
 
-	for _, pkg := range pkgs {
-		for name, pf := range pkg.Files {
-			f := &file{
-				fset:     fset,
-				astFile:  pf,
-				filename: name,
-				current:  her,
-			}
-
-			x, err := f.find()
-			if err != nil {
-				return nil, err
-			}
-			decls = append(decls, x...)
+	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
 		}
-	}
 
-	return decls, nil
+		fset := token.NewFileSet()
+
+		if !info.IsDir() {
+			return nil
+		}
+		pkgs, err := parser.ParseDir(fset, path, nil, 0)
+		if err != nil {
+			return err
+		}
+
+		for _, pkg := range pkgs {
+			for name, pf := range pkg.Files {
+				f := &file{
+					fset:     fset,
+					astFile:  pf,
+					filename: name,
+					current:  her,
+				}
+
+				x, err := f.find()
+				if err != nil {
+					return err
+				}
+				decls = append(decls, x...)
+			}
+		}
+		return nil
+	})
+
+	return decls, err
 }

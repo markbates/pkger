@@ -65,7 +65,7 @@ func (d OpenDecl) Files(virtual map[string]string) ([]*File, error) {
 		return nil, err
 	}
 
-	fp := filepath.Join(her.Dir, pt.Name)
+	fp := filepath.Join(her.Module.Dir, pt.Name)
 
 	osf, err := os.Stat(fp)
 	if err != nil {
@@ -83,7 +83,7 @@ func (d OpenDecl) Files(virtual map[string]string) ([]*File, error) {
 
 	var files []*File
 	files = append(files, &File{
-		Abs:  filepath.Join(her.Dir, pt.Name),
+		Abs:  filepath.Join(her.Module.Dir, pt.Name),
 		Path: pt,
 		Here: her,
 	})

@@ -63,7 +63,7 @@ func (d WalkDecl) Files(virtual map[string]string) ([]*File, error) {
 		return nil, err
 	}
 
-	root := filepath.Join(her.Dir, pt.Name)
+	root := filepath.Join(her.Module.Dir, pt.Name)
 
 	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -82,7 +82,7 @@ func (d WalkDecl) Files(virtual map[string]string) ([]*File, error) {
 			return err
 		}
 
-		n := strings.TrimPrefix(path, her.Dir)
+		n := strings.TrimPrefix(path, her.Module.Dir)
 		if _, ok := virtual[n]; ok {
 			if info.IsDir() {
 				return filepath.SkipDir

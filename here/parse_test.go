@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/markbates/pkger/here"
-	"github.com/markbates/pkger/pkging/pkgtest"
+	"github.com/markbates/pkger/pkging/costello"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,7 +15,7 @@ func Test_Info_Parse(t *testing.T) {
 
 	r := require.New(t)
 
-	app, err := pkgtest.App()
+	app, err := costello.NewRef()
 	r.NoError(err)
 
 	ip := app.Info.ImportPath

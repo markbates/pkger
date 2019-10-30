@@ -19,7 +19,7 @@ func NewRef() (*Ref, error) {
 	}
 
 	dir := filepath.Join(
-		her.Dir,
+		her.Module.Dir,
 		"pkging",
 		"costello",
 		"testdata",
@@ -33,6 +33,10 @@ func NewRef() (*Ref, error) {
 		Info: here.Info{
 			ImportPath: "app",
 			Dir:        dir,
+			Module: here.Module{
+				Path: "app",
+				Dir:  dir,
+			},
 		},
 	}
 
