@@ -14,8 +14,9 @@ func All(t *testing.T, fn AllFn) {
 	type tf func(*testing.T, pkging.Pkger)
 
 	tests := map[string]tf{
-		"OpenTest": OpenTest,
-		"StatTest": StatTest,
+		"OpenTest":   OpenTest,
+		"StatTest":   StatTest,
+		"CreateTest": CreateTest,
 	}
 
 	ref, err := NewRef()

@@ -1,6 +1,7 @@
 package costello
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -12,12 +13,16 @@ import (
 )
 
 func OpenTest(t *testing.T, pkg pkging.Pkger) {
+	openTest("go.mod", t, pkg)
+}
+
+func openTest(name string, t *testing.T, pkg pkging.Pkger) {
 	r := require.New(t)
 
 	ref, err := NewRef()
 	r.NoError(err)
 
-	osf, err := os.Open(filepath.Join(ref.Dir, "go.mod"))
+	osf, err := os.Open(filepath.Join(ref.Dir, name))
 	r.NoError(err)
 
 	osi, err := osf.Stat()
@@ -29,7 +34,7 @@ func OpenTest(t *testing.T, pkg pkging.Pkger) {
 
 	r.NoError(LoadRef(ref, pkg))
 
-	pf, err := pkg.Open("/go.mod")
+	pf, err := pkg.Open(fmt.Sprintf("/%s", name))
 	r.NoError(err)
 
 	psi, err := pf.Stat()
