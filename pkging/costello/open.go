@@ -14,10 +14,10 @@ import (
 func OpenTest(t *testing.T, pkg pkging.Pkger) {
 	r := require.New(t)
 
-	app, err := NewRef()
+	ref, err := NewRef()
 	r.NoError(err)
 
-	osf, err := os.Open(filepath.Join(app.Dir, "go.mod"))
+	osf, err := os.Open(filepath.Join(ref.Dir, "go.mod"))
 	r.NoError(err)
 
 	osi, err := osf.Stat()
@@ -26,6 +26,8 @@ func OpenTest(t *testing.T, pkg pkging.Pkger) {
 	osb, err := ioutil.ReadAll(osf)
 	r.NoError(err)
 	r.NoError(osf.Close())
+
+	r.NoError(LoadRef(ref, pkg))
 
 	pf, err := pkg.Open("/go.mod")
 	r.NoError(err)

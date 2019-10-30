@@ -4,28 +4,12 @@ import (
 	"testing"
 
 	"github.com/markbates/pkger/pkging"
+	"github.com/markbates/pkger/pkging/costello"
 	"github.com/markbates/pkger/pkging/mem"
-	"github.com/markbates/pkger/pkging/pkgtest"
 )
 
 func Test_Pkger(t *testing.T) {
-	t.SkipNow()
-	suite, err := pkgtest.NewSuite("memos", func() (pkging.Pkger, error) {
-		app, err := pkgtest.App()
-		if err != nil {
-			return nil, err
-		}
-
-		pkg, err := mem.New(app.Info)
-		if err != nil {
-			return nil, err
-		}
-
-		return pkg, nil
+	costello.All(t, func(ref *costello.Ref) (pkging.Pkger, error) {
+		return mem.New(ref.Info)
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	suite.Test(t)
 }

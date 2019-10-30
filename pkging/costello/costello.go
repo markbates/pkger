@@ -1,52 +1,33 @@
 package costello
 
 import (
-	"io"
-	"os"
-	"path/filepath"
-	"strings"
+	"testing"
 
 	"github.com/markbates/pkger/pkging"
+	"github.com/stretchr/testify/require"
 )
 
-func LoadRef(ref *Ref, pkg pkging.Pkger) error {
-	return filepath.Walk(ref.Dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		of, err := os.Open(path)
-		if err != nil {
-			return err
-		}
-		defer of.Close()
+type AllFn func(ref *Ref) (pkging.Pkger, error)
 
-		if a, ok := pkg.(pkging.Adder); ok {
-			return a.Add(of)
-		}
+func All(t *testing.T, fn AllFn) {
+	r := require.New(t)
+	type tf func(*testing.T, pkging.Pkger)
 
-		path = strings.TrimPrefix(path, ref.Dir)
+	tests := map[string]tf{
+		"OpenTest": OpenTest,
+		"StatTest": StatTest,
+	}
 
-		pt, err := pkg.Parse(path)
-		if err != nil {
-			return err
-		}
+	ref, err := NewRef()
+	r.NoError(err)
 
-		if err := pkg.MkdirAll(filepath.Dir(pt.Name), 0755); err != nil {
-			return err
-		}
+	for n, tt := range tests {
+		t.Run(n, func(st *testing.T) {
+			pkg, err := fn(ref)
+			r.NoError(err)
 
-		if info.IsDir() {
-			return nil
-		}
-		f, err := pkg.Create(pt.String())
-		if err != nil {
-			return err
-		}
-		defer f.Close()
+			tt(st, pkg)
+		})
+	}
 
-		if _, err := io.Copy(f, of); err != nil {
-			return err
-		}
-		return nil
-	})
 }

@@ -7,17 +7,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_Pkger_Open(t *testing.T) {
+func Test_Pkger_Stat(t *testing.T) {
 	r := require.New(t)
 
-	app, err := costello.NewRef()
+	ref, err := costello.NewRef()
 	r.NoError(err)
 
-	pkg, err := New(app.Info)
+	pkg, err := New(ref.Info)
 	r.NoError(err)
 
-	err = costello.LoadRef(app, pkg)
-	r.NoError(err)
-
-	costello.OpenTest(t, pkg)
+	costello.StatTest(t, pkg)
 }
