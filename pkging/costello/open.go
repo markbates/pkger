@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/markbates/pkger/pkging"
 	"github.com/stretchr/testify/require"
@@ -33,11 +32,7 @@ func openTest(name string, t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	psi, err := pf.Stat()
 	r.NoError(err)
 
-	r.Equal(osi.IsDir(), psi.IsDir())
-	r.Equal(osi.Name(), psi.Name())
-	r.Equal(osi.Mode(), psi.Mode())
-	r.Equal(osi.Size(), psi.Size())
-	r.Equal(osi.ModTime().Format(time.RFC3339), psi.ModTime().Format(time.RFC3339))
+	cmpFileInfo(t, osi, psi)
 
 	if osi.IsDir() {
 		return

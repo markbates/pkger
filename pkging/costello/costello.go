@@ -2,7 +2,9 @@ package costello
 
 import (
 	"fmt"
+	"os"
 	"testing"
+	"time"
 
 	"github.com/markbates/pkger/pkging"
 	"github.com/stretchr/testify/require"
@@ -16,12 +18,15 @@ func All(t *testing.T, ref *Ref, fn AllFn) {
 	type tf func(*testing.T, *Ref, pkging.Pkger)
 
 	tests := map[string]tf{
-		"OpenTest":    OpenTest,
-		"StatTest":    StatTest,
-		"CreateTest":  CreateTest,
-		"CurrentTest": CurrentTest,
-		"InfoTest":    InfoTest,
-		"MkdirAll":    MkdirAllTest,
+		"Open":      OpenTest,
+		"Stat":      StatTest,
+		"Create":    CreateTest,
+		"Current":   CurrentTest,
+		"Info":      InfoTest,
+		"MkdirAll":  MkdirAllTest,
+		"Remove":    RemoveTest,
+		"RemoveAll": RemoveAllTest,
+		"Walk":      WalkTest,
 	}
 
 	pkg, err := fn(ref)
@@ -37,4 +42,14 @@ func All(t *testing.T, ref *Ref, fn AllFn) {
 		})
 	}
 
+}
+
+func cmpFileInfo(t *testing.T, a os.FileInfo, b os.FileInfo) {
+	t.Helper()
+	r := require.New(t)
+	r.Equal(a.IsDir(), b.IsDir())
+	r.Equal(a.ModTime().Format(time.RFC3339), b.ModTime().Format(time.RFC3339))
+	r.Equal(a.Mode(), b.Mode())
+	r.Equal(a.Name(), b.Name())
+	r.Equal(a.Size(), b.Size())
 }
