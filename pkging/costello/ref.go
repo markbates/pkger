@@ -3,6 +3,7 @@ package costello
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/markbates/pkger/here"
 )
@@ -33,9 +34,13 @@ func NewRef() (*Ref, error) {
 		Info: here.Info{
 			ImportPath: "app",
 			Dir:        dir,
+			Name:       "app",
 			Module: here.Module{
-				Path: "app",
-				Dir:  dir,
+				Main:      true,
+				Path:      "app",
+				Dir:       dir,
+				GoMod:     filepath.Join(dir, "go.mod"),
+				GoVersion: runtime.Version(),
 			},
 		},
 	}

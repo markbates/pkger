@@ -13,5 +13,5 @@ func InfoTest(t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	info, err := pkg.Info("app")
 	r.NoError(err)
 
-	r.Equal(ref.Info, info)
+	cmpHereInfo(t, ref.Info, info)
 }

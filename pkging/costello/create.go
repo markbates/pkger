@@ -1,9 +1,7 @@
 package costello
 
 import (
-	"fmt"
-	"os"
-	"path/filepath"
+	"io/ioutil"
 	"strings"
 	"testing"
 
@@ -14,32 +12,31 @@ import (
 func CreateTest(t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	r := require.New(t)
 
-	const name = "create.test"
+	const name = "/create.test"
 
-	fp := filepath.Join(ref.Dir, name)
-	os.RemoveAll(fp)
-	defer os.RemoveAll(fp)
-
-	_, err := os.Stat(fp)
-	r.Error(err)
-
-	_, err = pkg.Stat(name)
+	_, err := pkg.Stat(name)
 	r.Error(err)
 
 	data := []byte(strings.ToUpper(name))
 
-	osf, err := os.Create(fp)
+	f, err := pkg.Create(name)
 	r.NoError(err)
 
-	_, err = osf.Write(data)
+	_, err = f.Write(data)
 	r.NoError(err)
-	r.NoError(osf.Close())
+	r.NoError(f.Close())
 
-	psf, err := pkg.Create(fmt.Sprintf("/%s", name))
+	f, err = pkg.Open(name)
 	r.NoError(err)
 
-	_, err = psf.Write(data)
+	info, err := f.Stat()
 	r.NoError(err)
-	r.NoError(psf.Close())
-	openTest(name, t, ref, pkg)
+
+	b, err := ioutil.ReadAll(f)
+	r.NoError(err)
+	r.NoError(f.Close())
+
+	r.Equal(data, b)
+	r.Equal("create.test", info.Name())
+
 }

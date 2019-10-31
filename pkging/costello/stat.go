@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/markbates/pkger/pkging"
 	"github.com/stretchr/testify/require"
@@ -20,8 +19,5 @@ func StatTest(t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	psi, err := pkg.Stat("/go.mod")
 	r.NoError(err)
 
-	r.Equal(osi.Name(), psi.Name())
-	r.Equal(osi.Mode(), psi.Mode())
-	r.Equal(osi.Size(), psi.Size())
-	r.Equal(osi.ModTime().Format(time.RFC3339), psi.ModTime().Format(time.RFC3339))
+	cmpFileInfo(t, osi, psi)
 }

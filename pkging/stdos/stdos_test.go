@@ -1,39 +1,34 @@
-package stdos_test
+package stdos
 
 import (
 	"io/ioutil"
+	"path/filepath"
 	"testing"
 
+	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/pkging"
-	"github.com/markbates/pkger/pkging/pkgtest"
-	"github.com/markbates/pkger/pkging/stdos"
+	"github.com/markbates/pkger/pkging/costello"
 )
 
-func Test_Pkger(t *testing.T) {
-	t.SkipNow()
-	suite, err := pkgtest.NewSuite("stdos", func() (pkging.Pkger, error) {
-		app, err := pkgtest.App()
-		if err != nil {
-			return nil, err
-		}
-
-		dir, err := ioutil.TempDir("", "stdos")
-		if err != nil {
-			return nil, err
-		}
-
-		app.Dir = dir
-
-		mypkging, err := stdos.New(app.Info)
-		if err != nil {
-			return nil, err
-		}
-
-		return mypkging, nil
-	})
+func NewTemp(ref *costello.Ref) (pkging.Pkger, error) {
+	dir, err := ioutil.TempDir("", "stdos")
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
-	suite.Test(t)
+	info := here.Info{
+		Module:     ref.Module,
+		ImportPath: ref.ImportPath,
+		Name:       ref.Name,
+		Dir:        dir,
+	}
+	info.Module.Dir = dir
+	info.Module.GoMod = filepath.Join(dir, "go.mod")
+	return New(info)
+}
+
+func Test_Pkger(t *testing.T) {
+	costello.All(t, func(ref *costello.Ref) (pkging.Pkger, error) {
+		return NewTemp(ref)
+	})
 }
