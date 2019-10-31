@@ -11,12 +11,6 @@ type Pkger interface {
 	// Parse the string in here.Path format.
 	Parse(p string) (here.Path, error)
 
-	// Abs returns an absolute representation of path. If the path is not absolute it will be joined with the current working directory to turn it into an absolute path. The absolute path name for a given file is not guaranteed to be unique. Abs calls Clean on the result.
-	Abs(p string) (string, error)
-
-	// AbsPath returns an absolute representation of here.Path. If the path is not absolute it will be joined with the current working directory to turn it into an absolute path. The absolute path name for a given file is not guaranteed to be unique. AbsPath calls Clean on the result.
-	AbsPath(here.Path) (string, error)
-
 	// Current returns the here.Info representing the current Pkger implementation.
 	Current() (here.Info, error)
 

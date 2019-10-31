@@ -38,28 +38,6 @@ func (w withPkger) Parse(p string) (here.Path, error) {
 	return pt, nil
 }
 
-func (w withPkger) Abs(p string) (string, error) {
-	pt, err := w.base.Abs(p)
-	if err != nil {
-		if w.parent != nil {
-			return w.parent.Abs(p)
-		}
-		return pt, err
-	}
-	return pt, nil
-}
-
-func (w withPkger) AbsPath(p here.Path) (string, error) {
-	pt, err := w.base.AbsPath(p)
-	if err != nil {
-		if w.parent != nil {
-			return w.parent.AbsPath(p)
-		}
-		return pt, err
-	}
-	return pt, nil
-}
-
 func (w withPkger) Current() (here.Info, error) {
 	pt, err := w.base.Current()
 	if err != nil {

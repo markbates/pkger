@@ -51,16 +51,6 @@ func Parse(p string) (here.Path, error) {
 	return impl().Parse(p)
 }
 
-// Abs returns an absolute representation of path. If the path is not absolute it will be joined with the current working directory to turn it into an absolute path. The absolute path name for a given file is not guaranteed to be unique. Abs calls Clean on the result.
-func Abs(p string) (string, error) {
-	return impl().Abs(p)
-}
-
-// AbsPath returns an absolute representation of here.Path. If the path is not absolute it will be joined with the current working directory to turn it into an absolute path. The absolute path name for a given file is not guaranteed to be unique. AbsPath calls Clean on the result.
-func AbsPath(p here.Path) (string, error) {
-	return impl().AbsPath(p)
-}
-
 // Current returns the here.Info representing the current Pkger implementation.
 func Current() (here.Info, error) {
 	return impl().Current()

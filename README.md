@@ -33,8 +33,6 @@ Pkger's API is modeled on that of the [`os`](https://godoc.org/os) package in Go
 ```go
 type Pkger interface {
   Parse(p string) (Path, error)
-  Abs(p string) (string, error)
-  AbsPath(Path) (string, error)
   Current() (here.Info, error)
   Info(p string) (here.Info, error)
   Create(name string) (File, error)
@@ -48,7 +46,6 @@ type Pkger interface {
 
 type File interface {
   Close() error
-  Abs() (string, error)
   Info() here.Info
   Name() string
   Open(name string) (http.File, error)
