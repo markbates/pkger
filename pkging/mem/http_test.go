@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_Pkger_Walk(t *testing.T) {
+func Test_Pkger_HTTP(t *testing.T) {
 	r := require.New(t)
 
 	ref, err := costello.NewRef()
@@ -18,5 +18,5 @@ func Test_Pkger_Walk(t *testing.T) {
 	pkg, err := New(ref.Info)
 	r.NoError(err)
 
-	costello.WalkTest(t, ref, pkg)
+	costello.HTTPTest(t, ref, pkg)
 }

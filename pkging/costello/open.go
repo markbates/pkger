@@ -12,11 +12,9 @@ import (
 )
 
 func OpenTest(t *testing.T, ref *Ref, pkg pkging.Pkger) {
-	openTest("go.mod", t, ref, pkg)
-}
-
-func openTest(name string, t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	r := require.New(t)
+
+	name := "/go.mod"
 
 	osf, err := os.Open(filepath.Join(ref.Dir, name))
 	r.NoError(err)
@@ -24,7 +22,8 @@ func openTest(name string, t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	osi, err := osf.Stat()
 	r.NoError(err)
 
-	r.NoError(LoadRef(ref, pkg))
+	_, err = LoadFile(name, pkg)
+	r.NoError(err)
 
 	pf, err := pkg.Open(fmt.Sprintf("/%s", name))
 	r.NoError(err)
@@ -33,10 +32,6 @@ func openTest(name string, t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	r.NoError(err)
 
 	cmpFileInfo(t, osi, psi)
-
-	if osi.IsDir() {
-		return
-	}
 
 	osb, err := ioutil.ReadAll(osf)
 	r.NoError(err)

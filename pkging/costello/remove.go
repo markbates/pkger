@@ -10,11 +10,11 @@ import (
 func RemoveTest(t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	r := require.New(t)
 
-	r.NoError(LoadRef(ref, pkg))
-
 	name := "/go.mod"
+	_, err := LoadFile(name, pkg)
+	r.NoError(err)
 
-	_, err := pkg.Stat(name)
+	_, err = pkg.Stat(name)
 	r.NoError(err)
 
 	r.NoError(pkg.Remove(name))

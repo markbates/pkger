@@ -1,6 +1,7 @@
 package here_test
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -17,6 +18,7 @@ func Test_Info_Parse(t *testing.T) {
 
 	app, err := costello.NewRef()
 	r.NoError(err)
+	defer os.RemoveAll(app.Dir)
 
 	ip := app.Info.ImportPath
 	ip2 := "another/app"

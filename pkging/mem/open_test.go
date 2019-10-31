@@ -1,6 +1,7 @@
 package mem
 
 import (
+	"os"
 	"testing"
 
 	"github.com/markbates/pkger/pkging/costello"
@@ -12,6 +13,7 @@ func Test_Pkger_Open(t *testing.T) {
 
 	ref, err := costello.NewRef()
 	r.NoError(err)
+	defer os.RemoveAll(ref.Dir)
 
 	pkg, err := New(ref.Info)
 	r.NoError(err)

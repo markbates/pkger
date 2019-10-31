@@ -10,9 +10,8 @@ import (
 func RemoveAllTest(t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	r := require.New(t)
 
-	r.NoError(LoadRef(ref, pkg))
-
 	name := "/public/assets"
+	r.NoError(pkg.MkdirAll(name, 0755))
 
 	_, err := pkg.Stat(name)
 	r.NoError(err)

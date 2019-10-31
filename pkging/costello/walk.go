@@ -2,7 +2,6 @@ package costello
 
 import (
 	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/markbates/pkger/pkging"
@@ -12,22 +11,11 @@ import (
 func WalkTest(t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	r := require.New(t)
 
-	r.NoError(LoadRef(ref, pkg))
+	exp, err := LoadFiles("/public", ref, pkg)
+	r.NoError(err)
+	defer os.RemoveAll(ref.Dir)
 
 	name := "public"
-
-	fp := filepath.Join(ref.Dir, name)
-
-	var exp []os.FileInfo
-	err := filepath.Walk(fp, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		exp = append(exp, info)
-		return nil
-	})
-	r.NoError(err)
 
 	var act []os.FileInfo
 	err = pkg.Walk("/"+name, func(path string, info os.FileInfo, err error) error {

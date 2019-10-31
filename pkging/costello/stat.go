@@ -15,7 +15,8 @@ func StatTest(t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	osi, err := os.Stat(filepath.Join(ref.Dir, "go.mod"))
 	r.NoError(err)
 
-	r.NoError(LoadRef(ref, pkg))
+	_, err = LoadFile("/go.mod", pkg)
+	r.NoError(err)
 	psi, err := pkg.Stat("/go.mod")
 	r.NoError(err)
 

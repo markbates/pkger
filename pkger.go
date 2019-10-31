@@ -39,7 +39,7 @@ func impl() pkging.Pkger {
 type Dir string
 
 func (d Dir) Open(name string) (http.File, error) {
-	f, err := Open(string(d))
+	f, err := impl().Open(string(d))
 	if err != nil {
 		return nil, err
 	}

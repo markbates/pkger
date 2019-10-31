@@ -2,6 +2,7 @@ package parser_test
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"sort"
 	"testing"
@@ -10,6 +11,7 @@ import (
 	"github.com/markbates/pkger/parser"
 	"github.com/markbates/pkger/pkging/costello"
 	"github.com/markbates/pkger/pkging/pkgtest"
+	"github.com/markbates/pkger/pkging/stdos"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,6 +19,13 @@ func Test_Parser_Ref(t *testing.T) {
 	r := require.New(t)
 
 	ref, err := costello.NewRef()
+	r.NoError(err)
+	defer os.RemoveAll(ref.Dir)
+
+	disk, err := stdos.New(ref.Info)
+	r.NoError(err)
+
+	_, err = costello.LoadFiles("/", ref, disk)
 	r.NoError(err)
 
 	res, err := parser.Parse(ref.Info)
