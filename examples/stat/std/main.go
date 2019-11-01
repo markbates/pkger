@@ -13,7 +13,7 @@ func main() {
 }
 
 func run() error {
-	info, err := os.Stat("./go.mod")
+	info, err := os.Stat("./public/index.html")
 	if err != nil {
 		return err
 	}

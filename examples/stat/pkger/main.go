@@ -14,7 +14,7 @@ func main() {
 }
 
 func run() error {
-	info, err := pkger.Stat("/go.mod")
+	info, err := pkger.Stat("/public/index.html")
 	if err != nil {
 		return err
 	}
