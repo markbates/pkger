@@ -3,31 +3,28 @@ package mem_test
 import (
 	"os"
 	"path/filepath"
-	"sort"
 	"testing"
 
+	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/pkging/mem"
-	"github.com/markbates/pkger/pkging/pkgtest"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_Pkger_Add(t *testing.T) {
 	r := require.New(t)
 
-	app, err := pkgtest.App()
+	cur, err := here.Package("github.com/markbates/pkger")
 	r.NoError(err)
 
-	pkg, err := mem.New(app.Info)
+	pkg, err := mem.New(cur)
 	r.NoError(err)
-
-	root := app.Info.Dir
 
 	var exp []os.FileInfo
+	root := filepath.Join(cur.Dir, "pkging", "pkgtest", "testdata", "ref")
 	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		exp = append(exp, info)
 
 		f, err := os.Open(path)
 		if err != nil {
@@ -35,15 +32,10 @@ func Test_Pkger_Add(t *testing.T) {
 		}
 		defer f.Close()
 
+		exp = append(exp, info)
 		return pkg.Add(f)
-
 	})
-
 	r.NoError(err)
-
-	sort.Slice(exp, func(i, j int) bool {
-		return exp[i].Name() < exp[j].Name()
-	})
 
 	var act []os.FileInfo
 	err = pkg.Walk("/", func(path string, info os.FileInfo, err error) error {
@@ -54,10 +46,6 @@ func Test_Pkger_Add(t *testing.T) {
 		return nil
 	})
 	r.NoError(err)
-
-	sort.Slice(act, func(i, j int) bool {
-		return act[i].Name() < act[j].Name()
-	})
 
 	r.Len(act, len(exp))
 

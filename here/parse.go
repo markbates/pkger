@@ -41,7 +41,7 @@ func (i Info) build(p, pkg, name string) (Path, error) {
 
 	if strings.HasPrefix(pt.Pkg, "/") || len(pt.Pkg) == 0 {
 		pt.Name = pt.Pkg
-		pt.Pkg = i.ImportPath
+		pt.Pkg = i.Module.Path
 	}
 
 	if len(pt.Name) == 0 {
@@ -49,7 +49,7 @@ func (i Info) build(p, pkg, name string) (Path, error) {
 	}
 
 	if pt.Pkg == pt.Name {
-		pt.Pkg = i.ImportPath
+		pt.Pkg = i.Module.Path
 		pt.Name = "/"
 	}
 

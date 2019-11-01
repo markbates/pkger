@@ -11,9 +11,6 @@ type File interface {
 	// Close closes the File, rendering it unusable for I/O.
 	Close() error
 
-	// Abs returns an absolute representation of the file. If the path is not absolute it will be joined with the current working directory to turn it into an absolute path. The absolute path name for a given file is not guaranteed to be unique. Abs calls Clean on the result.
-	Abs() (string, error)
-
 	// Info returns the here.Info of the file
 	Info() here.Info
 

@@ -2,7 +2,7 @@ package here
 
 import (
 	"bytes"
-	"os"
+	"fmt"
 	"os/exec"
 	"sync"
 )
@@ -16,10 +16,10 @@ func run(n string, args ...string) ([]byte, error) {
 
 	bb := &bytes.Buffer{}
 	c.Stdout = bb
-	c.Stderr = os.Stderr
+	c.Stderr = bb
 	err := c.Run()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %s", err, bb)
 	}
 
 	return bb.Bytes(), nil

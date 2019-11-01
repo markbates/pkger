@@ -25,7 +25,12 @@ func (fx *Pkger) Add(files ...*os.File) error {
 			return err
 		}
 
-		her, err := here.Package(pt.Pkg)
+		dir := f.Name()
+		if !info.IsDir() {
+			dir = filepath.Dir(dir)
+		}
+
+		her, err := here.Dir(dir)
 		if err != nil {
 			return err
 		}

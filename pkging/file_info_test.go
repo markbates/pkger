@@ -6,18 +6,18 @@ import (
 	"testing"
 	"time"
 
+	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/pkging"
-	"github.com/markbates/pkger/pkging/pkgtest"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_NewFileInfo(t *testing.T) {
 	r := require.New(t)
 
-	app, err := pkgtest.App()
+	her, err := here.Current()
 	r.NoError(err)
 
-	exp, err := os.Stat(filepath.Join(app.Info.Dir, "go.mod"))
+	exp, err := os.Stat(filepath.Join(her.Dir, "go.mod"))
 	r.NoError(err)
 
 	act := pkging.NewFileInfo(exp)

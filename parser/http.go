@@ -10,7 +10,7 @@ var _ Decl = HTTPDecl{}
 
 type HTTPDecl struct {
 	file  *File
-	pos   token.Pos
+	pos   token.Position
 	value string
 }
 
@@ -35,10 +35,7 @@ func (d HTTPDecl) File() (*File, error) {
 	return d.file, nil
 }
 
-func (d HTTPDecl) Pos() (token.Pos, error) {
-	if d.pos <= 0 {
-		return -1, os.ErrNotExist
-	}
+func (d HTTPDecl) Position() (token.Position, error) {
 	return d.pos, nil
 }
 
@@ -55,5 +52,6 @@ func (d HTTPDecl) Files(virtual map[string]string) ([]*File, error) {
 		pos:   d.pos,
 		value: d.value,
 	}
+
 	return od.Files(virtual)
 }

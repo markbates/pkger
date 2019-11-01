@@ -7,7 +7,7 @@ import (
 
 type Decl interface {
 	File() (*File, error)
-	Pos() (token.Pos, error)
+	Position() (token.Position, error)
 	Value() (string, error)
 }
 
@@ -43,7 +43,7 @@ func (decls Decls) Files() ([]*File, error) {
 		}
 
 		for _, f := range files {
-			m[f.Path.String()] = f
+			m[f.Abs] = f
 		}
 	}
 

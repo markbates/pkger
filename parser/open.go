@@ -5,16 +5,13 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
-
-	"github.com/markbates/pkger"
-	"github.com/markbates/pkger/here"
 )
 
 var _ Decl = OpenDecl{}
 
 type OpenDecl struct {
 	file  *File
-	pos   token.Pos
+	pos   token.Position
 	value string
 }
 
@@ -39,10 +36,7 @@ func (d OpenDecl) File() (*File, error) {
 	return d.file, nil
 }
 
-func (d OpenDecl) Pos() (token.Pos, error) {
-	if d.pos <= 0 {
-		return -1, os.ErrNotExist
-	}
+func (d OpenDecl) Position() (token.Position, error) {
 	return d.pos, nil
 }
 
@@ -58,17 +52,10 @@ func (d OpenDecl) Files(virtual map[string]string) ([]*File, error) {
 		return nil, nil
 	}
 
-	pt, err := pkger.Parse(d.value)
-	if err != nil {
-		return nil, err
-	}
+	her := d.file.Here
+	pt := d.file.Path
 
-	her, err := here.Package(pt.Pkg)
-	if err != nil {
-		return nil, err
-	}
-
-	fp := filepath.Join(her.Dir, pt.Name)
+	fp := filepath.Join(her.Module.Dir, pt.Name)
 
 	osf, err := os.Stat(fp)
 	if err != nil {
@@ -83,10 +70,9 @@ func (d OpenDecl) Files(virtual map[string]string) ([]*File, error) {
 		}
 		return wd.Files(virtual)
 	}
-
 	var files []*File
 	files = append(files, &File{
-		Abs:  filepath.Join(her.Dir, pt.Name),
+		Abs:  filepath.Join(her.Module.Dir, pt.Name),
 		Path: pt,
 		Here: her,
 	})

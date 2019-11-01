@@ -1,93 +1,69 @@
 package parser_test
 
 import (
-	"fmt"
+	"os"
 	"path/filepath"
-	"sort"
+	"strings"
 	"testing"
 
 	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/parser"
 	"github.com/markbates/pkger/pkging/pkgtest"
+	"github.com/markbates/pkger/pkging/stdos"
 	"github.com/stretchr/testify/require"
 )
 
-func Test_Parser_App(t *testing.T) {
+func Test_Parser_Ref(t *testing.T) {
 	r := require.New(t)
 
-	app, err := pkgtest.App()
+	ref, err := pkgtest.NewRef()
+	r.NoError(err)
+	defer os.RemoveAll(ref.Dir)
+
+	disk, err := stdos.New(ref.Info)
 	r.NoError(err)
 
-	res, err := parser.Parse(app.Info)
+	_, err = pkgtest.LoadFiles("/", ref, disk)
+	r.NoError(err)
+
+	res, err := parser.Parse(ref.Info)
 
 	r.NoError(err)
 
 	files, err := res.Files()
 	r.NoError(err)
+	r.Len(files, 22)
 
-	act := make([]string, len(files))
-	for i := 0; i < len(files); i++ {
-		act[i] = files[i].Path.String()
+	for _, f := range files {
+		r.True(strings.HasPrefix(f.Abs, ref.Dir), "%q %q", f.Abs, ref.Dir)
 	}
-
-	sort.Strings(act)
-
-	for _, a := range act {
-		fmt.Println(a)
-	}
-	r.Equal(app.Paths.Parser, act)
 }
 
-func Test_Parse_Dynamic_Files(t *testing.T) {
+func Test_Parser_Example_HTTP(t *testing.T) {
 	r := require.New(t)
 
-	app, err := dynamic()
+	cur, err := here.Current()
 	r.NoError(err)
 
-	res, err := parser.Parse(app.Info)
+	pwd, err := os.Getwd()
+	r.NoError(err)
+	defer os.Chdir(pwd)
 
+	root := filepath.Join(cur.Dir, "examples", "http", "pkger")
+	r.NoError(os.Chdir(root))
+
+	her, err := here.Dir(".")
+	r.NoError(err)
+
+	res, err := parser.Parse(her)
 	r.NoError(err)
 
 	files, err := res.Files()
 	r.NoError(err)
+	r.Len(files, 5)
 
-	r.Len(files, 1)
-
-	f := files[0]
-	r.Equal("/go.mod", f.Path.Name)
-}
-
-// dynamic returns here.info that represents the
-// ./internal/testdata/app. This should be used
-// by tests.
-func dynamic() (pkgtest.AppDetails, error) {
-	var app pkgtest.AppDetails
-
-	her, err := here.Package("github.com/markbates/pkger")
-	if err != nil {
-		return app, err
+	for _, f := range files {
+		r.True(strings.HasPrefix(f.Abs, her.Dir), "%q %q", f.Abs, her.Dir)
+		r.True(strings.HasPrefix(f.Path.Name, "/public"), "%q %q", f.Path.Name, "/public")
 	}
-
-	info := here.Info{
-		ImportPath: "dynamic",
-	}
-
-	ch := filepath.Join(
-		her.Dir,
-		"pkging",
-		"pkgtest",
-		"internal",
-		"testdata",
-		"dynamic")
-
-	info.Dir = ch
-
-	info, err = here.Cache(info.ImportPath, func(s string) (here.Info, error) {
-		return info, nil
-	})
-	if err != nil {
-		return app, err
-	}
-	app.Info = info
-	return app, nil
 }

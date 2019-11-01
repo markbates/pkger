@@ -10,7 +10,7 @@ var _ Decl = CreateDecl{}
 
 type CreateDecl struct {
 	file  *File
-	pos   token.Pos
+	pos   token.Position
 	value string
 }
 
@@ -35,10 +35,7 @@ func (d CreateDecl) File() (*File, error) {
 	return d.file, nil
 }
 
-func (d CreateDecl) Pos() (token.Pos, error) {
-	if d.pos <= 0 {
-		return -1, os.ErrNotExist
-	}
+func (d CreateDecl) Position() (token.Position, error) {
 	return d.pos, nil
 }
 

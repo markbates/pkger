@@ -104,11 +104,6 @@ func (f File) Name() string {
 	return f.path.String()
 }
 
-// Abs returns an absolute representation of the file. If the path is not absolute it will be joined with the current working directory to turn it into an absolute path. The absolute path name for a given file is not guaranteed to be unique. Abs calls Clean on the result.
-func (f File) Abs() (string, error) {
-	return f.pkging.AbsPath(f.Path())
-}
-
 // Path returns the here.Path of the file
 func (f File) Path() here.Path {
 	return f.path

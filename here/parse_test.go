@@ -1,6 +1,7 @@
 package here_test
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -15,8 +16,9 @@ func Test_Info_Parse(t *testing.T) {
 
 	r := require.New(t)
 
-	app, err := pkgtest.App()
+	app, err := pkgtest.NewRef()
 	r.NoError(err)
+	defer os.RemoveAll(app.Dir)
 
 	ip := app.Info.ImportPath
 	ip2 := "another/app"

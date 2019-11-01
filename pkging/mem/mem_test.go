@@ -9,22 +9,7 @@ import (
 )
 
 func Test_Pkger(t *testing.T) {
-	suite, err := pkgtest.NewSuite("memos", func() (pkging.Pkger, error) {
-		app, err := pkgtest.App()
-		if err != nil {
-			return nil, err
-		}
-
-		pkg, err := mem.New(app.Info)
-		if err != nil {
-			return nil, err
-		}
-
-		return pkg, nil
+	pkgtest.All(t, func(ref *pkgtest.Ref) (pkging.Pkger, error) {
+		return mem.New(ref.Info)
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	suite.Test(t)
 }
