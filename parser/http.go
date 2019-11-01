@@ -52,5 +52,6 @@ func (d HTTPDecl) Files(virtual map[string]string) ([]*File, error) {
 		pos:   d.pos,
 		value: d.value,
 	}
+
 	return od.Files(virtual)
 }

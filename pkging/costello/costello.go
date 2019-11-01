@@ -56,7 +56,7 @@ func All(t *testing.T, fn AllFn) {
 
 }
 
-func cmpFileInfo(t *testing.T, a os.FileInfo, b os.FileInfo) {
+func CmpFileInfo(t *testing.T, a os.FileInfo, b os.FileInfo) {
 	t.Helper()
 
 	r := require.New(t)

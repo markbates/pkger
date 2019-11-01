@@ -5,9 +5,6 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
-
-	"github.com/markbates/pkger"
-	"github.com/markbates/pkger/here"
 )
 
 var _ Decl = OpenDecl{}
@@ -55,15 +52,8 @@ func (d OpenDecl) Files(virtual map[string]string) ([]*File, error) {
 		return nil, nil
 	}
 
-	pt, err := pkger.Parse(d.value)
-	if err != nil {
-		return nil, err
-	}
-
-	her, err := here.Package(pt.Pkg)
-	if err != nil {
-		return nil, err
-	}
+	her := d.file.Here
+	pt := d.file.Path
 
 	fp := filepath.Join(her.Module.Dir, pt.Name)
 
@@ -80,7 +70,6 @@ func (d OpenDecl) Files(virtual map[string]string) ([]*File, error) {
 		}
 		return wd.Files(virtual)
 	}
-
 	var files []*File
 	files = append(files, &File{
 		Abs:  filepath.Join(her.Module.Dir, pt.Name),

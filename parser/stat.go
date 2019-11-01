@@ -4,10 +4,6 @@ import (
 	"encoding/json"
 	"go/token"
 	"os"
-	"path/filepath"
-
-	"github.com/markbates/pkger"
-	"github.com/markbates/pkger/here"
 )
 
 var _ Decl = StatDecl{}
@@ -51,26 +47,11 @@ func (d StatDecl) Value() (string, error) {
 }
 
 func (d StatDecl) Files(virtual map[string]string) ([]*File, error) {
-	if _, ok := virtual[d.value]; ok {
-		return nil, nil
+	od := OpenDecl{
+		file:  d.file,
+		pos:   d.pos,
+		value: d.value,
 	}
 
-	pt, err := pkger.Parse(d.value)
-	if err != nil {
-		return nil, err
-	}
-
-	her, err := here.Package(pt.Pkg)
-	if err != nil {
-		return nil, err
-	}
-
-	var files []*File
-	files = append(files, &File{
-		Abs:  filepath.Join(her.Module.Dir, pt.Name),
-		Path: pt,
-		Here: her,
-	})
-
-	return files, nil
+	return od.Files(virtual)
 }

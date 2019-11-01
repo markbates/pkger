@@ -31,6 +31,6 @@ func WalkTest(t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	r.Len(act, len(exp))
 
 	for i, info := range exp {
-		cmpFileInfo(t, info, act[i])
+		CmpFileInfo(t, info, act[i])
 	}
 }

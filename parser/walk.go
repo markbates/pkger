@@ -53,19 +53,12 @@ func (d WalkDecl) Value() (string, error) {
 func (d WalkDecl) Files(virtual map[string]string) ([]*File, error) {
 	var files []*File
 
-	her, err := here.Dir(filepath.Dir(d.pos.Filename))
-	if err != nil {
-		return nil, err
-	}
-
-	pt, err := her.Parse(d.value)
-	if err != nil {
-		return nil, err
-	}
+	her := d.file.Here
+	pt := d.file.Path
 
 	root := filepath.Join(her.Module.Dir, pt.Name)
 
-	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -77,12 +70,13 @@ func (d WalkDecl) Files(virtual map[string]string) ([]*File, error) {
 			}
 		}
 
-		pt, err := her.Parse(path)
+		n := strings.TrimPrefix(path, her.Module.Dir)
+
+		pt, err := her.Parse(n)
 		if err != nil {
 			return err
 		}
 
-		n := strings.TrimPrefix(path, her.Module.Dir)
 		if _, ok := virtual[n]; ok {
 			if info.IsDir() {
 				return filepath.SkipDir

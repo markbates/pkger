@@ -34,7 +34,8 @@ func Dir(p string) (Info, error) {
 		b, err := run("go", "list", "-json")
 		if err != nil {
 
-			if !strings.Contains(err.Error(), "cannot find module for path .") {
+			es := err.Error()
+			if !(strings.Contains(es, "cannot find module for path .") || strings.Contains(es, "no Go files")) {
 				return i, err
 			}
 

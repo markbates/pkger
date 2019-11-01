@@ -99,6 +99,10 @@ func (f *file) findMkdirAllCalls() error {
 		pf := &File{
 			Abs:  f.filename,
 			Here: info,
+			Path: here.Path{
+				Pkg:  info.Module.Path,
+				Name: s,
+			},
 		}
 
 		decl := MkdirAllDecl{
@@ -141,6 +145,10 @@ func (f *file) findStatCalls() error {
 		pf := &File{
 			Abs:  f.filename,
 			Here: info,
+			Path: here.Path{
+				Pkg:  info.Module.Path,
+				Name: s,
+			},
 		}
 
 		decl := StatDecl{
@@ -154,6 +162,7 @@ func (f *file) findStatCalls() error {
 	})
 	return err
 }
+
 func (f *file) findCreateCalls() error {
 	var err error
 	f.walk(func(node ast.Node) bool {
@@ -182,6 +191,10 @@ func (f *file) findCreateCalls() error {
 		pf := &File{
 			Abs:  f.filename,
 			Here: info,
+			Path: here.Path{
+				Pkg:  info.Module.Path,
+				Name: s,
+			},
 		}
 
 		decl := CreateDecl{
@@ -195,6 +208,7 @@ func (f *file) findCreateCalls() error {
 	})
 	return err
 }
+
 func (f *file) findOpenCalls() error {
 	var err error
 	f.walk(func(node ast.Node) bool {
@@ -223,6 +237,10 @@ func (f *file) findOpenCalls() error {
 		pf := &File{
 			Abs:  f.filename,
 			Here: info,
+			Path: here.Path{
+				Pkg:  info.Module.Path,
+				Name: s,
+			},
 		}
 
 		decl := OpenDecl{
@@ -265,16 +283,13 @@ func (f *file) findWalkCalls() error {
 			return false
 		}
 
-		pt, err := info.Parse(f.filename)
-		if err != nil {
-			err = err
-			return false
-		}
-
 		pf := &File{
-			Path: pt,
 			Abs:  f.filename,
 			Here: info,
+			Path: here.Path{
+				Pkg:  info.Module.Path,
+				Name: s,
+			},
 		}
 
 		decl := WalkDecl{
@@ -317,6 +332,10 @@ func (f *file) findHTTPCalls() error {
 		pf := &File{
 			Abs:  f.filename,
 			Here: info,
+			Path: here.Path{
+				Pkg:  info.Module.Path,
+				Name: s,
+			},
 		}
 
 		pos := f.fset.Position(n.Pos())

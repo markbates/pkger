@@ -11,7 +11,7 @@ import (
 	"github.com/markbates/pkger/pkging"
 )
 
-func LoadFile(name string, pkg pkging.Pkger) (os.FileInfo, error) {
+func LoadFile(name string, ref *Ref, pkg pkging.Pkger) (os.FileInfo, error) {
 	her, err := here.Package("github.com/markbates/pkger")
 	if err != nil {
 		return nil, err
@@ -52,7 +52,19 @@ func LoadFile(name string, pkg pkging.Pkger) (os.FileInfo, error) {
 	}
 	defer bf.Close()
 
-	if _, err := io.Copy(bf, af); err != nil {
+	xp := strings.TrimPrefix(root, filepath.Dir(root))
+	xp = filepath.Join(ref.Dir, xp)
+
+	cf, err := os.Create(xp)
+	if err != nil {
+		return nil, err
+	}
+	defer cf.Close()
+
+	mw := io.MultiWriter(bf, cf)
+
+	_, err = io.Copy(mw, af)
+	if err != nil {
 		return nil, err
 	}
 	return info, nil

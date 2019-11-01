@@ -22,7 +22,7 @@ func OpenTest(t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	osi, err := osf.Stat()
 	r.NoError(err)
 
-	_, err = LoadFile(name, pkg)
+	_, err = LoadFile(name, ref, pkg)
 	r.NoError(err)
 
 	pf, err := pkg.Open(fmt.Sprintf("/%s", name))
@@ -31,7 +31,7 @@ func OpenTest(t *testing.T, ref *Ref, pkg pkging.Pkger) {
 	psi, err := pf.Stat()
 	r.NoError(err)
 
-	cmpFileInfo(t, osi, psi)
+	CmpFileInfo(t, osi, psi)
 
 	osb, err := ioutil.ReadAll(osf)
 	r.NoError(err)

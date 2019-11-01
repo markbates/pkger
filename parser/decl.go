@@ -43,7 +43,7 @@ func (decls Decls) Files() ([]*File, error) {
 		}
 
 		for _, f := range files {
-			m[f.Path.String()] = f
+			m[f.Abs] = f
 		}
 	}
 

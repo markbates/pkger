@@ -6,9 +6,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-
-	"github.com/markbates/pkger/internal/takeon/github.com/markbates/hepa"
-	"github.com/markbates/pkger/internal/takeon/github.com/markbates/hepa/filters"
 )
 
 // Info represents details about the directory/package
@@ -27,16 +24,7 @@ func (fi Info) MarshalJSON() ([]byte, error) {
 		"Dir":        fi.Dir,
 	}
 
-	b, err := json.Marshal(mm)
-	if err != nil {
-		return nil, err
-	}
-
-	hep := hepa.New()
-	hep = hepa.With(hep, filters.Home())
-	hep = hepa.With(hep, filters.Golang())
-
-	return hep.Filter(b)
+	return json.Marshal(mm)
 }
 
 func (i Info) FilePath(paths ...string) string {
