@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/markbates/pkger/parser"
-	"github.com/markbates/pkger/pkging/costello"
 	"github.com/markbates/pkger/pkging/mem"
+	"github.com/markbates/pkger/pkging/pkgtest"
 	"github.com/markbates/pkger/pkging/stdos"
 	"github.com/stretchr/testify/require"
 )
@@ -15,14 +15,14 @@ import (
 func Test_Stuff(t *testing.T) {
 	r := require.New(t)
 
-	ref, err := costello.NewRef()
+	ref, err := pkgtest.NewRef()
 	r.NoError(err)
 	defer os.RemoveAll(ref.Dir)
 
 	disk, err := stdos.New(ref.Info)
 	r.NoError(err)
 
-	infos, err := costello.LoadFiles("/", ref, disk)
+	infos, err := pkgtest.LoadFiles("/", ref, disk)
 	r.NoError(err)
 	r.Len(infos, 34)
 
@@ -48,10 +48,10 @@ func Test_Stuff(t *testing.T) {
 	pkg, err := mem.UnmarshalEmbed(bb.Bytes())
 	r.NoError(err)
 
-	costello.CurrentTest(t, ref, pkg)
-	costello.InfoTest(t, ref, pkg)
-	costello.OpenTest(t, ref, pkg)
-	costello.WalkTest(t, ref, pkg)
+	pkgtest.CurrentTest(t, ref, pkg)
+	pkgtest.InfoTest(t, ref, pkg)
+	pkgtest.OpenTest(t, ref, pkg)
+	pkgtest.WalkTest(t, ref, pkg)
 
 	_, err = pkg.Stat("/go.mod")
 	r.NoError(err)

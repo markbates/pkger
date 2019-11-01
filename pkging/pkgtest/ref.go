@@ -1,4 +1,4 @@
-package costello
+package pkgtest
 
 import (
 	"crypto/rand"
@@ -24,7 +24,7 @@ func NewRef() (*Ref, error) {
 	root := filepath.Join(
 		her.Module.Dir,
 		"pkging",
-		"costello",
+		"pkgtest",
 		"testdata",
 		"ref")
 

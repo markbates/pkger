@@ -1,4 +1,4 @@
-package costello
+package pkgtest
 
 import (
 	"os"

@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/markbates/pkger/pkging"
-	"github.com/markbates/pkger/pkging/costello"
+	"github.com/markbates/pkger/pkging/pkgtest"
 )
 
 func Test_Pkger(t *testing.T) {
-	costello.All(t, func(ref *costello.Ref) (pkging.Pkger, error) {
+	pkgtest.All(t, func(ref *pkgtest.Ref) (pkging.Pkger, error) {
 		return New(ref.Info)
 	})
 }

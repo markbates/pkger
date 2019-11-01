@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/markbates/pkger/here"
-	"github.com/markbates/pkger/pkging/costello"
+	"github.com/markbates/pkger/pkging/pkgtest"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,7 +16,7 @@ func Test_Info_Parse(t *testing.T) {
 
 	r := require.New(t)
 
-	app, err := costello.NewRef()
+	app, err := pkgtest.NewRef()
 	r.NoError(err)
 	defer os.RemoveAll(app.Dir)
 

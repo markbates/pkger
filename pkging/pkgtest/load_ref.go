@@ -1,4 +1,4 @@
-package costello
+package pkgtest
 
 import (
 	"fmt"
@@ -20,7 +20,7 @@ func LoadFile(name string, ref *Ref, pkg pkging.Pkger) (os.FileInfo, error) {
 	root := filepath.Join(
 		her.Module.Dir,
 		"pkging",
-		"costello",
+		"pkgtest",
 		"testdata",
 		"ref",
 		name,
@@ -81,7 +81,7 @@ func LoadFiles(name string, ref *Ref, pkg pkging.Pkger) ([]os.FileInfo, error) {
 	root := filepath.Join(
 		her.Module.Dir,
 		"pkging",
-		"costello",
+		"pkgtest",
 		"testdata",
 		"ref",
 		name,

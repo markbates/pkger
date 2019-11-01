@@ -69,7 +69,7 @@ func Test_Walk(t *testing.T) {
 	r := require.New(t)
 
 	files := map[string]os.FileInfo{}
-	err := Walk("/pkging/costello/testdata/ref", func(path string, info os.FileInfo, err error) error {
+	err := Walk("/pkging/pkgtest/testdata/ref", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
