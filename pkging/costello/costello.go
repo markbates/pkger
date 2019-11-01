@@ -60,9 +60,8 @@ func CmpFileInfo(t *testing.T, a os.FileInfo, b os.FileInfo) {
 	t.Helper()
 
 	r := require.New(t)
-
 	r.Equal(a.IsDir(), b.IsDir())
-	r.Equal(a.Mode().String(), b.Mode().String())
+	r.Equal(a.Mode().Perm(), b.Mode().Perm())
 	r.Equal(a.Name(), b.Name())
 	// r.Equal(a.Size(), b.Size())
 	r.NotZero(b.ModTime())
