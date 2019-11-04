@@ -6,11 +6,12 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/markbates/pkger/here"
 )
 
-// var DefaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "_fixtures", "testdata"}
+var defaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "testdata"}
 
 func Parse(her here.Info) (Decls, error) {
 	src, err := fromSource(her)
@@ -43,6 +44,14 @@ func fromSource(her here.Info) (Decls, error) {
 		if !info.IsDir() {
 			return nil
 		}
+
+		base := filepath.Base(path)
+		for _, x := range defaultIgnoredFolders {
+			if strings.HasPrefix(base, x) {
+				return filepath.SkipDir
+			}
+		}
+
 		pkgs, err := parser.ParseDir(fset, path, nil, 0)
 		if err != nil {
 			return err
