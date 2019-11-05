@@ -1,19 +1,23 @@
-package parser_test
+package parser
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/markbates/pkger/here"
-	"github.com/markbates/pkger/parser"
 	"github.com/markbates/pkger/pkging/pkgtest"
 	"github.com/markbates/pkger/pkging/stdos"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_Parser_Ref(t *testing.T) {
+	defer func() {
+		c := exec.Command("go", "mod", "tidy", "-v")
+		c.Run()
+	}()
 	r := require.New(t)
 
 	ref, err := pkgtest.NewRef()
@@ -26,16 +30,20 @@ func Test_Parser_Ref(t *testing.T) {
 	_, err = pkgtest.LoadFiles("/", ref, disk)
 	r.NoError(err)
 
-	res, err := parser.Parse(ref.Info)
+	res, err := Parse(ref.Info)
 
 	r.NoError(err)
 
 	files, err := res.Files()
 	r.NoError(err)
-	r.Len(files, 22)
+	r.Len(files, 23)
 
 	for _, f := range files {
-		r.True(strings.HasPrefix(f.Abs, ref.Dir), "%q %q", f.Abs, ref.Dir)
+		if f.Path.Pkg == ref.Module.Path {
+			r.True(strings.HasPrefix(f.Abs, ref.Dir), "%q %q", f.Abs, ref.Dir)
+		} else {
+			r.False(strings.HasPrefix(f.Abs, ref.Dir), "%q %q", f.Abs, ref.Dir)
+		}
 	}
 }
 
@@ -51,11 +59,15 @@ func Test_Parser_Example_HTTP(t *testing.T) {
 
 	root := filepath.Join(cur.Dir, "examples", "http", "pkger")
 	r.NoError(os.Chdir(root))
+	defer func() {
+		c := exec.Command("go", "mod", "tidy", "-v")
+		c.Run()
+	}()
 
 	her, err := here.Dir(".")
 	r.NoError(err)
 
-	res, err := parser.Parse(her)
+	res, err := Parse(her)
 	r.NoError(err)
 
 	files, err := res.Files()
