@@ -29,16 +29,20 @@ func Test_Stuff(t *testing.T) {
 	decls, err := parser.Parse(ref.Info)
 	r.NoError(err)
 
-	r.Len(decls, 9)
+	r.Len(decls, 10)
 
 	files, err := decls.Files()
 	r.NoError(err)
 
 	for _, f := range files {
-		r.Equal("app", f.Path.Pkg)
+		if f.Path.Pkg == ref.Module.Path {
+			r.Equal("app", f.Path.Pkg)
+		} else {
+			r.NotEqual("app", f.Path.Pkg)
+		}
 	}
 
-	r.Len(files, 22)
+	r.Len(files, 23)
 
 	bb := &bytes.Buffer{}
 

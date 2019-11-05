@@ -142,13 +142,22 @@ func (f *file) findStatCalls() error {
 			return false
 		}
 
+		pt, err := info.Parse(s)
+		if err != nil {
+			return false
+		}
+
+		if pt.Pkg != info.Module.Path {
+			info, err = here.Package(pt.Pkg)
+			if err != nil {
+				return false
+			}
+		}
+
 		pf := &File{
 			Abs:  f.filename,
 			Here: info,
-			Path: here.Path{
-				Pkg:  info.Module.Path,
-				Name: s,
-			},
+			Path: pt,
 		}
 
 		decl := StatDecl{

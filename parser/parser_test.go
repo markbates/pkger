@@ -32,10 +32,14 @@ func Test_Parser_Ref(t *testing.T) {
 
 	files, err := res.Files()
 	r.NoError(err)
-	r.Len(files, 22)
+	r.Len(files, 23)
 
 	for _, f := range files {
-		r.True(strings.HasPrefix(f.Abs, ref.Dir), "%q %q", f.Abs, ref.Dir)
+		if f.Path.Pkg == ref.Module.Path {
+			r.True(strings.HasPrefix(f.Abs, ref.Dir), "%q %q", f.Abs, ref.Dir)
+		} else {
+			r.False(strings.HasPrefix(f.Abs, ref.Dir), "%q %q", f.Abs, ref.Dir)
+		}
 	}
 }
 
