@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"go/ast"
 	"go/token"
 	"path/filepath"
@@ -147,6 +148,8 @@ func (f *file) findStatCalls() error {
 			return false
 		}
 
+		fmt.Println(">>>TODO parser/visitor.go:151: pt ", pt)
+		fmt.Println(">>>TODO parser/visitor.go:151: info.Module ", info.Module)
 		if pt.Pkg != info.Module.Path {
 			info, err = here.Package(pt.Pkg)
 			if err != nil {
