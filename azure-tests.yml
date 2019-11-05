@@ -13,6 +13,7 @@ steps:
         mv !(gopath) "$(modulePath)"
     displayName: "Setup Go Workspace"
   - script: |
+      go get github.com/gobuffalo/buffalo
       go get -t -v ./...
       go test -race ./...
     workingDirectory: "$(modulePath)"
