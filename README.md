@@ -2,6 +2,8 @@
 
 [`github.com/markbates/pkger`](https://godoc.org/github.com/markbates/pkger) is a tool for embedding static files into Go binaries. It will, hopefully, be a replacement for [`github.com/gobuffalo/packr/v2`](https://godoc.org/github.com/gobuffalo/packr/v2).
 
+<iframe src="https://player.vimeo.com/video/370402266" width="640" height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+
 ## How it Works
 
 Pkger is powered by the dark magic of Go Modules, so they're like, totally required.
