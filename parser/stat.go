@@ -2,6 +2,7 @@ package parser
 
 import (
 	"encoding/json"
+	"fmt"
 	"go/token"
 	"os"
 )
@@ -15,8 +16,7 @@ type StatDecl struct {
 }
 
 func (d StatDecl) String() string {
-	b, _ := json.Marshal(d)
-	return string(b)
+	return fmt.Sprintf("pkger.Stat(%q)", d.value)
 }
 
 func (d StatDecl) MarshalJSON() ([]byte, error) {

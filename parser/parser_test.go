@@ -1,4 +1,4 @@
-package parser_test
+package parser
 
 import (
 	"os"
@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/markbates/pkger/here"
-	"github.com/markbates/pkger/parser"
 	"github.com/markbates/pkger/pkging/pkgtest"
 	"github.com/markbates/pkger/pkging/stdos"
 	"github.com/stretchr/testify/require"
@@ -31,7 +30,7 @@ func Test_Parser_Ref(t *testing.T) {
 	_, err = pkgtest.LoadFiles("/", ref, disk)
 	r.NoError(err)
 
-	res, err := parser.Parse(ref.Info)
+	res, err := Parse(ref.Info)
 
 	r.NoError(err)
 
@@ -68,7 +67,7 @@ func Test_Parser_Example_HTTP(t *testing.T) {
 	her, err := here.Dir(".")
 	r.NoError(err)
 
-	res, err := parser.Parse(her)
+	res, err := Parse(her)
 	r.NoError(err)
 
 	files, err := res.Files()

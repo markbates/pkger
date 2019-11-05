@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"go/token"
 	"sort"
 )
@@ -39,11 +40,12 @@ func (decls Decls) Files() ([]*File, error) {
 
 		files, err := fl.Files(v)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%w: %s", err, d)
 		}
 
 		for _, f := range files {
 			m[f.Abs] = f
+			v[f.Abs] = f.Abs
 		}
 	}
 
