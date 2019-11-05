@@ -2,6 +2,7 @@ package parser_test
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -14,6 +15,10 @@ import (
 )
 
 func Test_Parser_Ref(t *testing.T) {
+	defer func() {
+		c := exec.Command("go", "mod", "tidy", "-v")
+		c.Run()
+	}()
 	r := require.New(t)
 
 	ref, err := pkgtest.NewRef()
@@ -55,6 +60,10 @@ func Test_Parser_Example_HTTP(t *testing.T) {
 
 	root := filepath.Join(cur.Dir, "examples", "http", "pkger")
 	r.NoError(os.Chdir(root))
+	defer func() {
+		c := exec.Command("go", "mod", "tidy", "-v")
+		c.Run()
+	}()
 
 	her, err := here.Dir(".")
 	r.NoError(err)
