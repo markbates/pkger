@@ -80,23 +80,22 @@ func ParseDir(abs string, mode parser.Mode) ([]*ParsedSource, error) {
 	if !info.IsDir() {
 		return nil, fmt.Errorf("%s is not a directory", abs)
 	}
-	dir := filepath.Dir(abs)
 
-	her, err := here.Dir(dir)
+	her, err := here.Dir(abs)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: here.Dir failed %s", err, abs)
 	}
 
-	pt, err := her.Parse(strings.TrimPrefix(abs, dir))
+	pt, err := her.Parse(strings.TrimPrefix(abs, filepath.Dir(abs)))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: here.Parse failed %s", err, abs)
 	}
 
 	fset := token.NewFileSet()
 
 	pkgs, err := parser.ParseDir(fset, abs, nil, 0)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: ParseDir failed %s", err, abs)
 	}
 
 	var srcs []*ParsedSource
