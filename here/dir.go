@@ -35,7 +35,7 @@ func Dir(p string) (Info, error) {
 		if err != nil {
 
 			es := err.Error()
-			if !(strings.Contains(es, "cannot find module for path .") || strings.Contains(es, "no Go files")) {
+			if !(strings.Contains(es, "cannot find module for path .") || strings.Contains(es, "no Go files") || strings.Contains(es, "can't load package")) {
 				return i, err
 			}
 
