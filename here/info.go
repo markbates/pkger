@@ -16,6 +16,16 @@ type Info struct {
 	Module     Module
 }
 
+// NewInfoFromPath initialize a Info with a basic information and his module
+// this method could be used when the Unmarshal information is not possible
+func NewInfoFromPath(path string, m Module) Info {
+	return Info{
+		Dir:        path,
+		ImportPath: "command-line-arguments",
+		Module:     m,
+	}
+}
+
 func (fi Info) MarshalJSON() ([]byte, error) {
 	mm := map[string]interface{}{
 		"ImportPath": fi.ImportPath,

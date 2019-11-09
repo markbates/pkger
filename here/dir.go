@@ -2,6 +2,7 @@ package here
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -39,20 +40,30 @@ func Dir(p string) (Info, error) {
 				return i, err
 			}
 
+			if strings.Contains(es, "can't load package: package .") {
+				if _, err := os.Stat(fmt.Sprintf("%s/go.mod", p)); err == nil {
+					var mod Module
+					bm, err := run ("go", "list", "-m", "-json")
+					if err != nil {
+						return i, err
+					}
+
+					if err := json.Unmarshal(bm, &mod); err != nil {
+						return i, err
+					}
+					info := NewInfoFromPath(p, mod)
+					prepareInfo(p, info, &i)
+
+					return i, err
+				}
+			}
+
 			info, err := Dir(filepath.Dir(p))
 			if err != nil {
 				return info, err
 			}
-			i.Module = info.Module
 
-			ph := strings.TrimPrefix(p, info.Module.Dir)
-
-			i.ImportPath = path.Join(info.Module.Path, ph)
-			i.Name = path.Base(i.ImportPath)
-
-			ph = filepath.Join(info.Module.Dir, ph)
-			i.Dir = ph
-
+			prepareInfo(p, info, &i)
 			return i, err
 		}
 
@@ -72,4 +83,15 @@ func Dir(p string) (Info, error) {
 	})
 
 	return i, nil
+}
+
+func prepareInfo(p string, info Info, target *Info) {
+	target.Module = info.Module
+	ph := strings.TrimPrefix(p, target.Module.Dir)
+
+	target.ImportPath = path.Join(info.Module.Path, ph)
+	target.Name = path.Base(target.ImportPath)
+
+	ph = filepath.Join(info.Module.Dir, ph)
+	target.Dir = ph
 }
