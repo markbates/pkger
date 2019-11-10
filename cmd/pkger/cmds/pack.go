@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -30,7 +31,7 @@ func (e *packCmd) Exec(args []string) error {
 		return err
 	}
 
-	fp := info.FilePath(outName)
+	fp := filepath.Join(info.Dir, outName)
 	os.RemoveAll(fp)
 
 	decls, err := parser.Parse(info)
