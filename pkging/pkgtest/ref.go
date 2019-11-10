@@ -13,6 +13,24 @@ import (
 
 type Ref struct {
 	here.Info
+	root string
+}
+
+func NewRefOnlyMod() (*Ref, error) {
+	her, err := here.Package("github.com/markbates/pkger")
+	if err != nil {
+		return nil, err
+	}
+
+	root := filepath.Join(
+		her.Module.Dir,
+		"pkging",
+		"pkgtest",
+		"testdata",
+		"ref",
+		"cmd-main")
+
+	return newRef(root)
 }
 
 func NewRef() (*Ref, error) {
@@ -26,14 +44,19 @@ func NewRef() (*Ref, error) {
 		"pkging",
 		"pkgtest",
 		"testdata",
-		"ref")
+		"ref",
+		"root-main")
 
+	return newRef(root)
+}
+
+func newRef(root string) (*Ref, error) {
 	if _, err := os.Stat(root); err != nil {
 		return nil, err
 	}
 
 	b := make([]byte, 10)
-	_, err = rand.Read(b)
+	_, err := rand.Read(b)
 	if err != nil {
 		return nil, err
 	}
@@ -54,6 +77,8 @@ func NewRef() (*Ref, error) {
 				GoVersion: runtime.Version(),
 			},
 		},
+
+		root: root,
 	}
 
 	if err := os.MkdirAll(dir, 0755); err != nil {

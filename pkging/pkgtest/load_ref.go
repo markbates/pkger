@@ -12,19 +12,7 @@ import (
 )
 
 func LoadFile(name string, ref *Ref, pkg pkging.Pkger) (os.FileInfo, error) {
-	her, err := here.Package("github.com/markbates/pkger")
-	if err != nil {
-		return nil, err
-	}
-
-	root := filepath.Join(
-		her.Module.Dir,
-		"pkging",
-		"pkgtest",
-		"testdata",
-		"ref",
-		name,
-	)
+	root := filepath.Join(ref.root, name)
 
 	info, err := os.Stat(root)
 	if err != nil {
@@ -35,7 +23,7 @@ func LoadFile(name string, ref *Ref, pkg pkging.Pkger) (os.FileInfo, error) {
 		return nil, fmt.Errorf("%s is a directory", name)
 	}
 
-	her, err = pkg.Current()
+	_, err = pkg.Current()
 	if err != nil {
 		return nil, err
 	}
@@ -78,14 +66,7 @@ func LoadFiles(name string, ref *Ref, pkg pkging.Pkger) ([]os.FileInfo, error) {
 		return nil, err
 	}
 
-	root := filepath.Join(
-		her.Module.Dir,
-		"pkging",
-		"pkgtest",
-		"testdata",
-		"ref",
-		name,
-	)
+	root := filepath.Join(ref.root, name)
 
 	info, err := os.Stat(root)
 	if err != nil {
