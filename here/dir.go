@@ -2,10 +2,9 @@ package here
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
-	"path"
 	"path/filepath"
-	"strings"
 )
 
 // Dir attempts to gather info for the requested directory.
@@ -32,28 +31,14 @@ func Dir(p string) (Info, error) {
 		os.Chdir(p)
 
 		b, err := run("go", "list", "-json")
+		// go: cannot find main module; see 'go help modules'
+		// build .: cannot find module for path .
+		// no Go files in
 		if err != nil {
-
-			es := err.Error()
-			if !(strings.Contains(es, "cannot find module for path .") || strings.Contains(es, "no Go files") || strings.Contains(es, "can't load package")) {
-				return i, err
+			if nonGoDirRx.MatchString(err.Error()) {
+				return fromNonGoDir(p)
 			}
-
-			info, err := Dir(filepath.Dir(p))
-			if err != nil {
-				return info, err
-			}
-			i.Module = info.Module
-
-			ph := strings.TrimPrefix(p, info.Module.Dir)
-
-			i.ImportPath = path.Join(info.Module.Path, ph)
-			i.Name = path.Base(i.ImportPath)
-
-			ph = filepath.Join(info.Module.Dir, ph)
-			i.Dir = ph
-
-			return i, err
+			return i, fmt.Errorf("%w %s", err, p)
 		}
 
 		if err := json.Unmarshal(b, &i); err != nil {
@@ -67,9 +52,26 @@ func Dir(p string) (Info, error) {
 		return i, err
 	}
 
-	Cache(i.ImportPath, func(p string) (Info, error) {
+	return Cache(i.ImportPath, func(p string) (Info, error) {
 		return i, nil
 	})
 
-	return i, nil
+}
+
+func fromNonGoDir(dir string) (Info, error) {
+	i := Info{
+		Dir:  dir,
+		Name: filepath.Base(dir),
+	}
+
+	b, err := run("go", "list", "-json", "-m")
+	if err != nil {
+		return i, err
+	}
+
+	if err := json.Unmarshal(b, &i.Module); err != nil {
+		return i, err
+	}
+
+	return i, err
 }

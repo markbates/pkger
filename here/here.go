@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
+	"regexp"
 	"sync"
 )
 
@@ -37,3 +38,11 @@ func Cache(p string, fn func(string) (Info, error)) (Info, error) {
 	cache.Store(p, i)
 	return i, nil
 }
+
+func ClearCache() {
+	cache = &infoMap{
+		data: &sync.Map{},
+	}
+}
+
+var nonGoDirRx = regexp.MustCompile(`cannot find main|go help modules|go: |build .:|no Go files`)

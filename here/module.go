@@ -5,11 +5,11 @@ import (
 )
 
 type Module struct {
-	Path      string `json:"path"`
-	Main      bool   `json:"main"`
-	Dir       string `json:"dir"`
-	GoMod     string `json:"go_mod"`
-	GoVersion string `json:"go_version"`
+	Path      string
+	Main      bool
+	Dir       string
+	GoMod     string
+	GoVersion string
 }
 
 func (i Module) String() string {
