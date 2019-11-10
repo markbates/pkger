@@ -36,10 +36,10 @@ func Dir(p string) (Info, error) {
 		if err != nil {
 
 			es := err.Error()
-			if (strings.Contains(es, "cannot find module for path .") || strings.Contains(es, "no Go files") || strings.Contains(es, "can't load package")) {
+			if strings.Contains(es, "cannot find module for path .") || strings.Contains(es, "no Go files") || strings.Contains(es, "can't load package") {
 				if _, err := os.Stat(fmt.Sprintf("%s/go.mod", p)); err == nil {
 					var mod Module
-					bm, err := run ("go", "list", "-m", "-json")
+					bm, err := run("go", "list", "-m", "-json")
 					if err != nil {
 						return i, err
 					}

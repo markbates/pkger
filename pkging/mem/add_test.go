@@ -20,7 +20,7 @@ func Test_Pkger_Add(t *testing.T) {
 	r.NoError(err)
 
 	var exp []os.FileInfo
-	root := filepath.Join(cur.Dir, "pkging", "pkgtest", "testdata", "ref", "cmd-main")
+	root := filepath.Join(cur.Dir, "pkging", "pkgtest", "testdata", "ref")
 	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err

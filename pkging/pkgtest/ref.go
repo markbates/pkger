@@ -16,23 +16,6 @@ type Ref struct {
 	root string
 }
 
-func NewRefOnlyMod() (*Ref, error) {
-	her, err := here.Package("github.com/markbates/pkger")
-	if err != nil {
-		return nil, err
-	}
-
-	root := filepath.Join(
-		her.Module.Dir,
-		"pkging",
-		"pkgtest",
-		"testdata",
-		"ref",
-		"cmd-main")
-
-	return newRef(root)
-}
-
 func NewRef() (*Ref, error) {
 	her, err := here.Package("github.com/markbates/pkger")
 	if err != nil {
@@ -45,7 +28,7 @@ func NewRef() (*Ref, error) {
 		"pkgtest",
 		"testdata",
 		"ref",
-		"root-main")
+	)
 
 	return newRef(root)
 }
