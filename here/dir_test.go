@@ -49,12 +49,17 @@ func Test_Dir(t *testing.T) {
 		t.Run(tt.in, func(st *testing.T) {
 			r := require.New(st)
 
-			_, err = here.Dir(tt.in)
+			info, err := here.Dir(tt.in)
 			if tt.err {
 				r.Error(err)
 				return
 			}
 			r.NoError(err)
+
+			r.NotZero(info)
+			r.NotZero(info.Dir)
+			r.NotZero(info.Name)
+			r.NotZero(info.Module)
 
 		})
 	}

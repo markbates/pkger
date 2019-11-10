@@ -2,7 +2,6 @@ package here
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -93,9 +92,9 @@ func dir(p string) (Info, error) {
 }
 
 func fromNonGoDir(dir string) (Info, error) {
-	fmt.Println(">>>TODO here/dir.go:59: dir ", dir)
 	i := Info{
-		Dir: dir,
+		Dir:  dir,
+		Name: filepath.Base(dir),
 	}
 
 	b, err := run("go", "list", "-json", "-m")
