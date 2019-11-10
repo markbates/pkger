@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/markbates/pkger"
+	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/parser"
 	"github.com/markbates/pkger/pkging/pkgutil"
 )
@@ -17,6 +18,7 @@ const outName = "pkged.go"
 
 type packCmd struct {
 	*flag.FlagSet
+	out  string
 	help bool
 	subs []command
 }
@@ -31,7 +33,7 @@ func (e *packCmd) Exec(args []string) error {
 		return err
 	}
 
-	fp := filepath.Join(info.Dir, outName)
+	fp := filepath.Join(info.Dir, e.out, outName)
 	os.RemoveAll(fp)
 
 	decls, err := parser.Parse(info)
@@ -89,6 +91,7 @@ func New() (*packCmd, error) {
 
 	c.FlagSet = flag.NewFlagSet("pkger", flag.ExitOnError)
 	c.BoolVar(&c.help, "h", false, "prints help information")
+	c.StringVar(&c.out, "o", "", "output directory for pkged.go")
 	c.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage:\n\n")
 		Usage(os.Stderr, c.FlagSet)()
@@ -116,7 +119,7 @@ func Package(out string, decls parser.Decls) error {
 	}
 	defer f.Close()
 
-	c, err := pkger.Current()
+	c, err := here.Dir(filepath.Dir(out))
 	if err != nil {
 		return err
 	}
