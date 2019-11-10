@@ -21,17 +21,16 @@ type Info struct {
 func NewInfoFromPath(path string, m Module) Info {
 	return Info{
 		Dir:        path,
-		ImportPath: "command-line-arguments",
 		Module:     m,
 	}
 }
 
-func (fi Info) MarshalJSON() ([]byte, error) {
+func (i Info) MarshalJSON() ([]byte, error) {
 	mm := map[string]interface{}{
-		"ImportPath": fi.ImportPath,
-		"Name":       fi.Name,
-		"Module":     fi.Module,
-		"Dir":        fi.Dir,
+		"ImportPath": i.ImportPath,
+		"Name":       i.Name,
+		"Module":     i.Module,
+		"Dir":        i.Dir,
 	}
 
 	return json.Marshal(mm)
