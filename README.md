@@ -24,6 +24,45 @@ github.com/markbates/pkger:/cmd/pkger/main.go
 "github.com/gobuffalo/buffalo:/go.mod" => $GOPATH/pkg/mod/github.com/gobuffalo/buffalo@v0.14.7/go.mod
 ```
 
+## CLI
+
+### Installation
+
+```bash
+$ go get github.com/markbates/pkger/cmd/pkger
+$ pkger -h
+```
+
+### Usage
+
+```bash
+$ pkger
+```
+
+The result will be a `pkged.go` file in the **root** of the module with the embedded information and the package name of the module.
+
+```go
+// ./pkged.go
+package <.>
+
+// Pkger stuff here
+```
+
+The `-o` flag can be used specify the directory of the `pkged.go` file.
+
+```bash
+$ pkger -o cmd/reader
+```
+
+The result will be a `pkged.go` file in the **cmd/reader** folder with the embedded information and the package name of that folder.
+
+```go
+// cmd/reader/pkged.go
+package <reader>
+
+// Pkger stuff here
+```
+
 ## Usage
 
 Pkger's API is modeled on that of the [`os`](https://godoc.org/os) package in Go's standard library. This makes Pkger usage familiar to Go developers.
