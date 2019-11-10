@@ -47,6 +47,7 @@ func Test_Dir(t *testing.T) {
 	}
 	for _, tt := range table {
 		t.Run(tt.in, func(st *testing.T) {
+			here.ClearCache()
 			r := require.New(st)
 
 			info, err := here.Dir(tt.in)
