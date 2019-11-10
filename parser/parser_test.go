@@ -50,21 +50,18 @@ func Test_Parser_Ref(t *testing.T) {
 func Test_Parser_Example_HTTP(t *testing.T) {
 	r := require.New(t)
 
-	cur, err := here.Current()
+	here.ClearCache()
+	cur, err := here.Package("github.com/markbates/pkger")
 	r.NoError(err)
-
-	pwd, err := os.Getwd()
-	r.NoError(err)
-	defer os.Chdir(pwd)
 
 	root := filepath.Join(cur.Dir, "examples", "http", "pkger")
-	r.NoError(os.Chdir(root))
+
 	defer func() {
 		c := exec.Command("go", "mod", "tidy", "-v")
 		c.Run()
 	}()
 
-	her, err := here.Dir(".")
+	her, err := here.Dir(root)
 	r.NoError(err)
 
 	res, err := Parse(her)

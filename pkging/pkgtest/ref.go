@@ -17,6 +17,7 @@ type Ref struct {
 }
 
 func NewRef() (*Ref, error) {
+	here.ClearCache()
 	her, err := here.Package("github.com/markbates/pkger")
 	if err != nil {
 		return nil, err
