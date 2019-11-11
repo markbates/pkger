@@ -140,3 +140,75 @@ type File interface {
 }
 ```
 
+These two interfaces, along with the [`os#FileInfo`](https://godoc.org/os#FileInfo), provide the bulk of the API surface area.
+
+### Open
+
+```go
+func run() error {
+	f, err := pkger.Open("/public/index.html")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	info, err := f.Stat()
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Name: ", info.Name())
+	fmt.Println("Size: ", info.Size())
+	fmt.Println("Mode: ", info.Mode())
+	fmt.Println("ModTime: ", info.ModTime())
+
+	if _, err := io.Copy(os.Stdout, f); err != nil {
+		return err
+	}
+	return nil
+}
+```
+
+### Stat
+
+```go
+func run() error {
+	info, err := pkger.Stat("/public/index.html")
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Name: ", info.Name())
+	fmt.Println("Size: ", info.Size())
+	fmt.Println("Mode: ", info.Mode())
+	fmt.Println("ModTime: ", info.ModTime())
+
+	return nil
+}
+```
+
+### Walk
+
+```go
+func run() error {
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.Debug)
+	defer w.Flush()
+
+	return pkger.Walk("/public", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		fmt.Fprintf(w,
+			"%s \t %d \t %s \t %s \t\n",
+			info.Name(),
+			info.Size(),
+			info.Mode(),
+			info.ModTime().Format(time.RFC3339),
+		)
+
+		return nil
+	})
+
+}
+```
