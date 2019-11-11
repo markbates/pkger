@@ -14,13 +14,25 @@ import (
 	"github.com/markbates/pkger/pkging/pkgutil"
 )
 
+type slice []string
+
+func (i slice) String() string {
+	return fmt.Sprintf("%s", []string(i))
+}
+
+func (i *slice) Set(value string) error {
+	*i = append(*i, value)
+	return nil
+}
+
 const outName = "pkged.go"
 
 type packCmd struct {
 	*flag.FlagSet
-	out  string
-	help bool
-	subs []command
+	out     string
+	help    bool
+	include slice
+	subs    []command
 }
 
 func (e *packCmd) Name() string {
@@ -36,7 +48,7 @@ func (e *packCmd) Exec(args []string) error {
 	fp := filepath.Join(info.Dir, e.out, outName)
 	os.RemoveAll(fp)
 
-	decls, err := parser.Parse(info)
+	decls, err := parser.Parse(info, e.include...)
 	if err != nil {
 		return err
 	}
@@ -92,6 +104,7 @@ func New() (*packCmd, error) {
 	c.FlagSet = flag.NewFlagSet("pkger", flag.ExitOnError)
 	c.BoolVar(&c.help, "h", false, "prints help information")
 	c.StringVar(&c.out, "o", "", "output directory for pkged.go")
+	c.Var(&c.include, "include", "packages the specified file or directory")
 	c.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage:\n\n")
 		Usage(os.Stderr, c.FlagSet)()

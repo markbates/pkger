@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 	"regexp"
+	"strings"
 	"sync"
 )
 
@@ -20,7 +21,7 @@ func run(n string, args ...string) ([]byte, error) {
 	c.Stderr = bb
 	err := c.Run()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %s", err, bb)
+		return nil, fmt.Errorf("%w: %q: %s", err, strings.Join(c.Args, " "), bb)
 	}
 
 	return bb.Bytes(), nil

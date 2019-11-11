@@ -16,9 +16,10 @@ import (
 
 type listCmd struct {
 	*flag.FlagSet
-	help bool
-	json bool
-	subs []command
+	help    bool
+	json    bool
+	include slice
+	subs    []command
 }
 
 func (e *listCmd) Name() string {
@@ -43,7 +44,7 @@ func (e *listCmd) Exec(args []string) error {
 	fp := filepath.Join(info.Dir, outName)
 	os.RemoveAll(fp)
 
-	decls, err := parser.Parse(info)
+	decls, err := parser.Parse(info, e.include...)
 	if err != nil {
 		return err
 	}
@@ -93,6 +94,7 @@ func (e *listCmd) Flags() *flag.FlagSet {
 	if e.FlagSet == nil {
 		e.FlagSet = flag.NewFlagSet("list", flag.ExitOnError)
 		e.BoolVar(&e.json, "json", false, "prints in JSON format")
+		e.Var(&e.include, "include", "packages the specified file or directory")
 	}
 	e.Usage = Usage(os.Stderr, e.FlagSet)
 	return e.FlagSet

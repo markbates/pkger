@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+	pkger.Include("/web")
 	if err := run(); err != nil {
 		log.Fatal(err)
 	}

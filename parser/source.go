@@ -88,6 +88,14 @@ func (p *ParsedSource) parse() error {
 					value: value,
 				}
 			}
+		case "Include":
+			fn = func(f File, pos token.Position, value string) Decl {
+				return IncludeDecl{
+					file:  &f,
+					pos:   pos,
+					value: value,
+				}
+			}
 		case "Stat":
 			fn = func(f File, pos token.Position, value string) Decl {
 				return StatDecl{

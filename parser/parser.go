@@ -16,15 +16,32 @@ import (
 
 var defaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "testdata"}
 
-func Parse(her here.Info) (Decls, error) {
+func New(her here.Info) (*Parser, error) {
+	return &Parser{
+		Info:  her,
+		decls: map[string]Decls{},
+	}, nil
+}
+
+type Parser struct {
+	here.Info
+	decls    map[string]Decls
+	once     sync.Once
+	includes []string
+	err      error
+}
+
+func Parse(her here.Info, includes ...string) (Decls, error) {
 	p, err := New(her)
 	if err != nil {
 		return nil, err
 	}
+	p.includes = includes
+
 	return p.Decls()
 }
 
-func ParseSource(source Source, mode parser.Mode) (*ParsedSource, error) {
+func (p *Parser) ParseSource(source Source, mode parser.Mode) (*ParsedSource, error) {
 	pf := &ParsedSource{
 		Source:  source,
 		FileSet: token.NewFileSet(),
@@ -45,7 +62,7 @@ func ParseSource(source Source, mode parser.Mode) (*ParsedSource, error) {
 	return pf, nil
 }
 
-func ParseFile(abs string, mode parser.Mode) (*ParsedSource, error) {
+func (p *Parser) ParseFile(abs string, mode parser.Mode) (*ParsedSource, error) {
 	s := Source{
 		Abs: abs,
 	}
@@ -68,10 +85,10 @@ func ParseFile(abs string, mode parser.Mode) (*ParsedSource, error) {
 
 	s.Path, err = s.Here.Parse(strings.TrimPrefix(abs, dir))
 
-	return ParseSource(s, 0)
+	return p.ParseSource(s, 0)
 }
 
-func ParseDir(abs string, mode parser.Mode) ([]*ParsedSource, error) {
+func (p *Parser) ParseDir(abs string, mode parser.Mode) ([]*ParsedSource, error) {
 	info, err := os.Stat(abs)
 	if err != nil {
 		return nil, err
@@ -116,19 +133,6 @@ func ParseDir(abs string, mode parser.Mode) ([]*ParsedSource, error) {
 
 	return srcs, nil
 }
-func New(her here.Info) (*Parser, error) {
-	return &Parser{
-		Info:  her,
-		decls: map[string]Decls{},
-	}, nil
-}
-
-type Parser struct {
-	here.Info
-	decls map[string]Decls
-	once  sync.Once
-	err   error
-}
 
 func (p *Parser) Decls() (Decls, error) {
 	if err := p.parse(); err != nil {
@@ -139,6 +143,7 @@ func (p *Parser) Decls() (Decls, error) {
 	orderedNames := []string{
 		"MkdirAll",
 		"Create",
+		"Include",
 		"Stat",
 		"Open",
 		"Dir",
@@ -166,12 +171,18 @@ func (p *Parser) Parse() error {
 
 func (p *Parser) parse() error {
 	p.decls = map[string]Decls{}
+
 	root := p.Dir
+
+	if err := p.parseIncludes(); err != nil {
+		return err
+	}
 
 	fi, err := os.Stat(root)
 	if err != nil {
 		return err
 	}
+
 	if !fi.IsDir() {
 		return fmt.Errorf("%q is not a directory", root)
 	}
@@ -192,7 +203,7 @@ func (p *Parser) parse() error {
 			}
 		}
 
-		srcs, err := ParseDir(path, 0)
+		srcs, err := p.ParseDir(path, 0)
 		if err != nil {
 			return fmt.Errorf("%w: %s", err, path)
 		}
@@ -211,4 +222,34 @@ func (p *Parser) parse() error {
 	})
 
 	return err
+}
+
+func (p *Parser) parseIncludes() error {
+	for _, i := range p.includes {
+		pt, err := p.Info.Parse(i)
+		if err != nil {
+			return err
+		}
+
+		her := p.Info
+		if pt.Pkg != her.ImportPath {
+			her, err = here.Package(pt.Pkg)
+			if err != nil {
+				return err
+			}
+		}
+
+		abs := filepath.Join(her.Module.Dir, pt.Name)
+
+		f := &File{
+			Abs:  abs,
+			Path: pt,
+			Here: her,
+		}
+		p.decls["Include"] = append(p.decls["Include"], IncludeDecl{
+			value: i,
+			file:  f,
+		})
+	}
+	return nil
 }
