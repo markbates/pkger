@@ -125,6 +125,11 @@ func (e *packCmd) Flags() *flag.FlagSet {
 
 func Package(out string, decls parser.Decls) error {
 	os.RemoveAll(out)
+	defer func() {
+		if err := recover(); err != nil {
+			os.RemoveAll(out)
+		}
+	}()
 
 	f, err := os.Create(out)
 	if err != nil {
