@@ -15,15 +15,12 @@ type Pkger interface {
 	Current() (here.Info, error)
 
 	// Info returns the here.Info of the here.Path
-	// @Parser Directive
 	Info(p string) (here.Info, error)
 
 	// Create creates the named file with mode 0666 (before umask) - It's actually 0644, truncating it if it already exists. If successful, methods on the returned File can be used for I/O; the associated file descriptor has mode O_RDWR.
-	// @Parser Directive
 	Create(name string) (File, error)
 
 	// MkdirAll creates a directory named path, along with any necessary parents, and returns nil, or else returns an error. The permission bits perm (before umask) are used for all directories that MkdirAll creates. If path is already a directory, MkdirAll does nothing and returns nil.
-	// @Parser Directive
 	MkdirAll(p string, perm os.FileMode) error
 
 	// Open opens the named file for reading. If successful, methods on the returned file can be used for reading; the associated file descriptor has mode O_RDONLY.
@@ -39,14 +36,8 @@ type Pkger interface {
 	Walk(p string, wf filepath.WalkFunc) error
 
 	// Remove removes the named file or (empty) directory.
-	// @Parser Directive
 	Remove(name string) error
 
 	// RemoveAll removes path and any children it contains. It removes everything it can but returns the first error it encounters. If the path does not exist, RemoveAll returns nil (no error).
-	// @Parser Directive
 	RemoveAll(path string) error
-
-	// Include is a no-op that directs the pkger tool to include the desired file or folder.
-	// @Parser Directive
-	// 	pkger.Include
 }

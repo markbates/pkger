@@ -2,7 +2,7 @@
 
 [`github.com/markbates/pkger`](https://godoc.org/github.com/markbates/pkger) is a tool for embedding static files into Go binaries. It will, hopefully, be a replacement for [`github.com/gobuffalo/packr/v2`](https://godoc.org/github.com/gobuffalo/packr/v2).
 
-## How it Works
+## How it Works (Module Aware Pathing)
 
 Pkger is powered by the dark magic of Go Modules, so they're like, totally required.
 
@@ -212,3 +212,17 @@ func run() error {
 
 }
 ```
+
+## Understanding the Parser
+
+The [`github.com/markbates/pkger/parser#Parser`](https://godoc.org/github.com/markbates/pkger/parser#Parser) works by statically analyzing the source code of your module using the [`go/parser`](https://godoc.org/go/parser) to find a selection of declarations.
+
+The following declarations in your source code will tell the parser to embed files or folders.
+
+* `pkger.Dir("<path>")` - Embeds all files under the specified path.
+* `pkger.Open("<path>")` - Embeds the file, or folder, of the specified path.
+* `pkger.Stat("<path>")` - Embeds the file, or folder, of the specified path.
+* `pkger.Walk("<path>", filepath.WalkFunc)` - Embeds all files under the specified path.
+* `pkger.Include("<path>")` - `Include` is a no-op that directs the pkger tool to include the desired file or folder.
+
+
