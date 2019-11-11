@@ -2,6 +2,11 @@
 
 [`github.com/markbates/pkger`](https://godoc.org/github.com/markbates/pkger) is a tool for embedding static files into Go binaries. It will, hopefully, be a replacement for [`github.com/gobuffalo/packr/v2`](https://godoc.org/github.com/gobuffalo/packr/v2).
 
+### Requirements
+
+* Go 1.13+
+* Go Modules
+
 ## How it Works (Module Aware Pathing)
 
 Pkger is powered by the dark magic of Go Modules, so they're like, totally required.
@@ -61,6 +66,49 @@ The result will be a `pkged.go` file in the **cmd/reader** folder with the embed
 package <reader>
 
 // Pkger stuff here
+```
+
+### Including Files at Package Time
+
+There may be reasons where you don't reference a particular file, or folder, that you want embedded in your application, such as a build artifact.
+
+To do this you may use either the [`github.com/markbates/pkger#Include`](https://godoc.org/github.com/markbates/pkger#Include) function to set a no-op parser directive to include the specified path.
+
+Alternatively, you may use the `-include` flag with the `pkger` and `pkger list` commands.
+
+```bash
+$ pkger list -include /actions -include github.com/gobuffalo/buffalo:/app.go
+
+app
+ > app:/actions
+ > app:/actions/actions.go
+ > app:/assets
+ > app:/assets/css
+ > app:/assets/css/_buffalo.scss
+ > app:/assets/css/application.scss
+ > app:/assets/images
+ > app:/assets/images/favicon.ico
+ > app:/assets/images/logo.svg
+ > app:/assets/js
+ > app:/assets/js/application.js
+ > app:/go.mod
+ > app:/locales/all.en-us.yaml
+ > app:/public
+ > app:/public/assets
+ > app:/public/assets/.keep
+ > app:/public/assets/app.css
+ > app:/public/images
+ > app:/public/images/img1.png
+ > app:/public/index.html
+ > app:/public/robots.txt
+ > app:/templates
+ > app:/templates/_flash.plush.html
+ > app:/templates/application.plush.html
+ > app:/templates/index.plush.html
+ > app:/web
+ > app:/web/web.go
+ > github.com/gobuffalo/buffalo:/app.go
+ > github.com/gobuffalo/buffalo:/logo.svg
 ```
 
 ## Reference Application
@@ -225,4 +273,159 @@ The following declarations in your source code will tell the parser to embed fil
 * `pkger.Walk("<path>", filepath.WalkFunc)` - Embeds all files under the specified path.
 * `pkger.Include("<path>")` - `Include` is a no-op that directs the pkger tool to include the desired file or folder.
 
+### CLI Usage
+
+To see what declarations the parser has found, you can use the `pkger parse` command to get a `JSON` list of the declarations.
+
+```bash
+$ pkger parse
+
+{
+ ".": [
+  {
+   "file": {
+    "Abs": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/foo/bar/baz",
+    "Path": {
+     "Pkg": "app",
+     "Name": "/foo/bar/baz"
+    },
+    "Here": {
+     "Dir": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
+     "ImportPath": "app",
+     "Module": {
+      "Path": "app",
+      "Main": true,
+      "Dir": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
+      "GoMod": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/go.mod",
+      "GoVersion": "1.13"
+     },
+     "Name": "main"
+    }
+   },
+   "pos": {
+    "Filename": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/main.go",
+    "Offset": 629,
+    "Line": 47,
+    "Column": 27
+   },
+   "type": "pkger.MkdirAll",
+   "value": "/foo/bar/baz"
+  },
+  {
+   "file": {
+    "Abs": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/foo/bar/baz/biz.txt",
+    "Path": {
+     "Pkg": "app",
+     "Name": "/foo/bar/baz/biz.txt"
+    },
+    "Here": {
+     "Dir": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
+     "ImportPath": "app",
+     "Module": {
+      "Path": "app",
+      "Main": true,
+      "Dir": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
+      "GoMod": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/go.mod",
+      "GoVersion": "1.13"
+     },
+     "Name": "main"
+    }
+   },
+   "pos": {
+    "Filename": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/main.go",
+    "Offset": 706,
+    "Line": 51,
+    "Column": 25
+   },
+   "type": "pkger.Create",
+   "value": "/foo/bar/baz/biz.txt"
+  },
+  ...
+ ]
+}
+```
+
+For a module aware list use the `pkger list` command.
+
+```bash
+$ pkger list
+
+app
+ > app:/assets
+ > app:/assets/css
+ > app:/assets/css/_buffalo.scss
+ > app:/assets/css/application.scss
+ > app:/assets/images
+ > app:/assets/images/favicon.ico
+ > app:/assets/images/logo.svg
+ > app:/assets/js
+ > app:/assets/js/application.js
+ > app:/go.mod
+ > app:/locales/all.en-us.yaml
+ > app:/public
+ > app:/public/assets
+ > app:/public/assets/.keep
+ > app:/public/assets/app.css
+ > app:/public/images
+ > app:/public/images/img1.png
+ > app:/public/index.html
+ > app:/public/robots.txt
+ > app:/templates
+ > app:/templates/_flash.plush.html
+ > app:/templates/application.plush.html
+ > app:/templates/index.plush.html
+ > app:/web
+ > app:/web/web.go
+ > github.com/gobuffalo/buffalo:/logo.svg
+```
+
+The `-json` flag can be used to get a more detailed list in JSON.
+
+```bash
+$ pkger list -json
+
+{
+ "ImportPath": "app",
+ "Files": [
+  {
+   "Abs": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/assets",
+   "Path": {
+    "Pkg": "app",
+    "Name": "/assets"
+   },
+   "Here": {
+    "Dir": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/assets",
+    "ImportPath": "",
+    "Module": {
+     "Path": "app",
+     "Main": true,
+     "Dir": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
+     "GoMod": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/go.mod",
+     "GoVersion": "1.13"
+    },
+    "Name": "assets"
+   }
+  },
+  {
+   "Abs": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/assets/css",
+   "Path": {
+    "Pkg": "app",
+    "Name": "/assets/css"
+   },
+   "Here": {
+    "Dir": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/assets",
+    "ImportPath": "",
+    "Module": {
+     "Path": "app",
+     "Main": true,
+     "Dir": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
+     "GoMod": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/go.mod",
+     "GoVersion": "1.13"
+    },
+    "Name": "assets"
+   }
+  },
+  ...
+}
+```
 
