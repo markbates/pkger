@@ -45,15 +45,12 @@ func (e *packCmd) Exec(args []string) error {
 		return err
 	}
 
-	fp := filepath.Join(info.Dir, e.out, outName)
-	os.RemoveAll(fp)
-
 	decls, err := parser.Parse(info, e.include...)
 	if err != nil {
 		return err
 	}
 
-	if err := Package(info, fp, decls); err != nil {
+	if err := Package(info, e.out, decls); err != nil {
 		return err
 	}
 
@@ -124,20 +121,23 @@ func (e *packCmd) Flags() *flag.FlagSet {
 }
 
 func Package(info here.Info, out string, decls parser.Decls) error {
-	os.RemoveAll(out)
+	outDir := filepath.Join(info.Dir, out)
+	fp := filepath.Join(outDir, outName)
+
+	os.RemoveAll(fp)
 	defer func() {
 		if err := recover(); err != nil {
-			os.RemoveAll(out)
+			os.RemoveAll(fp)
 		}
 	}()
 
-	f, err := os.Create(out)
+	f, err := os.Create(fp)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	c, err := here.Dir(filepath.Dir(out))
+	c, err := here.Dir(outDir)
 	if err != nil {
 		return err
 	}
