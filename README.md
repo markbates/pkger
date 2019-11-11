@@ -63,11 +63,54 @@ package <reader>
 // Pkger stuff here
 ```
 
-## Usage
+## Reference Application
+
+The reference application for the `README` examples, as well as all testing, can be found at [https://github.com/markbates/pkger/tree/master/pkging/pkgtest/testdata/ref](https://github.com/markbates/pkger/tree/master/pkging/pkgtest/testdata/ref).
+
+```
+├── actions
+│   └── actions.go
+├── assets
+│   ├── css
+│   │   ├── _buffalo.scss
+│   │   └── application.scss
+│   ├── images
+│   │   ├── favicon.ico
+│   │   └── logo.svg
+│   └── js
+│       └── application.js
+├── go.mod
+├── go.sum
+├── locales
+│   └── all.en-us.yaml
+├── main.go
+├── mod
+│   └── mod.go
+├── models
+│   └── models.go
+├── public
+│   ├── assets
+│   │   └── app.css
+│   ├── images
+│   │   └── img1.png
+│   ├── index.html
+│   └── robots.txt
+├── templates
+│   ├── _flash.plush.html
+│   ├── application.plush.html
+│   └── index.plush.html
+└── web
+    └── web.go
+
+13 directories, 20 files
+```
+
+
+## API Usage
 
 Pkger's API is modeled on that of the [`os`](https://godoc.org/os) package in Go's standard library. This makes Pkger usage familiar to Go developers.
 
-
+The two most important interfaces are [`github.com/markbates/pkger/pkging#Pkger`](https://godoc.org/github.com/markbates/pkger/pkging#Pkger) and [`github.com/markbates/pkger/pkging#File`](https://godoc.org/github.com/markbates/pkger/pkging#File).
 
 ```go
 type Pkger interface {
@@ -97,86 +140,3 @@ type File interface {
 }
 ```
 
-```bash
-├── go.mod
-├── go.sum
-├── main.go
-├── public
-│   ├── images
-│   │   ├── mark-small.png
-│   │   ├── img1.png
-│   │   ├── mark_250px.png
-│   │   └── mark_400px.png
-│   └── index.html
-```
-
-```go
-package main
-
-import (
-	"fmt"
-	"log"
-	"os"
-	"text/tabwriter"
-	"time"
-
-	"github.com/markbates/pkger"
-)
-
-func main() {
-	if err := run(); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func run() error {
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.Debug)
-	defer w.Flush()
-
-	return pkger.Walk("/public", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		fmt.Fprintf(w,
-			"%s \t %d \t %s \t %s \t\n",
-			info.Name(),
-			info.Size(),
-			info.Mode(),
-			info.ModTime().Format(time.RFC3339),
-		)
-
-		return nil
-	})
-
-}
-```
-
-### Output Without Packing
-
-```bash
-# compile the go binary as usual and run the app:
-$ go build -v; ./app
-
-public     | 128   | drwxr-xr-x | 2019-10-18T16:24:55-04:00 |
-images     | 128   | drwxr-xr-x | 2019-10-18T16:24:55-04:00 |
-img1.png   | 27718 | -rw-r--r-- | 2019-10-18T16:24:55-04:00 |
-img2.png   | 27718 | -rw-r--r-- | 2019-10-18T16:24:55-04:00 |
-index.html | 257   | -rw-r--r-- | 2019-10-18T16:24:55-04:00 |
-```
-
-### Output With Packing
-
-```bash
-# run the pkger cli to generate a pkged.go file:
-$ pkger
-
-# compile the go binary as usual and run the app:
-$ go build -v; ./app
-
-public     | 128   | drwxr-xr-x | 2019-10-18T16:24:55-04:00 |
-images     | 128   | drwxr-xr-x | 2019-10-18T16:24:55-04:00 |
-img1.png   | 27718 | -rw-r--r-- | 2019-10-18T16:24:55-04:00 |
-img2.png   | 27718 | -rw-r--r-- | 2019-10-18T16:24:55-04:00 |
-index.html | 257   | -rw-r--r-- | 2019-10-18T16:24:55-04:00 |
-```

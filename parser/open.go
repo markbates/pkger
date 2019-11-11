@@ -70,6 +70,7 @@ func (d OpenDecl) Files(virtual map[string]string) ([]*File, error) {
 		}
 		return wd.Files(virtual)
 	}
+
 	var files []*File
 	files = append(files, d.file)
 

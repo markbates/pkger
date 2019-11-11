@@ -2,8 +2,7 @@ package here
 
 import (
 	"encoding/json"
-	"path"
-	"strings"
+	"fmt"
 )
 
 // Package attempts to gather info for the requested package.
@@ -18,14 +17,12 @@ import (
 func Package(p string) (Info, error) {
 	i, err := Cache(p, func(p string) (Info, error) {
 		var i Info
+		if len(p) == 0 || p == "." {
+			return i, fmt.Errorf("missing package name")
+		}
 		b, err := run("go", "list", "-json", "-find", p)
 		if err != nil {
-			if !strings.Contains(err.Error(), "can't load package: package") {
-				return i, err
-			}
-
-			p, _ = path.Split(p)
-			return Package(p)
+			return i, err
 		}
 		if err := json.Unmarshal(b, &i); err != nil {
 			return i, err

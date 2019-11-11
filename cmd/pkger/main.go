@@ -10,13 +10,20 @@ import (
 
 func main() {
 	clean := func() {
-		c := exec.Command("go", "mod", "tidy", "-v")
+		c := exec.Command("go", "mod", "tidy")
 		c.Stdout = os.Stdout
 		c.Stderr = os.Stderr
 		c.Stdin = os.Stdin
 		c.Run()
 	}
 	defer clean()
+
+	defer func() {
+		if err := recover(); err != nil {
+			clean()
+			log.Fatal(err)
+		}
+	}()
 
 	if err := run(); err != nil {
 		clean()

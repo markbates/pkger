@@ -36,7 +36,46 @@ func Test_Parser_Ref(t *testing.T) {
 
 	files, err := res.Files()
 	r.NoError(err)
-	r.Len(files, 23)
+	r.Len(files, 25)
+
+	for _, f := range files {
+		if f.Path.Pkg == ref.Module.Path {
+			r.True(strings.HasPrefix(f.Abs, ref.Dir), "%q %q", f.Abs, ref.Dir)
+		} else {
+			r.False(strings.HasPrefix(f.Abs, ref.Dir), "%q %q", f.Abs, ref.Dir)
+		}
+	}
+}
+
+func Test_Parser_Ref_Include(t *testing.T) {
+	defer func() {
+		c := exec.Command("go", "mod", "tidy", "-v")
+		c.Run()
+	}()
+	r := require.New(t)
+
+	here.ClearCache()
+	ref, err := pkgtest.NewRef()
+	r.NoError(err)
+	defer os.RemoveAll(ref.Dir)
+
+	disk, err := stdos.New(ref.Info)
+	r.NoError(err)
+
+	_, err = pkgtest.LoadFiles("/", ref, disk)
+	r.NoError(err)
+
+	res, err := Parse(ref.Info, "github.com/gobuffalo/buffalo:/app.go")
+
+	r.NoError(err)
+
+	files, err := res.Files()
+	r.NoError(err)
+	// t.FailNow()
+
+	l := len(files)
+	r.Equal(26, l)
+	// r.Len(files, 27)
 
 	for _, f := range files {
 		if f.Path.Pkg == ref.Module.Path {

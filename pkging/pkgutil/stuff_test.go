@@ -29,7 +29,7 @@ func Test_Stuff(t *testing.T) {
 	decls, err := parser.Parse(ref.Info)
 	r.NoError(err)
 
-	r.Len(decls, 10)
+	r.Len(decls, 11)
 
 	files, err := decls.Files()
 	r.NoError(err)
@@ -42,7 +42,7 @@ func Test_Stuff(t *testing.T) {
 		}
 	}
 
-	r.Len(files, 23)
+	r.Len(files, 25)
 
 	bb := &bytes.Buffer{}
 
