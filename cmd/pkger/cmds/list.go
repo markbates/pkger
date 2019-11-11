@@ -50,8 +50,8 @@ func (e *listCmd) Exec(args []string) error {
 	}
 
 	jay := struct {
-		ImportPath string         `json:"import_path"`
-		Files      []*parser.File `json:"files"`
+		ImportPath string
+		Files      []*parser.File
 	}{
 		ImportPath: info.ImportPath,
 	}

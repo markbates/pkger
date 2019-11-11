@@ -45,11 +45,21 @@ func (c *parseCmd) Exec(args []string) error {
 	m := map[string]parser.Decls{}
 
 	for _, a := range args {
-		info, err := here.Package(a)
-		if err != nil {
-			return err
-		}
+		var info here.Info
+		var err error
 
+		if a == "." {
+			info, err = here.Dir(a)
+			if err != nil {
+				return err
+			}
+		} else {
+			info, err = here.Package(a)
+			if err != nil {
+				return err
+			}
+
+		}
 		decls, err := parser.Parse(info)
 		if err != nil {
 			return err
