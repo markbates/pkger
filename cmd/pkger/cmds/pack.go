@@ -53,7 +53,7 @@ func (e *packCmd) Exec(args []string) error {
 		return err
 	}
 
-	if err := Package(fp, decls); err != nil {
+	if err := Package(info, fp, decls); err != nil {
 		return err
 	}
 
@@ -123,7 +123,7 @@ func (e *packCmd) Flags() *flag.FlagSet {
 	return e.FlagSet
 }
 
-func Package(out string, decls parser.Decls) error {
+func Package(info here.Info, out string, decls parser.Decls) error {
 	os.RemoveAll(out)
 	defer func() {
 		if err := recover(); err != nil {
@@ -146,7 +146,7 @@ func Package(out string, decls parser.Decls) error {
 	fmt.Fprintf(f, "import \"github.com/markbates/pkger/pkging/mem\"\n\n")
 	fmt.Fprintf(f, "\nvar _ = pkger.Apply(mem.UnmarshalEmbed([]byte(`")
 
-	if err := pkgutil.Stuff(f, c, decls); err != nil {
+	if err := pkgutil.Stuff(f, info, decls); err != nil {
 		return err
 	}
 
