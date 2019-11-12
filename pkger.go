@@ -15,7 +15,7 @@ import (
 var current pkging.Pkger
 var gil = &sync.RWMutex{}
 
-var disk = func() pkging.Pkger {
+func disk() pkging.Pkger {
 	her, err := here.Current()
 	if err != nil {
 		log.Println(err)
@@ -25,13 +25,13 @@ var disk = func() pkging.Pkger {
 		log.Println(err)
 	}
 	return n
-}()
+}
 
 func impl() pkging.Pkger {
 	gil.RLock()
 	defer gil.RUnlock()
 	if current == nil {
-		return disk
+		return disk()
 	}
 	return current
 }
