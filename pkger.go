@@ -13,18 +13,21 @@ import (
 )
 
 var current pkging.Pkger
+var currentDisk pkging.Pkger
 var gil = &sync.RWMutex{}
 
 func disk() pkging.Pkger {
+	if currentDisk != nil {
+		return currentDisk
+	}
 	her, err := here.Current()
 	if err != nil {
 		log.Println(err)
 	}
-	n, err := stdos.New(her)
-	if err != nil {
+	if currentDisk, err = stdos.New(her); err != nil {
 		log.Println(err)
 	}
-	return n
+	return currentDisk
 }
 
 func impl() pkging.Pkger {
