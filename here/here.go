@@ -46,4 +46,4 @@ func ClearCache() {
 	}
 }
 
-var nonGoDirRx = regexp.MustCompile(`cannot find main|go help modules|go: |build .:|no Go files`)
+var nonGoDirRx = regexp.MustCompile(`cannot find main|go help modules|go: |build .:|no Go files|can't load package`)
