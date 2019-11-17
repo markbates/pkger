@@ -97,4 +97,6 @@ func RemoveAll(name string) error {
 }
 
 // Include is a no-op that directs the pkger tool to include the desired file or folder.
-func Include(name string) {}
+func Include(name string) string {
+	return name
+}
