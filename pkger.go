@@ -1,7 +1,6 @@
 package pkger
 
 import (
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -16,14 +15,8 @@ var current pkging.Pkger
 var gil = &sync.RWMutex{}
 
 var disk = func() pkging.Pkger {
-	her, err := here.Current()
-	if err != nil {
-		log.Println(err)
-	}
-	n, err := stdos.New(her)
-	if err != nil {
-		log.Println(err)
-	}
+	her, _ := here.Current()
+	n, _ := stdos.New(her)
 	return n
 }()
 
