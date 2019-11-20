@@ -1,6 +1,7 @@
 package mem
 
 import (
+	"io"
 	"io/ioutil"
 	"testing"
 
@@ -26,6 +27,16 @@ func Test_File_Seek(t *testing.T) {
 
 	f, err = pkg.Open(":/wilco.band")
 	r.NoError(err)
+
+	// seek to end of file before read
+	pos, err := f.Seek(0, io.SeekEnd)
+	r.NoError(err)
+	r.Equal(int64(len(data)), pos)
+
+	// reset seek
+	pos, err = f.Seek(0, 0)
+	r.NoError(err)
+	r.Equal(int64(0), pos)
 
 	b, err := ioutil.ReadAll(f)
 	r.NoError(err)
