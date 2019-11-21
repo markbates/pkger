@@ -5,6 +5,18 @@ builds:
       - CGO_ENABLED=0
     ldflags:
       - -s -w -X "github.com/markbates/pkger.Version={{.Tag}}"
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - 386
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
 archives:
   -
     replacements:
