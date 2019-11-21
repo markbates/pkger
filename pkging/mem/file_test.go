@@ -1,7 +1,6 @@
 package mem
 
 import (
-	"io"
 	"io/ioutil"
 	"testing"
 
@@ -29,7 +28,7 @@ func Test_File_Seek(t *testing.T) {
 	r.NoError(err)
 
 	// seek to end of file before read
-	pos, err := f.Seek(0, io.SeekEnd)
+	pos, err := f.Seek(0, 2)
 	r.NoError(err)
 	r.Equal(int64(len(data)), pos)
 
