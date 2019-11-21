@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -36,6 +37,9 @@ func Test_Parser_Ref(t *testing.T) {
 
 	files, err := res.Files()
 	r.NoError(err)
+	for _, f := range files {
+		fmt.Println(f.Path)
+	}
 	r.Len(files, 25)
 
 	for _, f := range files {
