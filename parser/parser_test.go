@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -36,6 +37,9 @@ func Test_Parser_Ref(t *testing.T) {
 
 	files, err := res.Files()
 	r.NoError(err)
+	for _, f := range files {
+		fmt.Println(f.Path)
+	}
 	r.Len(files, 25)
 
 	for _, f := range files {
@@ -65,7 +69,7 @@ func Test_Parser_Ref_Include(t *testing.T) {
 	_, err = pkgtest.LoadFiles("/", ref, disk)
 	r.NoError(err)
 
-	res, err := Parse(ref.Info, "github.com/gobuffalo/buffalo:/app.go")
+	res, err := Parse(ref.Info, "github.com/stretchr/testify:/go.mod")
 
 	r.NoError(err)
 

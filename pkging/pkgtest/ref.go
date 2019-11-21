@@ -68,32 +68,25 @@ func newRef(root string) (*Ref, error) {
 		return nil, err
 	}
 
-	b, err = ioutil.ReadFile(filepath.Join(root, "go.mod"))
-	if err != nil {
-		return nil, err
-	}
+	for _, n := range []string{"go.mod", "go.sum"} {
+		b, err = ioutil.ReadFile(filepath.Join(root, n))
+		if err != nil {
+			return nil, err
+		}
 
-	f, err := os.Create(filepath.Join(dir, "go.mod"))
-	if err != nil {
-		return nil, err
-	}
+		f, err := os.Create(filepath.Join(dir, n))
+		if err != nil {
+			return nil, err
+		}
 
-	if _, err := f.Write(b); err != nil {
-		return nil, err
-	}
+		if _, err := f.Write(b); err != nil {
+			return nil, err
+		}
 
-	if err := f.Close(); err != nil {
-		return nil, err
+		if err := f.Close(); err != nil {
+			return nil, err
+		}
 	}
-
-	// c := exec.Command("cp", "-rv", root, dir)
-	// fmt.Println(strings.Join(c.Args, " "))
-	// c.Stdout = os.Stdout
-	// c.Stderr = os.Stderr
-	// c.Stdin = os.Stdin
-	// if err := c.Run(); err != nil {
-	// 	return nil, err
-	// }
 
 	return ref, nil
 }
