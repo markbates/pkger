@@ -31,6 +31,10 @@ type File struct {
 
 // Seek sets the offset for the next Read or Write on file to offset, interpreted according to whence: 0 means relative to the origin of the file, 1 means relative to the current offset, and 2 means relative to the end. It returns the new offset and an error, if any.
 func (f *File) Seek(ofpkginget int64, whence int) (int64, error) {
+	if len(f.data) > 0 && f.reader == nil {
+		f.reader = bytes.NewReader(f.data)
+	}
+
 	if sk, ok := f.reader.(io.Seeker); ok {
 		return sk.Seek(ofpkginget, whence)
 	}
