@@ -69,7 +69,7 @@ func Test_Parser_Ref_Include(t *testing.T) {
 	_, err = pkgtest.LoadFiles("/", ref, disk)
 	r.NoError(err)
 
-	res, err := Parse(ref.Info, "github.com/gobuffalo/buffalo:/app.go")
+	res, err := Parse(ref.Info, "github.com/stretchr/testify:/go.mod")
 
 	r.NoError(err)
 

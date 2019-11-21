@@ -20,6 +20,5 @@ jobs:
 
     - name: Test
       run: |
-        go get github.com/gobuffalo/buffalo
         go mod tidy -v
         go test -v -race ./...
