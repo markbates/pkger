@@ -1,6 +1,7 @@
 package pkgutil
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -29,7 +30,7 @@ func Stuff(w io.Writer, c here.Info, decls parser.Decls) error {
 			}
 			df, err := os.Open(pf.Abs)
 			if err != nil {
-				return err
+				return fmt.Errorf("could open stuff %s: %s", pf.Abs, err)
 			}
 			defer df.Close()
 
