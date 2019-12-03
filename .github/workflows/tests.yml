@@ -16,6 +16,7 @@ jobs:
         fetch-depth: 1
     - name: Test
       run: |
+        go get -t ./...
         go mod download
         go mod tidy -v
         go test -race ./...
