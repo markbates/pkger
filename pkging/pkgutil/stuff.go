@@ -3,6 +3,7 @@ package pkgutil
 import (
 	"io"
 	"os"
+	"strings"
 
 	"github.com/gobuffalo/here"
 	"github.com/markbates/pkger/parser"
@@ -23,6 +24,9 @@ func Stuff(w io.Writer, c here.Info, decls parser.Decls) error {
 
 	for _, pf := range files {
 		err = func() error {
+			if strings.HasSuffix(pf.Abs, ".tmp") {
+				return nil
+			}
 			df, err := os.Open(pf.Abs)
 			if err != nil {
 				return err
