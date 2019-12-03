@@ -8,7 +8,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/markbates/pkger/here"
+	"github.com/gobuffalo/here"
 	"github.com/markbates/pkger/pkging"
 )
 

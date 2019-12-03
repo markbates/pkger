@@ -19,6 +19,12 @@ func Test_Stuff(t *testing.T) {
 	r.NoError(err)
 	defer os.RemoveAll(ref.Dir)
 
+	pwd, err := os.Getwd()
+	r.NoError(err)
+	defer os.Chdir(pwd)
+
+	os.Chdir(ref.Dir)
+
 	disk, err := stdos.New(ref.Info)
 	r.NoError(err)
 

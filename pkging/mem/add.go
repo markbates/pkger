@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/markbates/pkger/here"
+	"github.com/gobuffalo/here"
 	"github.com/markbates/pkger/pkging"
 )
 
@@ -19,7 +19,6 @@ func (fx *Pkger) Add(files ...*os.File) error {
 		if err != nil {
 			return err
 		}
-
 		pt, err := fx.Parse(f.Name())
 		if err != nil {
 			return err
