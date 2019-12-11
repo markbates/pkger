@@ -148,9 +148,9 @@ func Package(info here.Info, out string, decls parser.Decls) error {
 	}
 
 	fmt.Fprintf(f, "package %s\n\n", name)
-	fmt.Fprintf(f, "import \"github.com/markbates/pkger\"\n\n")
-	fmt.Fprintf(f, "import \"github.com/markbates/pkger/pkging/mem\"\n\n")
-	fmt.Fprintf(f, "\nvar _ = pkger.Apply(mem.UnmarshalEmbed([]byte(`")
+	fmt.Fprintf(f, "import (\n\t\"github.com/markbates/pkger\"\n\t")
+	fmt.Fprintf(f, "\"github.com/markbates/pkger/pkging/mem\"\n)\n\n")
+	fmt.Fprintf(f, "var _ = pkger.Apply(mem.UnmarshalEmbed([]byte(`")
 
 	if err := pkgutil.Stuff(f, info, decls); err != nil {
 		return err
