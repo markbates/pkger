@@ -141,7 +141,13 @@ func Package(info here.Info, out string, decls parser.Decls) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(f, "package %s\n\n", c.Name)
+
+	name := c.Name
+	if info.Module.Main {
+		name = "main"
+	}
+
+	fmt.Fprintf(f, "package %s\n\n", name)
 	fmt.Fprintf(f, "import (\n\t\"github.com/markbates/pkger\"\n\t")
 	fmt.Fprintf(f, "\"github.com/markbates/pkger/pkging/mem\"\n)\n\n")
 	fmt.Fprintf(f, "var _ = pkger.Apply(mem.UnmarshalEmbed([]byte(`")
