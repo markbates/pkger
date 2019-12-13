@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"go/token"
 	"os"
+	"path/filepath"
+
+	"github.com/markbates/pkger/here"
 )
 
 var _ Decl = IncludeDecl{}
@@ -13,6 +16,34 @@ type IncludeDecl struct {
 	file  *File
 	pos   token.Position
 	value string
+}
+
+func NewInclude(her here.Info, inc string) (IncludeDecl, error) {
+	var id IncludeDecl
+	pt, err := her.Parse(inc)
+	if err != nil {
+		return id, err
+	}
+
+	if pt.Pkg != her.ImportPath {
+		her, err = here.Package(pt.Pkg)
+		if err != nil {
+			return id, err
+		}
+	}
+
+	abs := filepath.Join(her.Module.Dir, pt.Name)
+
+	f := &File{
+		Abs:  abs,
+		Path: pt,
+		Here: her,
+	}
+
+	return IncludeDecl{
+		value: inc,
+		file:  f,
+	}, nil
 }
 
 func (d IncludeDecl) String() string {
