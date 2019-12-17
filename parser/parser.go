@@ -226,30 +226,12 @@ func (p *Parser) parse() error {
 
 func (p *Parser) parseIncludes() error {
 	for _, i := range p.includes {
-		pt, err := p.Info.Parse(i)
+		d, err := NewInclude(p.Info, i)
 		if err != nil {
 			return err
 		}
 
-		her := p.Info
-		if pt.Pkg != her.ImportPath {
-			her, err = here.Package(pt.Pkg)
-			if err != nil {
-				return err
-			}
-		}
-
-		abs := filepath.Join(her.Module.Dir, pt.Name)
-
-		f := &File{
-			Abs:  abs,
-			Path: pt,
-			Here: her,
-		}
-		p.decls["Include"] = append(p.decls["Include"], IncludeDecl{
-			value: i,
-			file:  f,
-		})
+		p.decls["Include"] = append(p.decls["Include"], d)
 	}
 	return nil
 }

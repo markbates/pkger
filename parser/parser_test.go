@@ -41,14 +41,6 @@ func Test_Parser_Ref(t *testing.T) {
 		fmt.Println(f.Path)
 	}
 	r.Len(files, 25)
-
-	for _, f := range files {
-		if f.Path.Pkg == ref.Module.Path {
-			r.True(strings.HasPrefix(f.Abs, ref.Dir), "%q %q", f.Abs, ref.Dir)
-		} else {
-			r.False(strings.HasPrefix(f.Abs, ref.Dir), "%q %q", f.Abs, ref.Dir)
-		}
-	}
 }
 
 func Test_Parser_Ref_Include(t *testing.T) {
@@ -74,19 +66,9 @@ func Test_Parser_Ref_Include(t *testing.T) {
 
 	files, err := res.Files()
 	r.NoError(err)
-	// t.FailNow()
 
 	l := len(files)
 	r.Equal(26, l)
-	// r.Len(files, 27)
-
-	for _, f := range files {
-		if f.Path.Pkg == ref.Module.Path {
-			r.True(strings.HasPrefix(f.Abs, ref.Dir), "%q %q", f.Abs, ref.Dir)
-		} else {
-			r.False(strings.HasPrefix(f.Abs, ref.Dir), "%q %q", f.Abs, ref.Dir)
-		}
-	}
 }
 
 func Test_Parser_Example_HTTP(t *testing.T) {

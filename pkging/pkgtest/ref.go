@@ -21,7 +21,6 @@ func NewRef() (*Ref, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	root := filepath.Join(
 		her.Module.Dir,
 		"pkging",
