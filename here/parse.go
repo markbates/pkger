@@ -19,6 +19,10 @@ func (i Info) Parse(p string) (Path, error) {
 		return i.build("", "", "")
 	}
 
+	if pathrx == nil {
+		// Please do not move the initialization down to the declaration, see #54
+		pathrx = regexp.MustCompile("([^:]+)(:(/.+))?")
+	}
 	res := pathrx.FindAllStringSubmatch(p, -1)
 	if len(res) == 0 {
 		return Path{}, fmt.Errorf("could not parse %q", p)
@@ -60,4 +64,4 @@ func (i Info) build(p, pkg, name string) (Path, error) {
 	return pt, nil
 }
 
-var pathrx = regexp.MustCompile("([^:]+)(:(/.+))?")
+var pathrx *regexp.Regexp
