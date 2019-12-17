@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/markbates/pkger/here"
+	"github.com/gobuffalo/here"
 )
 
 type Ref struct {

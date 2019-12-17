@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/markbates/pkger/here"
+	"github.com/gobuffalo/here"
 	"github.com/markbates/pkger/pkging/pkgtest"
 	"github.com/markbates/pkger/pkging/stdos"
 	"github.com/stretchr/testify/require"
@@ -50,7 +50,6 @@ func Test_Parser_Ref_Include(t *testing.T) {
 	}()
 	r := require.New(t)
 
-	here.ClearCache()
 	ref, err := pkgtest.NewRef()
 	r.NoError(err)
 	defer os.RemoveAll(ref.Dir)
@@ -75,7 +74,6 @@ func Test_Parser_Ref_Include(t *testing.T) {
 func Test_Parser_Example_HTTP(t *testing.T) {
 	r := require.New(t)
 
-	here.ClearCache()
 	cur, err := here.Package("github.com/markbates/pkger")
 	r.NoError(err)
 

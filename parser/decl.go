@@ -40,7 +40,7 @@ func (decls Decls) Files() ([]*File, error) {
 
 		files, err := fl.Files(v)
 		if err != nil {
-			return nil, fmt.Errorf("%w: %s", err, d)
+			return nil, fmt.Errorf("%s: %s", err, d)
 		}
 
 		for _, f := range files {

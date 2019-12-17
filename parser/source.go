@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/markbates/pkger/here"
+	"github.com/gobuffalo/here"
 )
 
 type Source struct {
@@ -140,26 +140,26 @@ func (p *ParsedSource) parse() error {
 		n := ce.Args[0]
 		val, err := p.value(n)
 		if err != nil {
-			p.err = fmt.Errorf("%w: %s", err, n)
+			p.err = fmt.Errorf("%s: %s", err, n)
 			return false
 		}
 
 		info, err := here.Dir(filepath.Dir(p.Abs))
 		if err != nil {
-			p.err = fmt.Errorf("%w: %s", err, p.Abs)
+			p.err = fmt.Errorf("%s: %s", err, p.Abs)
 			return false
 		}
 
 		pt, err := info.Parse(val)
 		if err != nil {
-			p.err = fmt.Errorf("%w: %s", err, p.Abs)
+			p.err = fmt.Errorf("%s: %s", err, p.Abs)
 			return false
 		}
 
 		if pt.Pkg != info.Module.Path {
 			info, err = here.Package(pt.Pkg)
 			if err != nil {
-				p.err = fmt.Errorf("%w: %s", err, p.Abs)
+				p.err = fmt.Errorf("%s: %s", err, p.Abs)
 				return false
 			}
 		}

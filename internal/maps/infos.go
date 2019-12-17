@@ -8,7 +8,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/markbates/pkger/here"
+	"github.com/gobuffalo/here"
 )
 
 // Infos wraps sync.Map and uses the following types:

@@ -7,7 +7,7 @@ import (
 )
 
 func Serve() {
-	pkger.Stat("github.com/stretchr/testify:/README.md")
+	pkger.Stat("github.com/markbates/pkger:/README.md")
 	dir := http.FileServer(pkger.Dir("/public"))
 	http.ListenAndServe(":3000", dir)
 }

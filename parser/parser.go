@@ -11,7 +11,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/markbates/pkger/here"
+	"github.com/gobuffalo/here"
 )
 
 var defaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "testdata"}
@@ -100,19 +100,19 @@ func (p *Parser) ParseDir(abs string, mode parser.Mode) ([]*ParsedSource, error)
 
 	her, err := here.Dir(abs)
 	if err != nil {
-		return nil, fmt.Errorf("%w: here.Dir failed %s", err, abs)
+		return nil, fmt.Errorf("%s: here.Dir failed %s", err, abs)
 	}
 
 	pt, err := her.Parse(strings.TrimPrefix(abs, filepath.Dir(abs)))
 	if err != nil {
-		return nil, fmt.Errorf("%w: here.Parse failed %s", err, abs)
+		return nil, fmt.Errorf("%s: here.Parse failed %s", err, abs)
 	}
 
 	fset := token.NewFileSet()
 
 	pkgs, err := parser.ParseDir(fset, abs, nil, 0)
 	if err != nil {
-		return nil, fmt.Errorf("%w: ParseDir failed %s", err, abs)
+		return nil, fmt.Errorf("%s: ParseDir failed %s", err, abs)
 	}
 
 	var srcs []*ParsedSource
@@ -205,13 +205,13 @@ func (p *Parser) parse() error {
 
 		srcs, err := p.ParseDir(path, 0)
 		if err != nil {
-			return fmt.Errorf("%w: %s", err, path)
+			return fmt.Errorf("%s: %s", err, path)
 		}
 
 		for _, src := range srcs {
 			mm, err := src.DeclsMap()
 			if err != nil {
-				return fmt.Errorf("%w: %s", err, src.Abs)
+				return fmt.Errorf("%s: %s", err, src.Abs)
 			}
 			for k, v := range mm {
 				p.decls[k] = append(p.decls[k], v...)

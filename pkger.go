@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/markbates/pkger/here"
+	"github.com/gobuffalo/here"
 	"github.com/markbates/pkger/pkging"
 	"github.com/markbates/pkger/pkging/stdos"
 )

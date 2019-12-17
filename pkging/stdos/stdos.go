@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/markbates/pkger/here"
+	"github.com/gobuffalo/here"
 	"github.com/markbates/pkger/internal/maps"
 	"github.com/markbates/pkger/pkging"
 )
