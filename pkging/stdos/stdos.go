@@ -35,16 +35,17 @@ func (fx *Pkger) Create(name string) (pkging.File, error) {
 		return nil, err
 	}
 
-	name = filepath.Join(fx.Here.Dir, pt.Name)
+	her, err := fx.Info(pt.Pkg)
+	if err != nil {
+		return nil, err
+	}
+
+	name = filepath.Join(her.Dir, pt.Name)
 	f, err := os.Create(name)
 	if err != nil {
 		return nil, err
 	}
 
-	her, err := fx.Info(pt.Pkg)
-	if err != nil {
-		return nil, err
-	}
 	nf := &File{
 		File:   f,
 		her:    her,
@@ -82,7 +83,15 @@ func (f *Pkger) Info(p string) (here.Info, error) {
 
 // MkdirAll creates a directory named path, along with any necessary parents, and returns nil, or else returns an error. The permission bits perm (before umask) are used for all directories that MkdirAll creates. If path is already a directory, MkdirAll does nothing and returns nil.
 func (f *Pkger) MkdirAll(p string, perm os.FileMode) error {
-	return os.MkdirAll(filepath.Join(f.Here.Dir, p), perm)
+	pt, err := f.Parse(p)
+	if err != nil {
+		return err
+	}
+	info, err := f.Info(pt.Pkg)
+	if err != nil {
+		return err
+	}
+	return os.MkdirAll(filepath.Join(info.Dir, p), perm)
 }
 
 // Open opens the named file for reading. If successful, methods on the returned file can be used for reading; the associated file descriptor has mode O_RDONLY.
@@ -92,13 +101,13 @@ func (fx *Pkger) Open(name string) (pkging.File, error) {
 		return nil, err
 	}
 
-	name = filepath.Join(fx.Here.Dir, pt.Name)
-	f, err := os.Open(name)
+	her, err := fx.Info(pt.Pkg)
 	if err != nil {
 		return nil, err
 	}
 
-	her, err := fx.Info(pt.Pkg)
+	name = filepath.Join(her.Dir, pt.Name)
+	f, err := os.Open(name)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +140,12 @@ func (fx *Pkger) Stat(name string) (os.FileInfo, error) {
 		return nil, err
 	}
 
-	info, err := os.Stat(filepath.Join(fx.Here.Dir, pt.Name))
+	her, err := fx.Info(pt.Pkg)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := os.Stat(filepath.Join(her.Dir, pt.Name))
 	if err != nil {
 		return nil, err
 	}
@@ -148,19 +162,27 @@ func (f *Pkger) Walk(p string, wf filepath.WalkFunc) error {
 		return err
 	}
 
-	fp := filepath.Join(f.Here.Dir, pt.Name)
+	info, err := f.Info(pt.Pkg)
+	if err != nil {
+		return err
+	}
+
+	fp := filepath.Join(info.Dir, pt.Name)
 	err = filepath.Walk(fp, func(path string, fi os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
+
 		pt, err := f.Parse(fmt.Sprintf("%s:%s", pt.Pkg, path))
 		if err != nil {
 			return err
 		}
+
 		info, err := f.Info(pt.Pkg)
 		if err != nil {
 			return err
 		}
+
 		path = strings.TrimPrefix(path, info.Dir)
 		path = strings.ReplaceAll(path, "\\", "/")
 		pt.Name = path
@@ -176,7 +198,13 @@ func (fx *Pkger) Remove(name string) error {
 	if err != nil {
 		return err
 	}
-	return os.Remove(filepath.Join(fx.Here.Dir, pt.Name))
+
+	info, err := fx.Info(pt.Pkg)
+	if err != nil {
+		return err
+	}
+
+	return os.Remove(filepath.Join(info.Dir, pt.Name))
 }
 
 // RemoveAll removes path and any children it contains. It removes everything it can but returns the first error it encounters. If the path does not exist, RemoveAll returns nil (no error).
@@ -185,5 +213,11 @@ func (fx *Pkger) RemoveAll(name string) error {
 	if err != nil {
 		return err
 	}
-	return os.RemoveAll(filepath.Join(fx.Here.Dir, pt.Name))
+
+	info, err := fx.Info(pt.Pkg)
+	if err != nil {
+		return err
+	}
+
+	return os.RemoveAll(filepath.Join(info.Dir, pt.Name))
 }
