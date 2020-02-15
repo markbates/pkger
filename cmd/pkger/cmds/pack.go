@@ -137,13 +137,14 @@ func Package(info here.Info, out string, decls parser.Decls) error {
 	}
 	defer f.Close()
 
-	c, err := here.Dir(filepath.Dir(out))
+	dir := filepath.Dir(out)
+	c, err := here.Dir(dir)
 	if err != nil {
 		return err
 	}
 
 	name := c.Name
-	if info.Module.Main {
+	if dir == info.Dir && info.Module.Main {
 		name = "main"
 	}
 
