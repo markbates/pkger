@@ -108,9 +108,12 @@ func (p *Parser) ParseDir(abs string, mode parser.Mode) ([]*ParsedSource, error)
 		return nil, fmt.Errorf("%s: here.Parse failed %s", err, abs)
 	}
 
-	fset := token.NewFileSet()
+	filter := func(f os.FileInfo) bool {
+		return !f.IsDir()
+	}
 
-	pkgs, err := parser.ParseDir(fset, abs, nil, 0)
+	fset := token.NewFileSet()
+	pkgs, err := parser.ParseDir(fset, abs, filter, 0)
 	if err != nil {
 		return nil, fmt.Errorf("%s: ParseDir failed %s", err, abs)
 	}
