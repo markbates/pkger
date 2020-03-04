@@ -71,6 +71,27 @@ func Test_Parser_Ref_Include(t *testing.T) {
 	r.Equal(26, l)
 }
 
+func Test_Parser_dotGo_Directory(t *testing.T) {
+	r := require.New(t)
+
+	ref, err := pkgtest.NewRef()
+	r.NoError(err)
+	defer os.RemoveAll(ref.Dir)
+
+	err = os.Mkdir(filepath.Join(ref.Dir, ".go"), 0755)
+	r.NoError(err)
+
+	disk, err := stdos.New(ref.Info)
+	r.NoError(err)
+
+	_, err = pkgtest.LoadFiles("/", ref, disk)
+	r.NoError(err)
+
+	res, err := Parse(ref.Info)
+	r.NoError(err)
+	r.Equal(11, len(res))
+}
+
 func Test_Parser_Example_HTTP(t *testing.T) {
 	r := require.New(t)
 
