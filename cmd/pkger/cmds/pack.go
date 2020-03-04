@@ -31,6 +31,7 @@ type packCmd struct {
 	*flag.FlagSet
 	out     string
 	help    bool
+	version bool
 	include slice
 	subs    []command
 }
@@ -68,6 +69,11 @@ func (e *packCmd) Route(args []string) error {
 		return nil
 	}
 
+	if e.version {
+		e.Version()
+		return nil
+	}
+
 	args = e.Args()
 
 	if len(args) == 0 {
@@ -102,6 +108,7 @@ func New() (*packCmd, error) {
 	})
 
 	c.FlagSet = flag.NewFlagSet("pkger", flag.ExitOnError)
+	c.BoolVar(&c.version, "v", false, "prints the pkger version")
 	c.BoolVar(&c.help, "h", false, "prints help information")
 	c.StringVar(&c.out, "o", "", "output directory for pkged.go")
 	c.Var(&c.include, "include", "packages the specified file or directory")
@@ -113,6 +120,10 @@ func New() (*packCmd, error) {
 		}
 	}
 	return c, nil
+}
+
+func (e *packCmd) Version() {
+	fmt.Fprintf(os.Stderr, "pkger version %s\n\n", pkger.Version)
 }
 
 func (e *packCmd) Flags() *flag.FlagSet {

@@ -1,9 +1,10 @@
 TAGS ?= ""
 GO_BIN ?= "go"
-
+GIT_REV := $(shell git describe --tags HEAD)
+GO_BUILD_FLAGS := -ldflags "-X github.com/markbates/pkger.Version=dev-$(GIT_REV)"
 
 install: tidy
-	cd ./cmd/pkger && $(GO_BIN) install -tags ${TAGS} -v .
+	cd ./cmd/pkger && $(GO_BIN) install $(GO_BUILD_FLAGS) -tags ${TAGS} -v .
 	make tidy
 
 run: install
@@ -13,7 +14,7 @@ tidy:
 	$(GO_BIN) mod tidy -v
 
 build: tidy
-	$(GO_BIN) build -v .
+	cd ./cmd/pkger && $(GO_BIN) build $(GO_BUILD_FLAGS) -v .
 	make tidy
 
 test: tidy
