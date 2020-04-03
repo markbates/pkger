@@ -53,7 +53,7 @@ package <.>
 // Pkger stuff here
 ```
 
-The `-o` flag can be used specify the directory of the `pkged.go` file.
+The `-o` flag can be used to specify the directory of the `pkged.go` file.
 
 ```bash
 $ pkger -o cmd/reader
