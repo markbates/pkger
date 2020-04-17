@@ -29,6 +29,24 @@ github.com/markbates/pkger:/cmd/pkger/main.go
 "github.com/gobuffalo/buffalo:/go.mod" => $GOPATH/pkg/mod/github.com/gobuffalo/buffalo@v0.14.7/go.mod
 ```
 
+## Limitations
+
+It is not possible to embed files using variables nor constants:
+
+```
+var path = "/file.txt"
+file, err := pkger.Open(path) // not possible
+
+const path = "/file.txt"
+file, err := pkger.Open(path) // not possible
+```
+
+You may only use string literals to open files:
+
+```
+file, err := pkger.Open("/file.txt") // possible
+```
+
 ## CLI
 
 ### Installation
