@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"io"
 
-	"github.com/gobuffalo/here"
+	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/internal/takeon/github.com/markbates/hepa"
 	"github.com/markbates/pkger/internal/takeon/github.com/markbates/hepa/filters"
 )

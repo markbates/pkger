@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/gobuffalo/here"
+	"github.com/markbates/pkger/here"
 )
 
 type Source struct {
