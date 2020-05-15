@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gobuffalo/here"
+	"github.com/markbates/pkger/here"
 )
 
 var _ Decl = IncludeDecl{}

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gobuffalo/here"
+	"github.com/markbates/pkger/here"
 )
 
 type File interface {

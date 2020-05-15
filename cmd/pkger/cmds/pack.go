@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/gobuffalo/here"
 	"github.com/markbates/pkger"
+	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/parser"
 	"github.com/markbates/pkger/pkging/pkgutil"
 )

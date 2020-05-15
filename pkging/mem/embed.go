@@ -3,7 +3,7 @@ package mem
 import (
 	"encoding/json"
 
-	"github.com/gobuffalo/here"
+	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/internal/maps"
 	"github.com/markbates/pkger/pkging"
 	"github.com/markbates/pkger/pkging/embed"

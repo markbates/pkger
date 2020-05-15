@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gobuffalo/here"
+	"github.com/markbates/pkger/here"
 )
 
 func Wrap(parent, with Pkger) Pkger {

@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gobuffalo/here"
+	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/parser"
 	"github.com/markbates/pkger/pkging/embed"
 	"github.com/markbates/pkger/pkging/mem"

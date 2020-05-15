@@ -11,7 +11,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/gobuffalo/here"
+	"github.com/markbates/pkger/here"
 )
 
 var defaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "testdata"}

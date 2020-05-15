@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gobuffalo/here"
+	"github.com/markbates/pkger/here"
 	"github.com/markbates/pkger/pkging/pkgtest"
 	"github.com/markbates/pkger/pkging/stdos"
 	"github.com/stretchr/testify/require"
