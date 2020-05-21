@@ -33,16 +33,39 @@ func (p *ParsedSource) Parse() error {
 	return p.err
 }
 
-func (p *ParsedSource) value(node ast.Node) (string, error) {
-	var s string
+func (p *ParsedSource) valueIdent(node *ast.Ident) (s string) {
+	s = node.Name
+	if node.Obj.Kind != ast.Con {
+		return
+	}
+	// As per ast package a Con object is always a *ValueSpec,
+	// but double-checking to avoid panics
+	if x, ok := node.Obj.Decl.(*ast.ValueSpec); ok {
+		// The const var can be defined inline with other vars,
+		// as in `const a, b = "a", "b"`.
+		for i, v := range x.Names {
+			if v.Name == node.Name {
+				s = p.valueNode(x.Values[i])
+				break
+			}
+		}
+	}
+	return
+}
 
+func (p *ParsedSource) valueNode(node ast.Node) string {
+	var s string
 	switch x := node.(type) {
 	case *ast.BasicLit:
 		s = x.Value
 	case *ast.Ident:
-		s = x.Name
+		s = p.valueIdent(x)
 	}
+	return s
+}
 
+func (p *ParsedSource) value(node ast.Node) (string, error) {
+	s := p.valueNode(node)
 	return strconv.Unquote(s)
 }
 

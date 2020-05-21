@@ -18,12 +18,16 @@ func main() {
 	}
 }
 
+const (
+	unused, pathAsset = "", "/assets"
+)
+
 func run() error {
 	if err := actions.WalkTemplates(os.Stdout); err != nil {
 		return err
 	}
 
-	err := pkger.Walk("/assets", func(path string, info os.FileInfo, err error) error {
+	err := pkger.Walk(pathAsset, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
