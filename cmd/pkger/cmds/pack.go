@@ -155,5 +155,9 @@ func Package(info here.Info, out string, decls parser.Decls) error {
 
 	fmt.Fprintf(f, "`)))\n")
 
-	return f.Sync()
+	if err = f.Close(); err != nil {
+		return err
+	}
+
+	return nil
 }

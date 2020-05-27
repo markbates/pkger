@@ -38,6 +38,10 @@ func Stuff(w io.Writer, c here.Info, decls parser.Decls) error {
 				return err
 			}
 
+			if err := df.Close(); err != nil {
+				return err
+			}
+
 			return err
 		}()
 

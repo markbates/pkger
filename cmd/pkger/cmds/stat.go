@@ -32,7 +32,6 @@ func (f *statCmd) Exec(args []string) error {
 		if err != nil {
 			return err
 		}
-		defer f.Close()
 
 		fi, err := f.Stat()
 		if err != nil {
@@ -46,6 +45,9 @@ func (f *statCmd) Exec(args []string) error {
 			}
 			for _, ff := range files {
 				fmt.Println(pkging.NewFileInfo(ff))
+			}
+			if err := f.Close(); err != nil {
+				return err
 			}
 			continue
 		}

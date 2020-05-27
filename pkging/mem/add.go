@@ -68,10 +68,16 @@ func (fx *Pkger) Add(files ...*os.File) error {
 					if err != nil {
 						return err
 					}
+
 					mf.data = bb.Bytes()
 				}
 
 				fx.files.Store(mf.Path(), mf)
+
+				err = f.Close()
+				if err != nil {
+					return err
+				}
 
 				return nil
 			})
