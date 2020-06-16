@@ -31,6 +31,16 @@ type Parser struct {
 	err      error
 }
 
+func ParseLazy(her here.Info, includes ...string) (Decls, error) {
+	p, err := New(her)
+	if err != nil {
+		return nil, err
+	}
+	p.includes = includes
+
+	return p.DeclsLazy()
+}
+
 func Parse(her here.Info, includes ...string) (Decls, error) {
 	p, err := New(her)
 	if err != nil {
@@ -108,12 +118,9 @@ func (p *Parser) ParseDir(abs string, mode parser.Mode) ([]*ParsedSource, error)
 		return nil, fmt.Errorf("%s: here.Parse failed %s", err, abs)
 	}
 
-	filter := func(f os.FileInfo) bool {
-		return !f.IsDir()
-	}
-
 	fset := token.NewFileSet()
-	pkgs, err := parser.ParseDir(fset, abs, filter, 0)
+	pkgs, err := parser.ParseDir(fset, abs, nil, 0)
+	fmt.Printf("%v\n", pkgs)
 	if err != nil {
 		return nil, fmt.Errorf("%s: ParseDir failed %s", err, abs)
 	}
@@ -160,6 +167,29 @@ func (p *Parser) Decls() (Decls, error) {
 	return decls, nil
 }
 
+func (p *Parser) DeclsLazy() (Decls, error) {
+	if err := p.parseLazy(); err != nil {
+		return nil, err
+	}
+
+	var decls Decls
+	orderedNames := []string{
+		"MkdirAll",
+		"Create",
+		"Include",
+		"Stat",
+		"Open",
+		"Dir",
+		"Walk",
+	}
+
+	for _, n := range orderedNames {
+		decls = append(decls, p.decls[n]...)
+	}
+
+	return decls, nil
+}
+
 func (p *Parser) DeclsMap() (map[string]Decls, error) {
 	err := p.Parse()
 	return p.decls, err
@@ -170,6 +200,26 @@ func (p *Parser) Parse() error {
 		p.err = p.parse()
 	})
 	return p.err
+}
+
+func (p *Parser) parseLazy() error {
+	p.decls = map[string]Decls{}
+
+	root := p.Dir
+
+	if err := p.parseIncludes(); err != nil {
+		return err
+	}
+
+	fi, err := os.Stat(root)
+	if err != nil {
+		return err
+	}
+
+	if !fi.IsDir() {
+		return fmt.Errorf("%q is not a directory", root)
+	}
+	return nil
 }
 
 func (p *Parser) parse() error {
