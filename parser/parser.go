@@ -14,7 +14,7 @@ import (
 	"github.com/markbates/pkger/here"
 )
 
-var defaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "testdata"}
+var DefaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "testdata"}
 
 func New(her here.Info) (*Parser, error) {
 	return &Parser{
@@ -29,16 +29,6 @@ type Parser struct {
 	once     sync.Once
 	includes []string
 	err      error
-}
-
-func ParseLazy(her here.Info, includes ...string) (Decls, error) {
-	p, err := New(her)
-	if err != nil {
-		return nil, err
-	}
-	p.includes = includes
-
-	return p.DeclsLazy()
 }
 
 func Parse(her here.Info, includes ...string) (Decls, error) {
@@ -120,7 +110,6 @@ func (p *Parser) ParseDir(abs string, mode parser.Mode) ([]*ParsedSource, error)
 
 	fset := token.NewFileSet()
 	pkgs, err := parser.ParseDir(fset, abs, nil, 0)
-	fmt.Printf("%v\n", pkgs)
 	if err != nil {
 		return nil, fmt.Errorf("%s: ParseDir failed %s", err, abs)
 	}
@@ -167,29 +156,6 @@ func (p *Parser) Decls() (Decls, error) {
 	return decls, nil
 }
 
-func (p *Parser) DeclsLazy() (Decls, error) {
-	if err := p.parseLazy(); err != nil {
-		return nil, err
-	}
-
-	var decls Decls
-	orderedNames := []string{
-		"MkdirAll",
-		"Create",
-		"Include",
-		"Stat",
-		"Open",
-		"Dir",
-		"Walk",
-	}
-
-	for _, n := range orderedNames {
-		decls = append(decls, p.decls[n]...)
-	}
-
-	return decls, nil
-}
-
 func (p *Parser) DeclsMap() (map[string]Decls, error) {
 	err := p.Parse()
 	return p.decls, err
@@ -200,26 +166,6 @@ func (p *Parser) Parse() error {
 		p.err = p.parse()
 	})
 	return p.err
-}
-
-func (p *Parser) parseLazy() error {
-	p.decls = map[string]Decls{}
-
-	root := p.Dir
-
-	if err := p.parseIncludes(); err != nil {
-		return err
-	}
-
-	fi, err := os.Stat(root)
-	if err != nil {
-		return err
-	}
-
-	if !fi.IsDir() {
-		return fmt.Errorf("%q is not a directory", root)
-	}
-	return nil
 }
 
 func (p *Parser) parse() error {
@@ -250,7 +196,7 @@ func (p *Parser) parse() error {
 		}
 
 		base := filepath.Base(path)
-		for _, x := range defaultIgnoredFolders {
+		for _, x := range DefaultIgnoredFolders {
 			if strings.HasPrefix(base, x) {
 				return filepath.SkipDir
 			}
