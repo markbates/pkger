@@ -44,7 +44,7 @@ func (e *listCmd) Exec(args []string) error {
 	fp := filepath.Join(info.Dir, outName)
 	os.RemoveAll(fp)
 
-	decls, err := parser.Parse(info, e.include...)
+	decls, err := parser.Parse(info, e.include, nil)
 	if err != nil {
 		return err
 	}

@@ -60,7 +60,7 @@ func (c *parseCmd) Exec(args []string) error {
 			}
 
 		}
-		decls, err := parser.Parse(info)
+		decls, err := parser.Parse(info, nil, nil)
 		if err != nil {
 			return err
 		}
