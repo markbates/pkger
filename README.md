@@ -68,13 +68,13 @@ package <reader>
 // Pkger stuff here
 ```
 
-### Including Files at Package Time
+### Including and Excluding Files at Package Time
 
 There may be reasons where you don't reference a particular file, or folder, that you want embedded in your application, such as a build artifact.
 
 To do this you may use either the [`github.com/markbates/pkger#Include`](https://godoc.org/github.com/markbates/pkger#Include) function to set a no-op parser directive to include the specified path.
 
-Alternatively, you may use the `-include` flag with the `pkger` and `pkger list` commands.
+Alternatively, you may use the `-include` flag with the `pkger` and `pkger list` commands. To exclude files and directories when parsing, you may additionally use the `-exclude` flag. Directories such as `node_modules` are excluded by default.
 
 ```bash
 $ pkger list -include /actions -include github.com/gobuffalo/buffalo:/app.go
