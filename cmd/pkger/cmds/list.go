@@ -19,6 +19,7 @@ type listCmd struct {
 	help    bool
 	json    bool
 	include slice
+	exclude slice
 	subs    []command
 }
 
@@ -44,7 +45,7 @@ func (e *listCmd) Exec(args []string) error {
 	fp := filepath.Join(info.Dir, outName)
 	os.RemoveAll(fp)
 
-	decls, err := parser.Parse(info, e.include, nil)
+	decls, err := parser.Parse(info, e.include, e.exclude)
 	if err != nil {
 		return err
 	}
@@ -95,6 +96,7 @@ func (e *listCmd) Flags() *flag.FlagSet {
 		e.FlagSet = flag.NewFlagSet("list", flag.ExitOnError)
 		e.BoolVar(&e.json, "json", false, "prints in JSON format")
 		e.Var(&e.include, "include", "packages the specified file or directory")
+		e.Var(&e.exclude, "exclude", "exclude files or directories from parsing")
 	}
 	e.Usage = Usage(os.Stderr, e.FlagSet)
 	return e.FlagSet
