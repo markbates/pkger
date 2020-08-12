@@ -24,9 +24,10 @@ Paths:
 * Packages can specified in at the beginning of a path with a `:` seperator.
 github.com/markbates/pkger:/cmd/pkger/main.go
 * There are no relative paths. All paths are absolute to the modules root.
+* Fully-qualified paths are embedded into the metadata of your static assets. If this behavior is undesirable, a preference is to build in a containerized environ, like docker, where the path strings are not ex-filtrating data about your development environment.
 
 ```
-"github.com/gobuffalo/buffalo:/go.mod" => $GOPATH/pkg/mod/github.com/gobuffalo/buffalo@v0.14.7/go.mod
+"github.com/gobuffalo/buffalo:/go.mod" => /go/pkg/mod/github.com/gobuffalo/buffalo@v0.14.7/go.mod
 ```
 
 ## CLI
@@ -284,26 +285,26 @@ $ pkger parse
  ".": [
   {
    "file": {
-    "Abs": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/foo/bar/baz",
+    "Abs": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/foo/bar/baz",
     "Path": {
      "Pkg": "app",
      "Name": "/foo/bar/baz"
     },
     "Here": {
-     "Dir": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
+     "Dir": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
      "ImportPath": "app",
      "Module": {
       "Path": "app",
       "Main": true,
-      "Dir": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
-      "GoMod": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/go.mod",
+      "Dir": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
+      "GoMod": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/go.mod",
       "GoVersion": "1.13"
      },
      "Name": "main"
     }
    },
    "pos": {
-    "Filename": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/main.go",
+    "Filename": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/main.go",
     "Offset": 629,
     "Line": 47,
     "Column": 27
@@ -313,26 +314,26 @@ $ pkger parse
   },
   {
    "file": {
-    "Abs": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/foo/bar/baz/biz.txt",
+    "Abs": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/foo/bar/baz/biz.txt",
     "Path": {
      "Pkg": "app",
      "Name": "/foo/bar/baz/biz.txt"
     },
     "Here": {
-     "Dir": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
+     "Dir": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
      "ImportPath": "app",
      "Module": {
       "Path": "app",
       "Main": true,
-      "Dir": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
-      "GoMod": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/go.mod",
+      "Dir": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
+      "GoMod": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/go.mod",
       "GoVersion": "1.13"
      },
      "Name": "main"
     }
    },
    "pos": {
-    "Filename": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/main.go",
+    "Filename": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/main.go",
     "Offset": 706,
     "Line": 51,
     "Column": 25
@@ -388,38 +389,38 @@ $ pkger list -json
  "ImportPath": "app",
  "Files": [
   {
-   "Abs": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/assets",
+   "Abs": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/assets",
    "Path": {
     "Pkg": "app",
     "Name": "/assets"
    },
    "Here": {
-    "Dir": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/assets",
+    "Dir": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/assets",
     "ImportPath": "",
     "Module": {
      "Path": "app",
      "Main": true,
-     "Dir": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
-     "GoMod": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/go.mod",
+     "Dir": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
+     "GoMod": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/go.mod",
      "GoVersion": "1.13"
     },
     "Name": "assets"
    }
   },
   {
-   "Abs": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/assets/css",
+   "Abs": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/assets/css",
    "Path": {
     "Pkg": "app",
     "Name": "/assets/css"
    },
    "Here": {
-    "Dir": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/assets",
+    "Dir": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/assets",
     "ImportPath": "",
     "Module": {
      "Path": "app",
      "Main": true,
-     "Dir": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
-     "GoMod": "$GOPATH/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/go.mod",
+     "Dir": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref",
+     "GoMod": "/go/src/github.com/markbates/pkger/pkging/pkgtest/testdata/ref/go.mod",
      "GoVersion": "1.13"
     },
     "Name": "assets"

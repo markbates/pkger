@@ -9,8 +9,6 @@ import (
 	"path/filepath"
 
 	"github.com/markbates/pkger"
-	"github.com/markbates/pkger/internal/takeon/github.com/markbates/hepa"
-	"github.com/markbates/pkger/internal/takeon/github.com/markbates/hepa/filters"
 	"github.com/markbates/pkger/parser"
 )
 
@@ -71,15 +69,7 @@ func (e *listCmd) Exec(args []string) error {
 			return err
 		}
 
-		hep := hepa.New()
-		hep = hepa.With(hep, filters.Home())
-		hep = hepa.With(hep, filters.Golang())
-
-		b, err := hep.Filter(bb.Bytes())
-		if err != nil {
-			return err
-		}
-		_, err = os.Stdout.Write(b)
+		_, err = os.Stdout.Write(bb.Bytes())
 		return err
 	}
 
