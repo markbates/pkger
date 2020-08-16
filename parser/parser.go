@@ -14,7 +14,7 @@ import (
 	"github.com/markbates/pkger/here"
 )
 
-var defaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "testdata"}
+var DefaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "testdata"}
 
 func New(her here.Info) (*Parser, error) {
 	return &Parser{
@@ -108,12 +108,8 @@ func (p *Parser) ParseDir(abs string, mode parser.Mode) ([]*ParsedSource, error)
 		return nil, fmt.Errorf("%s: here.Parse failed %s", err, abs)
 	}
 
-	filter := func(f os.FileInfo) bool {
-		return !f.IsDir()
-	}
-
 	fset := token.NewFileSet()
-	pkgs, err := parser.ParseDir(fset, abs, filter, 0)
+	pkgs, err := parser.ParseDir(fset, abs, nil, 0)
 	if err != nil {
 		return nil, fmt.Errorf("%s: ParseDir failed %s", err, abs)
 	}
@@ -200,7 +196,7 @@ func (p *Parser) parse() error {
 		}
 
 		base := filepath.Base(path)
-		for _, x := range defaultIgnoredFolders {
+		for _, x := range DefaultIgnoredFolders {
 			if strings.HasPrefix(base, x) {
 				return filepath.SkipDir
 			}

@@ -31,6 +31,7 @@ type packCmd struct {
 	*flag.FlagSet
 	out     string
 	help    bool
+	exclude slice
 	include slice
 	subs    []command
 }
@@ -47,6 +48,11 @@ func (e *packCmd) Exec(args []string) error {
 
 	fp := filepath.Join(info.Dir, e.out, outName)
 	os.RemoveAll(fp)
+
+	exclude := []string(e.exclude)
+	if len(exclude) > 0 {
+		parser.DefaultIgnoredFolders = append(parser.DefaultIgnoredFolders, exclude...)
+	}
 
 	decls, err := parser.Parse(info, e.include...)
 	if err != nil {
@@ -104,6 +110,7 @@ func New() (*packCmd, error) {
 	c.FlagSet = flag.NewFlagSet("pkger", flag.ExitOnError)
 	c.BoolVar(&c.help, "h", false, "prints help information")
 	c.StringVar(&c.out, "o", "", "output directory for pkged.go")
+	c.Var(&c.exclude, "exclude", "folder prefix to ignore")
 	c.Var(&c.include, "include", "packages the specified file or directory")
 	c.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage:\n\n")
