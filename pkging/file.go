@@ -26,6 +26,13 @@ type File interface {
 	// Read reads up to len(b) bytes from the File. It returns the number of bytes read and any error encountered. At end of file, Read returns 0, io.EOF.
 	Read(p []byte) (int, error)
 
+	// ReadAt implements the ReadAt interface for File
+	// (reads len(b) bytes from the File starting at byte offset off.
+	// It returns the number of bytes read and the error, if any.
+	// ReadAt always returns a non-nil error when n < len(b).
+	// At end of file, that error is io.EOF)
+	ReadAt(p []byte, offset int64) (int, error)
+
 	// Readdir reads the contents of the directory associated with file and returns a slice of up to n FileInfo values, as would be returned by Lstat, in directory order. Subsequent calls on the same file will yield further FileInfos.
 	//
 	// If n > 0, Readdir returns at most n FileInfo structures. In this case, if Readdir returns an empty slice, it will return a non-nil error explaining why. At the end of a directory, the error is io.EOF.

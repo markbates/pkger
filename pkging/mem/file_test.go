@@ -60,3 +60,29 @@ func Test_File_Seek(t *testing.T) {
 	r.NotEqual(data, b)
 	r.Equal([]byte("the arm"), b)
 }
+
+func TestFileReadAt(t *testing.T) {
+	r := require.New(t)
+
+	info, err := here.Current()
+	r.NoError(err)
+
+	pkg, err := New(info)
+	r.NoError(err)
+
+	f, err := pkg.Create(":/tolstoy")
+	r.NoError(err)
+
+	data := []byte("pierre always loved natasha")
+	f.Write(data)
+	r.NoError(f.Close())
+
+	f, err = pkg.Open(":/tolstoy")
+	r.NoError(err)
+
+	b := make([]byte, len(data))
+	read, err := f.ReadAt(b, 7)
+	r.NoError(err)
+	r.Equal("always loved natasha", string(b[:read]))
+	r.Equal(read, len(data[7:]))
+}

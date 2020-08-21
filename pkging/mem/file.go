@@ -81,6 +81,21 @@ func (f *File) Read(p []byte) (int, error) {
 	return 0, fmt.Errorf("unable to read %s", f.Name())
 }
 
+// ReadAt implements the ReadAt interface for File
+// (reads len(b) bytes from the File starting at byte offset off.
+// It returns the number of bytes read and the error, if any.
+// ReadAt always returns a non-nil error when n < len(b).
+// At end of file, that error is io.EOF)
+func (f *File) ReadAt(p []byte, offset int64) (int, error) {
+	if len(f.data) == 0 || offset >= int64(len(f.data)) {
+		return 0, io.EOF
+	}
+
+	f.reader = bytes.NewReader(f.data[offset:])
+
+	return f.reader.Read(p)
+}
+
 // Write writes len(b) bytes to the File. It returns the number of bytes written and an error, if any. Write returns a non-nil error when n != len(b).
 func (f *File) Write(b []byte) (int, error) {
 	if f.writer == nil {
