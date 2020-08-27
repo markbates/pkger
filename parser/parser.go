@@ -28,15 +28,17 @@ type Parser struct {
 	decls    map[string]Decls
 	once     sync.Once
 	includes []string
+	excludes []string
 	err      error
 }
 
-func Parse(her here.Info, includes ...string) (Decls, error) {
+func Parse(her here.Info, includes []string, excludes []string) (Decls, error) {
 	p, err := New(her)
 	if err != nil {
 		return nil, err
 	}
 	p.includes = includes
+	p.excludes = excludes
 
 	return p.Decls()
 }
@@ -200,7 +202,7 @@ func (p *Parser) parse() error {
 		}
 
 		base := filepath.Base(path)
-		for _, x := range defaultIgnoredFolders {
+		for _, x := range append(defaultIgnoredFolders, p.excludes...) {
 			if strings.HasPrefix(base, x) {
 				return filepath.SkipDir
 			}

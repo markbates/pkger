@@ -32,7 +32,7 @@ func Test_Stuff(t *testing.T) {
 	r.NoError(err)
 	r.Len(infos, 34)
 
-	decls, err := parser.Parse(ref.Info)
+	decls, err := parser.Parse(ref.Info, nil, nil)
 	r.NoError(err)
 
 	r.Len(decls, 11)

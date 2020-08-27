@@ -31,7 +31,7 @@ func Test_Parser_Ref(t *testing.T) {
 	_, err = pkgtest.LoadFiles("/", ref, disk)
 	r.NoError(err)
 
-	res, err := Parse(ref.Info)
+	res, err := Parse(ref.Info, nil, nil)
 
 	r.NoError(err)
 
@@ -60,7 +60,7 @@ func Test_Parser_Ref_Include(t *testing.T) {
 	_, err = pkgtest.LoadFiles("/", ref, disk)
 	r.NoError(err)
 
-	res, err := Parse(ref.Info, "github.com/stretchr/testify:/go.mod")
+	res, err := Parse(ref.Info, []string{"github.com/stretchr/testify:/go.mod"}, nil)
 
 	r.NoError(err)
 
@@ -69,6 +69,34 @@ func Test_Parser_Ref_Include(t *testing.T) {
 
 	l := len(files)
 	r.Equal(26, l)
+}
+
+func Test_Parser_Ref_Exclude(t *testing.T) {
+	defer func() {
+		c := exec.Command("go", "mod", "tidy", "-v")
+		c.Run()
+	}()
+	r := require.New(t)
+
+	ref, err := pkgtest.NewRef()
+	r.NoError(err)
+	defer os.RemoveAll(ref.Dir)
+
+	disk, err := stdos.New(ref.Info)
+	r.NoError(err)
+
+	_, err = pkgtest.LoadFiles("/", ref, disk)
+	r.NoError(err)
+
+	res, err := Parse(ref.Info, nil, []string{"models"})
+
+	r.NoError(err)
+
+	files, err := res.Files()
+	r.NoError(err)
+
+	l := len(files)
+	r.Equal(24, l)
 }
 
 func Test_Parser_dotGo_Directory(t *testing.T) {
@@ -87,7 +115,7 @@ func Test_Parser_dotGo_Directory(t *testing.T) {
 	_, err = pkgtest.LoadFiles("/", ref, disk)
 	r.NoError(err)
 
-	res, err := Parse(ref.Info)
+	res, err := Parse(ref.Info, nil, nil)
 	r.NoError(err)
 	r.Equal(11, len(res))
 }
@@ -108,7 +136,7 @@ func Test_Parser_Example_HTTP(t *testing.T) {
 	her, err := here.Dir(root)
 	r.NoError(err)
 
-	res, err := Parse(her)
+	res, err := Parse(her, nil, nil)
 	r.NoError(err)
 
 	files, err := res.Files()
