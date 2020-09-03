@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/markbates/pkger"
 	"github.com/markbates/pkger/parser"
@@ -38,9 +37,6 @@ func (e *listCmd) Exec(args []string) error {
 	if err != nil {
 		return err
 	}
-
-	fp := filepath.Join(info.Dir, outName)
-	os.RemoveAll(fp)
 
 	decls, err := parser.Parse(info, e.include...)
 	if err != nil {
