@@ -3,15 +3,15 @@ package embed
 import (
 	"bytes"
 	"compress/gzip"
-	"encoding/hex"
+	"encoding/base64"
 	"io"
 
 	"github.com/markbates/pkger/here"
 )
 
 func Decode(src []byte) ([]byte, error) {
-	dst := make([]byte, hex.DecodedLen(len(src)))
-	_, err := hex.Decode(dst, src)
+	dst := make([]byte, base64.RawStdEncoding.DecodedLen(len(src)))
+	_, err := base64.RawStdEncoding.Decode(dst, src)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func Encode(b []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	s := hex.EncodeToString(bb.Bytes())
+	s := base64.RawStdEncoding.EncodeToString(bb.Bytes())
 	return []byte(s), nil
 }
 
