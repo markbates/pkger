@@ -103,7 +103,7 @@ func (f File) Stat() (os.FileInfo, error) {
 	return f.info, nil
 }
 
-// Name retuns the name of the file in pkger format
+// Name returns the name of the file in pkger format
 func (f File) Name() string {
 	return f.path.String()
 }
