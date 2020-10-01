@@ -57,5 +57,5 @@ func Stuff(w io.Writer, c here.Info, decls parser.Decls) error {
 	}
 
 	_, err = w.Write(b)
-	return nil
+	return err
 }
