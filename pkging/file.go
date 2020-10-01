@@ -14,7 +14,7 @@ type File interface {
 	// Info returns the here.Info of the file
 	Info() here.Info
 
-	// Name retuns the name of the file
+	// Name returns the name of the file
 	Name() string
 
 	// Open implements the http.FileSystem interface. A FileSystem implements access to a collection of named files. The elements in a file path are separated by slash ('/', U+002F) characters, regardless of host operating system convention.
