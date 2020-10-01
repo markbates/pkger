@@ -84,6 +84,9 @@ func (p *Parser) ParseFile(abs string, mode parser.Mode) (*ParsedSource, error) 
 	}
 
 	s.Path, err = s.Here.Parse(strings.TrimPrefix(abs, dir))
+	if err != nil {
+		return nil, err
+	}
 
 	return p.ParseSource(s, 0)
 }
