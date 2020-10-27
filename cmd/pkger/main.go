@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+
 	clean := func() {
 		c := exec.Command("go", "mod", "tidy")
 		c.Stdout = os.Stdout
@@ -16,7 +17,6 @@ func main() {
 		c.Stdin = os.Stdin
 		c.Run()
 	}
-	defer clean()
 
 	defer func() {
 		if err := recover(); err != nil {
@@ -29,6 +29,7 @@ func main() {
 		clean()
 		log.Fatal(err)
 	}
+
 }
 
 func run() error {
