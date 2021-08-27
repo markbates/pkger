@@ -7,6 +7,11 @@
 * Go 1.13+
 * Go Modules
 
+## Disclaimer
+You probably don't need this library anymore. Although it was very useful in its time, Go now has built-in file embedding functionality as of Go 1.16. Being natively supported, `go:embed` is notably easier to use, as it doesn't require importing external libraries, or running an explicit pre-build step to generate the embedded file data. See the Go embed documentation for more details: https://pkg.go.dev/embed
+
+However, if you're unconvinced or still need to use `pkger` for whatever reason, read on:
+
 ## How it Works (Module Aware Pathing)
 
 Pkger is powered by the dark magic of Go Modules, so they're like, totally required.
